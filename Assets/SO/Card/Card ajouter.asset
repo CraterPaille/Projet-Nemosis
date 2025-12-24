@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11dd4889239fdd3478083862a08848b8, type: 3}
+  m_Name: Card ajouter
+  m_EditorClassIdentifier: Assembly-CSharp::VillageCard
+  cardName: Priere intense
+  icon: {fileID: -2695734776074045611, guid: 4c1fd7160c6f6df4d9f5a2fd369abd1d, type: 3}
+  description: Nuit entiere de priere
+  cardSet: 1
+  effectSO: {fileID: 11400000, guid: f5edac698a0fe6849ad1f6e3e86b9bb0, type: 2}

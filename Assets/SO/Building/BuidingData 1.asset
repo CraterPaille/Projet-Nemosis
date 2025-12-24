@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
+  m_Name: BuidingData 1
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: Hotel
+  icon: {fileID: -5041592810142915036, guid: 45bf0f84cd37805458b577e28b2c1036, type: 3}
+  description: On peut dormir
+  passiveEffects: []
+  interactionEffects: []
+  upgradeEffects: []
