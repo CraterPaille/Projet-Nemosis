@@ -13,6 +13,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tooltipTitle;
     [SerializeField] private TextMeshProUGUI tooltipDescription;
 
+    private BuildingData currentTooltipData = null;
+
     [Header("Interaction Menu")]
     [SerializeField] private GameObject interactionPanel;
     [SerializeField] private GameObject interactionHeader;
@@ -38,6 +40,8 @@ public class UIManager : MonoBehaviour
     [Header("Village Card Choice UI")]
     //[SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardUIPrefab;
+
+    public Vector2 offsetTooltip;
 
 
 
@@ -68,6 +72,31 @@ public class UIManager : MonoBehaviour
     }
     
 
+    private void Update()
+    {
+        // Positionne le tooltip à côté de la souris
+        if (tooltipPanel.activeSelf)
+        {
+            RectTransform canvasRect = tooltipPanel.transform.parent.GetComponent<RectTransform>();
+            RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
+            
+            if (canvasRect != null && tooltipRect != null)
+            {
+                Vector2 localPoint;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect, 
+                    Input.mousePosition, 
+                    Camera.main, 
+                    out localPoint
+                );
+                
+                // Offset fixe en pixels : décale à droite et légèrement en bas
+                Vector2 offset = offsetTooltip;
+                tooltipRect.anchoredPosition = localPoint + offset;
+            }
+        }
+    }
+
     public void HideAllUI()
     {
         HideTooltip();
@@ -80,6 +109,11 @@ public class UIManager : MonoBehaviour
     // --- TOOLTIP ---
     public void ShowBuildingTooltip(BuildingData data)
     {
+        // Évite de rafraîchir si c'est le même bâtiment
+        if (currentTooltipData == data && tooltipPanel.activeSelf)
+            return;
+
+        currentTooltipData = data;
         tooltipPanel.SetActive(true);
         tooltipTitle.text = data.buildingName;
         tooltipDescription.text = data.description;
@@ -87,6 +121,7 @@ public class UIManager : MonoBehaviour
 
     public void HideTooltip()
     {
+        currentTooltipData = null;
         tooltipPanel.SetActive(false);
     }
 
@@ -117,9 +152,18 @@ public class UIManager : MonoBehaviour
         interactionPanel.SetActive(false);
     }
 
+    public bool IsInteractionMenuOpen()
+    {
+        return interactionPanel != null && interactionPanel.activeSelf;
+    }
+
     public void closeInteractionMenu()
     {
-        if (GameManager.Instance.currentGameMode == GameManager.GameMode.village) { SHowVillageUI(); }
+        if (GameManager.Instance.currentGameMode == GameManager.GameMode.village) 
+        { 
+            // Retour au mode village (UI ou 2D selon la config)
+            ShowVillage2DView(); 
+        }
         else { HideAllUI(); }
     }
 
@@ -128,6 +172,15 @@ public class UIManager : MonoBehaviour
     {
         HideAllUI();
         villagePanel.SetActive(true);
+    }
+
+    // Mode 2D isométrique - cache tout l'UI pour voir le monde
+    public void ShowVillage2DView()
+    {
+        HideAllUI();
+        // S'assure que le panel village UI est bien désactivé
+        if (villagePanel != null)
+            villagePanel.SetActive(false);
     }
 
     public void HideVillageUI()

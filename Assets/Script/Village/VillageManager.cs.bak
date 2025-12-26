@@ -1,0 +1,83 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class BuildingPlacement
+{
+    public BuildingData buildingData;
+    public Vector3 worldPosition; // Position dans le monde
+}
+
+public class VillageManager : MonoBehaviour
+{
+    public static VillageManager Instance { get; private set; }
+    
+    [Header("UI Mode (ancien système)")]
+    public GameObject buildingUIPrefab;
+    public Transform buildingContainer;
+    
+    [Header("2D Iso Mode (nouveau système)")]
+    public GameObject building2DPrefab; // Le prefab avec Building2D script
+    public Transform buildingsParent; // Parent pour organiser la hiérarchie
+    public List<BuildingPlacement> buildingPlacements; // Liste des bâtiments avec positions
+
+    [Header("Fallback (si buildingPlacements vide)")]
+    public List<BuildingData> currentBuildings;
+
+    private List<BuildingUI> instantiatedBuildingsUI = new List<BuildingUI>();
+    private List<Building2D> instantiatedBuildings2D = new List<Building2D>();
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+    public void AfficheBuildings()
+    {
+        // Nettoie l’ancien UI en parcourant la liste en sens inverse et en évitant les références nulles
+        for (int i = instantiatedBuildings.Count - 1; i >= 0; i--)
+        {
+            var ui = instantiatedBuildings[i];
+            if (ui != null && ui.gameObject != null)
+                Destroy(ui.gameObject);
+        }
+        instantiatedBuildings.Clear();
+
+        // Crée les nouveaux UI
+        UIManager.Instance.SHowVillageUI();
+        foreach (var building in currentBuildings)
+        {
+            var go = Instantiate(buildingUIPrefab, buildingContainer);
+            var ui = go.GetComponent<BuildingUI>();
+            ui.Init(building, this);
+            instantiatedBuildings.Add(ui);
+        }
+    }
+
+    public void OnBuildingHovered(BuildingUI building)
+    {
+        // Affiche info tooltip
+        UIManager.Instance.ShowBuildingTooltip(building.Data);
+    }
+
+    public void OnBuildingClicked(BuildingUI building)
+    {
+        // Si interactions : ouvre un panneau d’interaction
+        UIManager.Instance.ShowInteractionMenu(building.Data);
+        Debug.Log($"Building {building.Data.buildingName} clicked.");
+    }
+    // Overload pour Building2D
+    public void OnBuildingHovered(Building2D building)
+    {
+        UIManager.Instance.ShowBuildingTooltip(building.GetData());
+    }
+
+    public void OnBuildingClicked(Building2D building)
+    {
+        UIManager.Instance.ShowInteractionMenu(building.GetData());
+        Debug.Log($"Building {building.GetData().buildingName} clicked.");
+    }}

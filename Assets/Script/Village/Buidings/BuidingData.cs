@@ -10,5 +10,4 @@ public class BuildingData : ScriptableObject
 
     public List<EffectSO> passiveEffects;      // Appliqués automatiquement
     public List<EffectSO> interactionEffects;  // Lorsqu’on clique dessus
-    public List<EffectSO> upgradeEffects;      // Améliorations
 }
