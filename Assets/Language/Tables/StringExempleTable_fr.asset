@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: StringExempleTable_fr
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: fr
+  m_SharedData: {fileID: 11400000, guid: 72fcc4f5c81033d4192efd58e93ace7a, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 237533220864
+    m_Localized: commandes du clavier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1835474964480
+    m_Localized: "contr\xF4les de la mannette"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4266110319845376
+    m_Localized: Daltonisme
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4268605465157632
+    m_Localized: langue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4269050149462016
+    m_Localized: "Plein \xE9cran"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4270331530305536
+    m_Localized: "Qualit\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4270412765585408
+    m_Localized: Graphismes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4271773968228352
+    m_Localized: Volume General
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4271833678340096
+    m_Localized: Volume de la musique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4271967128510464
+    m_Localized: "Volume des effets sp\xE9ciaux"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4272348814368768
+    m_Localized: Volume des voix
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
