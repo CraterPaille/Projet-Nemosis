@@ -8,28 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 1
-    path: Assets/Scenes/Menu_option.unity
-    guid: 8c7df01d48ab6b14b8989a312e72457f
-  - enabled: 1
-    path: Assets/Scenes/ChyronTraverse.unity
-    guid: b869bf0be9389594aa680ee91750454f
-  - enabled: 1
-    path: Assets/Scenes/Menu_principal.unity
-    guid: 17ad7928508747a47a4df92e18c33dcf
-  - enabled: 1
-    path: Assets/Scenes/NuitGlaciale.unity
-    guid: 794392b160729cf448ac01d30e8a8be1
-  - enabled: 1
-    path: Assets/Scenes/RhythmScene.unity
-    guid: a7efac3f0da73e7439004acd29203987
-  - enabled: 1
-    path: Assets/Scenes/Tri.unity
-    guid: 75aeed768e124c74e8be015f32c58286
-  - enabled: 1
-    path: Assets/Scenes/Zeus_gameScene.unity
-    guid: 5273c56e71fb6ff48af3368496ea0326
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-    com.unity.localization.settings: {fileID: 11400000, guid: 273420ea81b5f9b4fa556ffb44b74d25, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: 130aea8f956c61e47beecfa269b3b99b, type: 2}
   m_UseUCBPForAssetBundles: 0
