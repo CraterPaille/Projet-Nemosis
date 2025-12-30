@@ -708,8 +708,8 @@ VFXRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 164903343
-  m_SortingLayer: 5
+  m_SortingLayerID: 44212749
+  m_SortingLayer: 4
   m_SortingOrder: 0
 --- !u!2083052967 &657417431
 VisualEffect:
@@ -1351,7 +1351,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd7da6362c318d54dbd7fa577256dd8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TesterStart
-  gameManager: {fileID: 1068778692}
 --- !u!4 &1945822209
 Transform:
   m_ObjectHideFlags: 0

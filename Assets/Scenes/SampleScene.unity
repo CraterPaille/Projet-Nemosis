@@ -582,6 +582,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1612588657}
+  - component: {fileID: 1612588658}
   m_Layer: 0
   m_Name: VIllageManager
   m_TagString: Untagged
@@ -604,6 +605,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 293507851}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1612588658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612588656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 697909ac8b11af14d8fa78d53e4fdd6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VillageManager
+  buildingUIPrefab: {fileID: 2586095266505145520, guid: 143d4712c889dc34dbcd1b2aab2f1f61, type: 3}
+  buildingContainer: {fileID: 0}
+  building2DPrefab: {fileID: 1098257676142304243, guid: fa27e92240b8fc54ab7e668c1e71c7dd, type: 3}
+  buildingsParent: {fileID: 0}
+  villageGrid: {fileID: 0}
+  buildingPlacements: []
+  CloseButton: {fileID: 0}
+  currentBuildings: []
 --- !u!1 &1893390160
 GameObject:
   m_ObjectHideFlags: 0
