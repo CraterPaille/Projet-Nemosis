@@ -92,6 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 253b03b6575826c4f8c70542293dcf90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Obstacle
+  type: 0
 --- !u!212 &3959805204147125950
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -136,8 +137,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1600557517
-  m_SortingLayer: 4
+  m_SortingLayerID: -376907029
+  m_SortingLayer: 3
   m_SortingOrder: 5
   m_Sprite: {fileID: -5010020611411523089, guid: 52c3df339f5296e49a26ebe14df13c82, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
