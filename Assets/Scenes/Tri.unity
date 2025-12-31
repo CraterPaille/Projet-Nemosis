@@ -209,7 +209,7 @@ GameObject:
   m_Component:
   - component: {fileID: 75012740}
   - component: {fileID: 75012739}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: STYX_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -283,8 +283,8 @@ Transform:
   m_GameObject: {fileID: 75012738}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -960.0322, y: -540, z: 0}
-  m_LocalScale: {x: 2.7, y: 2.302158, z: 2.302158}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 130, y: 110, z: 120}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 178920774}
@@ -528,7 +528,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 1
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 614108137}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
