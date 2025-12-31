@@ -14,4 +14,9 @@ public class MiniGameLauncher : MonoBehaviour
     {
         SceneManager.LoadScene("RhythmScene");
     }
+
+    public void ReturnToMainMenu()
+    {
+        SceneManager.LoadScene("Menu_principal");
+    }   
 }
