@@ -30,6 +30,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Zeus_gameScene.unity
     guid: 5273c56e71fb6ff48af3368496ea0326
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 44958e268e61ecb4e847952500f6bea5, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     com.unity.localization.settings: {fileID: 11400000, guid: 273420ea81b5f9b4fa556ffb44b74d25, type: 2}
   m_UseUCBPForAssetBundles: 0
