@@ -4,7 +4,6 @@ using UnityEditor.EditorTools;
 
 public enum DayTime { Matin, Aprem }
 
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -23,15 +22,13 @@ public class GameManager : MonoBehaviour
     public int currentDay = 1;
     public DayTime currentTime = DayTime.Matin;
     public string currentWeekDay = "Lundi";
-    public enum GameMode { village, VillageCard, Relation,  }
+    public enum GameMode { village, VillageCard, Relation, }
     public GameMode currentGameMode;
-
 
     //public EventScheduler eventScheduler;
 
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
-
 
     private readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
     public EffectSO effet;
@@ -58,7 +55,6 @@ public class GameManager : MonoBehaviour
         // initialise le dictionnaire : chaque clé est un élément de StatType, valeur initiale 
         foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
-            
             Multiplicateur[stat] = 1f;
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
             // initial value
@@ -67,7 +63,6 @@ public class GameManager : MonoBehaviour
         }
         changeStat(StatType.Nemosis, -50f);
         ChooseGameMode();
-
     }
 
     public void addHumain()
@@ -99,12 +94,46 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Stat {type} changed by {delta}, new value: {Valeurs[type]}");
     }
 
+    // --- Intégration mini-jeu de rythme ---
+    // accuracy = 0..1
+    public void ApplyRhythmResult(int score, float accuracy, int perfectHits, int goodHits, int normalHits, int missedHits)
+    {
+        Debug.Log($"[GameManager] Résultat mini-jeu rythme : score={score}, acc={accuracy:P1}, " +
+                  $"Perfect={perfectHits}, Good={goodHits}, Normal={normalHits}, Miss={missedHits}");
+
+        // Exemple de règles :
+        // > 80% de notes réussies => gros bonus Foi + Or, baisse de Némosis
+        // 50%–80% => petit bonus
+        // < 50% => malus (augmentation Némosis, perte de Foi ou Or)
+
+        if (accuracy >= 0.8f)
+        {
+            changeStat(StatType.Foi, 10);
+            changeStat(StatType.Or, 50);
+            changeStat(StatType.Nemosis, -5);
+        }
+        else if (accuracy >= 0.5f)
+        {
+            changeStat(StatType.Foi, 5);
+            changeStat(StatType.Or, 20);
+            // Némosis ne bouge pas
+        }
+        else
+        {
+            changeStat(StatType.Foi, -5);
+            changeStat(StatType.Nemosis, 10);
+        }
+
+        // Tu peux aussi utiliser "score" pour moduler davantage :
+        // ex: bonusOr += score / 1000; etc.
+    }
 
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
         UIManager.Instance.DayModeChoice(true);
     }
+
     public void ChooseVillage()
     {
         currentGameMode = GameMode.village;
@@ -125,7 +154,6 @@ public class GameManager : MonoBehaviour
     public void EndHalfDay()
     {
         // Passage à la demi-journée suivante
-        
         if (currentTime == DayTime.Matin)
         {
             currentTime = DayTime.Aprem;
@@ -139,13 +167,10 @@ public class GameManager : MonoBehaviour
             EndDay();
         }
 
-        // Calcul du jour de la semaine
-        
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
         ChooseGameMode();
         //eventScheduler.CheckAndTriggerEvents(currentDay, currentTime);
     }
-
 
     public void EndDay()
     {
@@ -166,7 +191,4 @@ public class GameManager : MonoBehaviour
         Valeurs[StatType.Food] -= foodLoss;
         GameEvents.TriggerDayEnd();
     }
-    
-
-
 }
