@@ -24,6 +24,13 @@ public class GameManagerRhytme : MonoBehaviour
     public TMP_Text ScoreText;
     public TMP_Text MultiText;
 
+    // --- Stats globales pour intégration GameManager ---
+    [Header("Stats performance")]
+    public int normalHits;
+    public int goodHits;
+    public int perfectHits;
+    public int missedHits;
+
     private PlayerControls keyboardControls;
     private PlayerControls gamepadControls;
 
@@ -86,6 +93,12 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
+        currentScore = 0;
+        normalHits = 0;
+        goodHits = 0;
+        perfectHits = 0;
+        missedHits = 0;
+
         ScoreText.text = "Score : 0";
 
         // --- Calibrage automatique de la vitesse à partir du BPM ---
@@ -113,6 +126,13 @@ public class GameManagerRhytme : MonoBehaviour
             StartPlaying = true;
             theBS.HasStarted = true;
             Invoke(nameof(StartMusic), 0.05f);
+        }
+
+        // Fin automatique quand la musique se termine
+        if (StartPlaying && theMusic != null && !theMusic.isPlaying)
+        {
+            StartPlaying = false;
+            EndSong();
         }
     }
 
@@ -152,6 +172,7 @@ public class GameManagerRhytme : MonoBehaviour
     // --- SCORING ---
     public void NormalHit()
     {
+        normalHits++;
         HandleMultiplier();
         AddScore(ScorePerNote);
         Vibrate(0.2f, 0.2f, 0.09f);
@@ -159,6 +180,7 @@ public class GameManagerRhytme : MonoBehaviour
 
     public void GoodHit()
     {
+        goodHits++;
         HandleMultiplier();
         AddScore(ScorePerGoodNote);
         Vibrate(0.35f, 0.35f, 0.11f);
@@ -166,6 +188,7 @@ public class GameManagerRhytme : MonoBehaviour
 
     public void PerfectHit()
     {
+        perfectHits++;
         HandleMultiplier();
         AddScore(ScorePerPerfectNote);
         Vibrate(0.1f, 0.1f, 0.04f);
@@ -201,11 +224,39 @@ public class GameManagerRhytme : MonoBehaviour
 
     public void NoteMissed()
     {
+        missedHits++;
         currentMultiplier = 1;
         multiplierTracker = 0;
         MultiText.text = "Multiplier X1";
 
         Vibrate(0.6f, 0.6f, 0.12f);
+    }
+
+    // --- Fin du mini-jeu & intégration GameManager principal ---
+    public void EndSong()
+    {
+        // Empêche d’appeler plusieurs fois
+        if (theBS != null)
+            theBS.HasStarted = false;
+
+        int totalNotes = normalHits + goodHits + perfectHits + missedHits;
+        float hitCount = normalHits + goodHits + perfectHits;
+        float accuracy = totalNotes > 0 ? (hitCount / totalNotes) : 0f;
+
+        Debug.Log($"[Rhytme] Fin chanson - Score={currentScore}, Acc={accuracy:P1}");
+
+        // Appeler le GameManager global si dispo
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ApplyRhythmResult(currentScore, accuracy, perfectHits, goodHits, normalHits, missedHits);
+        }
+        else
+        {
+            Debug.LogWarning("[Rhytme] GameManager.Instance nul, aucun bonus/malus appliqué.");
+        }
+
+        // Ici tu peux aussi charger une scène, fermer le mini-jeu, etc.
+        // SceneManager.LoadScene("NomSceneRetour");
     }
 
     // système de vibration
@@ -249,5 +300,12 @@ public class GameManagerRhytme : MonoBehaviour
                 case 3: visual.right = Vector3.right; break;
             }
         }
+    }
+    public void OnQuitMiniGame()
+    {
+        if (GameManagerRhytme.instance != null)
+            GameManagerRhytme.instance.EndSong();
+        // Charger la scène principale, ou revenir au village
+        //SceneManager.LoadScene("Village");
     }
 }

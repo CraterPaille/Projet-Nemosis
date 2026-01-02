@@ -4,7 +4,6 @@ using UnityEditor.EditorTools;
 
 public enum DayTime { Matin, Aprem }
 
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -23,7 +22,7 @@ public class GameManager : MonoBehaviour
     public float currentDay = 1;
     public DayTime currentTime = DayTime.Matin;
     public string currentWeekDay = "Lundi";
-    public enum GameMode { village, VillageCard, Relation,  }
+    public enum GameMode { village, VillageCard, Relation, }
     public GameMode currentGameMode;
 
     [Header("Event System")]
@@ -32,11 +31,8 @@ public class GameManager : MonoBehaviour
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
 
-
-    
     public EffectSO effet;
     public readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
-
 
     void Awake()
     {
@@ -57,19 +53,20 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"StatType values: {string.Join(", ", System.Enum.GetNames(typeof(StatType)))}");
+
         // initialise le dictionnaire : chaque clé est un élément de StatType, valeur initiale 
-        foreach (StatType stat in StatType.GetValues(typeof(StatType)))
+        foreach (StatType stat in System.Enum.GetValues(typeof(StatType)))
         {
-            
             Multiplicateur[stat] = 1f;
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
-            // initial value
+
+            // valeur initiale
             Valeurs[stat] = 50f;
             changeStat(stat, 0f);
         }
+
         changeStat(StatType.Nemosis, -50f);
         ChooseGameMode();
-
     }
 
     public void addHumain()
@@ -80,109 +77,4 @@ public class GameManager : MonoBehaviour
     public void lessHumain()
     {
         changeStat(StatType.Human, -10);
-    }
-
-    public void addOr()
-    {
-        changeStat(StatType.Or, 100);
-    }
-
-    public void addFood()
-    {
-        changeStat(StatType.Food, 100);
-    }
-
-    public void changeStat(StatType type, float amount)
-    {
-        Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
-        float delta = (amount > 0) ? amount * Multiplicateur[type] : amount;
-        Valeurs[type] += delta;
-        GameEvents.TriggerStatChanged(type, Valeurs[type]);
-        Debug.Log($"Stat {type} changed by {delta}, new value: {Valeurs[type]}");
-    }
-
-
-    // Gere le choix du mode de jeu 
-    public void ChooseGameMode()
-    {
-        UIManager.Instance.GameModeChoice();
-    }
-    public void ChooseVillage()
-    {
-        currentGameMode = GameMode.village;
-        VillageManager.Instance.AfficheBuildings();
-    }
-
-    public void ChooseVillageCards()
-    {
-        currentGameMode = GameMode.VillageCard;
-        UIManager.Instance.VillageCardChoice(villageCardCollection, cardsToDraw);
-    }
-
-    public void ChooseRelation()
-    {
-        currentGameMode = GameMode.Relation;
-    }
-
-    public void EndHalfDay()
-    {
-        // Passage à la demi-journée suivante
-        
-        if (currentTime == DayTime.Matin)
-        {
-            currentTime = DayTime.Aprem;
-            GameEvents.TriggerMorningEnd();
-        }
-        else
-        {
-            currentTime = DayTime.Matin;
-            currentDay += 1f;
-            currentWeekDay = weekDays[((int)currentDay - 1) % 7]; // C'est une responsibiliter que le Schen
-            EndDay();
-        }
-
-        // Calcul du jour de la semaine
-        
-        Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
-        
-        // Vérifier si un événement doit se déclencher ou est actif
-        if (eventScheduler != null)
-        {
-            Debug.Log("Vérification des événements...");
-            bool eventActive = eventScheduler.CheckAndTriggerEvent((int)currentDay, currentTime);
-            if (eventActive)
-            {
-                // Un événement est actif, on ne lance pas ChooseGameMode
-                Debug.Log("Événement actif, gameplay normal en pause.");
-                return;
-            }
-        }
-        
-        // Pas d'événement ou événement terminé, on continue normalement
-        ChooseGameMode();
-    }
-
-
-    public void EndDay()
-    {
-        // Actions à effectuer à la fin de la journée
-        currentWeekDay = weekDays[((int)currentDay - 1) % 7];
-        // arrondi à l'entier le plus proche
-        float foodLoss = Mathf.Round(Valeurs[StatType.Human] * 0.1f);
-        if (Valeurs[StatType.Food] >= foodLoss)
-        {
-            changeStat(StatType.Food, -foodLoss);
-        }
-        else
-        {
-            changeStat(StatType.Human, -10); // perte de 10 humains si pas assez de nourriture
-            changeStat(StatType.Food, -Valeurs[StatType.Food]); // met la nourriture à 0
-        }
-        Debug.Log($"Fin de journée : Perte de nourriture de {foodLoss}, Nourriture restante : {Valeurs[StatType.Food]}");
-        Valeurs[StatType.Food] -= foodLoss;
-        GameEvents.TriggerDayEnd();
-    }
-    
-
-
-}
+   
