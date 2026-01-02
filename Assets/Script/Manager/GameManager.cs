@@ -19,33 +19,29 @@ public class GameManager : MonoBehaviour
 
     // Effet pour le jeu global
     [Header("Jour actuel")]
-    public float currentDay = 1;
+    public int currentDay = 1;
     public DayTime currentTime = DayTime.Matin;
     public string currentWeekDay = "Lundi";
     public enum GameMode { village, VillageCard, Relation, }
     public GameMode currentGameMode;
 
-    [Header("Event System")]
-    public EventScheduler eventScheduler;
+    //public EventScheduler eventScheduler;
 
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
 
+    private readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
     public EffectSO effet;
-    public readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
-
 
     void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[GameManager] Deuxième instance détectée, je me détruis.");
             Destroy(gameObject);
             return;
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        Debug.Log("[GameManager] Instance initialisée et marquée DontDestroyOnLoad.");
     }
 
     void Start()
@@ -56,21 +52,16 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"StatType values: {string.Join(", ", System.Enum.GetNames(typeof(StatType)))}");
-
         // initialise le dictionnaire : chaque clé est un élément de StatType, valeur initiale 
-        foreach (StatType stat in System.Enum.GetValues(typeof(StatType)))
+        foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
             Multiplicateur[stat] = 1f;
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
-
-            // valeur initiale
+            // initial value
             Valeurs[stat] = 50f;
             changeStat(stat, 0f);
         }
-
-        // Némosis commence plus bas
         changeStat(StatType.Nemosis, -50f);
-
         ChooseGameMode();
     }
 
@@ -96,16 +87,6 @@ public class GameManager : MonoBehaviour
 
     public void changeStat(StatType type, float amount)
     {
-        // Sécurise les accès au dictionnaire au cas où
-        if (!Multiplicateur.ContainsKey(type))
-        {
-            Multiplicateur[type] = 1f;
-        }
-        if (!Valeurs.ContainsKey(type))
-        {
-            Valeurs[type] = 0f;
-        }
-
         Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
         float delta = (amount > 0) ? amount * Multiplicateur[type] : amount;
         Valeurs[type] += delta;
@@ -120,6 +101,11 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Résultat mini-jeu rythme : score={score}, acc={accuracy:P1}, " +
                   $"Perfect={perfectHits}, Good={goodHits}, Normal={normalHits}, Miss={missedHits}");
 
+        // Exemple de règles :
+        // > 80% de notes réussies => gros bonus Foi + Or, baisse de Némosis
+        // 50%–80% => petit bonus
+        // < 50% => malus (augmentation Némosis, perte de Foi ou Or)
+
         if (accuracy >= 0.8f)
         {
             changeStat(StatType.Foi, 10);
@@ -130,18 +116,22 @@ public class GameManager : MonoBehaviour
         {
             changeStat(StatType.Foi, 5);
             changeStat(StatType.Or, 20);
+            // Némosis ne bouge pas
         }
         else
         {
             changeStat(StatType.Foi, -5);
             changeStat(StatType.Nemosis, 10);
         }
+
+        // Tu peux aussi utiliser "score" pour moduler davantage :
+        // ex: bonusOr += score / 1000; etc.
     }
 
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
-        UIManager.Instance.GameModeChoice();
+        UIManager.Instance.DayModeChoice(true);
     }
 
     public void ChooseVillage()
@@ -172,28 +162,20 @@ public class GameManager : MonoBehaviour
         else
         {
             currentTime = DayTime.Matin;
-            currentDay += 1f;
-            currentWeekDay = weekDays[((int)currentDay - 1) % 7];
+            currentDay++;
+            currentWeekDay = weekDays[(currentDay - 1) % 7];
             EndDay();
         }
 
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
-
-        // Si tu veux réactiver le système d'events, décommente et adapte :
-        // if (eventScheduler != null)
-        // {
-        //     bool eventActive = eventScheduler.CheckAndTriggerEvent((int)currentDay, currentTime);
-        //     if (eventActive) return;
-        // }
-
         ChooseGameMode();
+        //eventScheduler.CheckAndTriggerEvents(currentDay, currentTime);
     }
 
     public void EndDay()
     {
         // Actions à effectuer à la fin de la journée
-        currentWeekDay = weekDays[((int)currentDay - 1) % 7];
-
+        currentWeekDay = weekDays[(currentDay - 1) % 7];
         // arrondi à l'entier le plus proche
         float foodLoss = Mathf.Round(Valeurs[StatType.Human] * 0.1f);
         if (Valeurs[StatType.Food] >= foodLoss)
@@ -205,10 +187,8 @@ public class GameManager : MonoBehaviour
             changeStat(StatType.Human, -10); // perte de 10 humains si pas assez de nourriture
             changeStat(StatType.Food, -Valeurs[StatType.Food]); // met la nourriture à 0
         }
-
         Debug.Log($"Fin de journée : Perte de nourriture de {foodLoss}, Nourriture restante : {Valeurs[StatType.Food]}");
-
-        // On ne redécrémente plus ici, changeStat l’a déjà fait
+        Valeurs[StatType.Food] -= foodLoss;
         GameEvents.TriggerDayEnd();
     }
 }
