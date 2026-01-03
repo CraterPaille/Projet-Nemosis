@@ -37,6 +37,9 @@ public class GameManagerZeus : MonoBehaviour
     [Header("Météo")]
     public WeatherMode currentWeather = WeatherMode.Normal;
 
+    [Header("Options")]
+    public bool autoStartOnLoad = true; // si vrai, StartGame() est appelé automatiquement à l'ouverture de la scène
+
     // Runtime
     private float spawnRate;
     private float currentTime;
@@ -51,11 +54,20 @@ public class GameManagerZeus : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    void Start()
+    {
+        // Lance automatiquement le mini-jeu si demandé (utile lorsqu'on charge la scène via SceneManager.LoadScene)
+        if (autoStartOnLoad && Application.isPlaying)
+        {
+            StartGame();
+        }
+    }
+
     public void StartGame()
     {
-        if (enemyPrefab == null || spawnPoints.Length == 0 || lightningController == null)
+        if (enemyPrefab == null || spawnPoints == null || spawnPoints.Length == 0 || lightningController == null)
         {
-            Debug.LogError("GameManager: Prefabs or references missing!");
+            Debug.LogError("GameManagerZeus: Prefabs or references missing! Vérifie enemyPrefab, spawnPoints et lightningController dans l'inspector.");
             return;
         }
 
@@ -156,15 +168,18 @@ public class GameManagerZeus : MonoBehaviour
                 score += 5;  // doré +5
                 break;
             case EnemyType.Red:
-                score += 1;  // rouge tué = comme un normal (tu ne m'as pas donné de règle spécifique)
+                score += 1;  // rouge tué = comme un normal
                 break;
             case EnemyType.Blue:
-                score += 1;  // bleu tué = +1 aussi, adapte si besoin
+                score += 1;  // bleu tué = +1 aussi
                 break;
         }
 
-        if (mainCamera.GetComponent<CameraShake>() != null)
-            mainCamera.GetComponent<CameraShake>().Shake(0.05f, 0.05f);
+        if (mainCamera != null)
+        {
+            var shake = mainCamera.GetComponent<CameraShake>();
+            if (shake != null) shake.Shake(0.05f, 0.05f);
+        }
 
         UpdateUI();
     }
@@ -182,7 +197,7 @@ public class GameManagerZeus : MonoBehaviour
                 score -= 1;  // passé -1
                 break;
             case EnemyType.Gold:
-                score -= 1;  // un doré passé = -1 (tu peux faire plus si tu veux)
+                score -= 1;
                 break;
             case EnemyType.Red:
                 score -= 5;  // rouge -5
@@ -213,7 +228,6 @@ public class GameManagerZeus : MonoBehaviour
         isRunning = false;
         StopAllCoroutines();
 
-        // Plafonner le score mini à 0 si tu veux (facultatif)
         int finalScore = Mathf.Max(0, score);
 
         if (endPanel) endPanel.SetActive(true);

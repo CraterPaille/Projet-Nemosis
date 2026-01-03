@@ -15,6 +15,20 @@ public class MiniGameLauncher : MonoBehaviour
         SceneManager.LoadScene("RhythmScene");
     }
 
+    public void LaunchNuitGlacialeGame()
+    {
+        SceneManager.LoadScene("NuitGlaciale");
+    }   
+
+    public void LaunchZeusGame()
+    {
+        SceneManager.LoadScene("Zeus_gameScene");
+    }
+
+    public void LaunchTriGame()
+    {
+        SceneManager.LoadScene("Tri");
+    }
     public void ReturnToMainMenu()
     {
         SceneManager.LoadScene("Menu_principal");
