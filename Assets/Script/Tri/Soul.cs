@@ -12,9 +12,15 @@ public class Soul : MonoBehaviour
     public float fallSpeed = 2f;
     private Vector3 mouseOffset;
 
+    // Indique si l'objet est actuellement déplacé (souris ou manette)
+    [HideInInspector] public bool isBeingDragged = false;
+
     private void Update()
     {
         if (!TriGameManager.Instance.IsPlaying) return;
+
+        // Ne pas appliquer le mouvement automatique si on est en train de draguer
+        if (isBeingDragged) return;
 
         if (movementType == MovementType.Vertical)
         {
@@ -37,6 +43,7 @@ public class Soul : MonoBehaviour
     {
         if (!TriGameManager.Instance.IsPlaying) return;
 
+        isBeingDragged = true;
 
         // Calcul du décalage entre la souris et le centre de l'objet
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -51,7 +58,11 @@ public class Soul : MonoBehaviour
         transform.position = new Vector3(mouseWorldPos.x + mouseOffset.x, mouseWorldPos.y + mouseOffset.y, transform.position.z);
     }
 
-
+    private void OnMouseUp()
+    {
+        // Relâchement de la souris
+        isBeingDragged = false;
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
