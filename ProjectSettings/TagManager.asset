@@ -2,22 +2,18 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 3
-  tags:
-  - Soul
-  - Activator
-  - Enemy
-  - DeathZone
+  serializedVersion: 2
+  tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Background
+  - 
   - Water
   - UI
-  - buttons
-  - arrows
-  - joueur
+  - 
+  - 
+  - 
   - 
   - 
   - 
@@ -42,20 +38,6 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: buttons
-    uniqueID: 2430317487
-    locked: 0
-  - name: Background
-    uniqueID: 1966872029
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: joueur
-    uniqueID: 3918060267
-    locked: 0
-  - name: arrows
-    uniqueID: 44212749
-    locked: 0
-  m_RenderingLayers:
-  - Default

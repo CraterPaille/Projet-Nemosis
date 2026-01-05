@@ -232,7 +232,7 @@ public class GameManagerRhytme : MonoBehaviour
         Vibrate(0.6f, 0.6f, 0.12f);
     }
 
-    // --- Fin du mini-jeu & intégration GameManager principal ---
+    // --- Fin du mini-jeu (sans appel au GameManager global) ---
     public void EndSong()
     {
         // Empêche d’appeler plusieurs fois
@@ -244,16 +244,6 @@ public class GameManagerRhytme : MonoBehaviour
         float accuracy = totalNotes > 0 ? (hitCount / totalNotes) : 0f;
 
         Debug.Log($"[Rhytme] Fin chanson - Score={currentScore}, Acc={accuracy:P1}");
-
-        // Appeler le GameManager global si dispo
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.ApplyRhythmResult(currentScore, accuracy, perfectHits, goodHits, normalHits, missedHits);
-        }
-        else
-        {
-            Debug.LogWarning("[Rhytme] GameManager.Instance nul, aucun bonus/malus appliqué.");
-        }
 
         // Ici tu peux aussi charger une scène, fermer le mini-jeu, etc.
         // SceneManager.LoadScene("NomSceneRetour");
@@ -301,6 +291,7 @@ public class GameManagerRhytme : MonoBehaviour
             }
         }
     }
+
     public void OnQuitMiniGame()
     {
         if (GameManagerRhytme.instance != null)
