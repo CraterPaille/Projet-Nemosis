@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
   m_Name: BuidingData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Tour de feu
-  icon: {fileID: -5041592810142915036, guid: 45bf0f84cd37805458b577e28b2c1036, type: 3}
-  description: Il fait chaud
+  buildingName: 5
+  icon: {fileID: 21300000, guid: 6e6cb779fd0aed2438fc22c679491eb7, type: 3}
+  description: 5
+  gridSize: 5
   passiveEffects: []
   interactionEffects:
-  - {fileID: 11400000, guid: 7c4d17d8603570b4b9ccaf4e7f9c41b5, type: 2}
-  - {fileID: 11400000, guid: 1aa9293f2d8fd374e89a563e420a6194, type: 2}
-  upgradeEffects: []
+  - {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}
+  - {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}

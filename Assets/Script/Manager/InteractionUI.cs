@@ -29,8 +29,13 @@ public class InteractionEntryUI : MonoBehaviour
     {
         if (currentEffect != null)
         {
-            currentEffect.CreateInstance();
-            Debug.Log($"Effect {currentEffect.effectName} applied.");
+            var eff = currentEffect.CreateInstance();
+            if (eff != null)
+            {
+                PassiveManager.Instance.AddEffect(eff);
+                eff.CheckConditions();
+                Debug.Log($"[Effect] Applied {currentEffect.effectName} via InteractionUI.");
+            }
             UIManager.Instance.closeInteractionMenu();
         }
     }

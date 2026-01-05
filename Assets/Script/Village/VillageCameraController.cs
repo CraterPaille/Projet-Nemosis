@@ -17,10 +17,17 @@ public class VillageCameraController : MonoBehaviour
     [SerializeField] private Vector2 maxBounds = new Vector2(10, 10);
 
     private Camera cam;
+    private float defaultZoom;
+    private Vector3 defaultPosition;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
+        if (cam != null)
+        {
+            defaultZoom = cam.orthographicSize;
+        }
+        defaultPosition = transform.position;
     }
 
     private void Update()
@@ -97,5 +104,28 @@ public class VillageCameraController : MonoBehaviour
     public void FocusOn(Vector3 position)
     {
         transform.position = new Vector3(position.x, position.y, transform.position.z);
+    }
+
+    /// <summary>
+    /// Réinitialise le zoom à la valeur de départ
+    /// </summary>
+    public void ResetZoom()
+    {
+        if (cam != null)
+        {
+            cam.orthographicSize = defaultZoom;
+        }
+    }
+
+    /// <summary>
+    /// Réinitialise la position et le zoom de la caméra
+    /// </summary>
+    public void ResetCamera()
+    {
+        transform.position = defaultPosition;
+        if (cam != null)
+        {
+            cam.orthographicSize = defaultZoom;
+        }
     }
 }

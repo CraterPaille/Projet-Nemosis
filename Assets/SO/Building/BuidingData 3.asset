@@ -10,11 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
-  m_Name: BuidingData 1
+  m_Name: BuidingData 3
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Hotel
-  icon: {fileID: 21300000, guid: b9d178f372f666543b109b87b9b630c3, type: 3}
-  description: 1
-  gridSize: 1
+  buildingName: 3
+  icon: {fileID: 21300000, guid: 454d8f5771c813b4da2248da73fe5328, type: 3}
+  description: 3
+  gridSize: 3
   passiveEffects: []
-  interactionEffects: []
+  interactionEffects:
+  - {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}
+  - {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}

@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
   graph: {fileID: 11400000}
-  position: {x: 584, y: -152}
+  position: {x: 520, y: -264}
   ports:
     keys:
     - previousNode
@@ -104,16 +104,16 @@ MonoBehaviour:
   godText: fr
   responses:
   - responseText: a
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: 635196661814950160}
   - responseText: b
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: 1824652131103855692}
   - responseText: c
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: 0}
   endOfPhase: 0
 --- !u!114 &-4237713353249914693
@@ -176,12 +176,12 @@ MonoBehaviour:
   godText: 'bien ou bien '
   responses:
   - responseText: je te suce
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: -5478368137052909631}
   - responseText: teranquille
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: 2910855492402868291}
   endOfPhase: 0
 --- !u!114 &11400000
@@ -253,8 +253,8 @@ MonoBehaviour:
   godText: aled
   responses:
   - responseText: "Nouvelle r\xE9ponse"
-    condition: {fileID: 0}
-    effect: {fileID: 0}
+    conditions: []
+    effects: []
     nextNode: {fileID: 3411246846331967137}
   endOfPhase: 0
 --- !u!114 &1824652131103855692
@@ -416,11 +416,14 @@ MonoBehaviour:
   godText: a or b
   responses:
   - responseText: a
-    condition: {fileID: 11400000, guid: 1d21011add08bda47a55b38c9a31b3ec, type: 2}
-    effect: {fileID: 0}
+    conditions:
+    - {fileID: 11400000, guid: 1d21011add08bda47a55b38c9a31b3ec, type: 2}
+    effects:
+    - {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}
+    - {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}
     nextNode: {fileID: -4250886267445819724}
   - responseText: b
-    condition: {fileID: 0}
-    effect: {fileID: 11400000, guid: f5edac698a0fe6849ad1f6e3e86b9bb0, type: 2}
+    conditions: []
+    effects: []
     nextNode: {fileID: -4237713353249914693}
   endOfPhase: 0

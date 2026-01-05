@@ -18,6 +18,15 @@ public class VillageGridController : MonoBehaviour
     [SerializeField] private Vector2 maxBounds = new Vector2(20, 20);
 
     private Vector3 currentScale = Vector3.one;
+    private Vector3 initialPosition;
+    private Vector3 initialScale;
+
+    private void Awake()
+    {
+        initialPosition = transform.position;
+        initialScale = transform.localScale;
+        currentScale = initialScale;
+    }
 
     private void Update()
     {
@@ -38,12 +47,12 @@ public class VillageGridController : MonoBehaviour
     {
         Vector3 moveDirection = Vector3.zero;
 
-        // Déplacement avec ZQSD / WASD (inverse car on bouge le monde)
-        if (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.W))
+        // Déplacement avec inverse car on bouge le monde)
+        if (Input.GetKey(KeyCode.Z))
             moveDirection += Vector3.down;
         if (Input.GetKey(KeyCode.S))
             moveDirection += Vector3.up;
-        if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.Q))
             moveDirection += Vector3.right;
         if (Input.GetKey(KeyCode.D))
             moveDirection += Vector3.left;
@@ -95,13 +104,11 @@ public class VillageGridController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Recentre la grille sur la position initiale
-    /// </summary>
+
     public void ResetPosition()
     {
-        transform.position = Vector3.zero;
-        transform.localScale = Vector3.one;
-        currentScale = Vector3.one;
+        transform.position = initialPosition;
+        transform.localScale = initialScale;
+        currentScale = initialScale;
     }
 }

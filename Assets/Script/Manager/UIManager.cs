@@ -53,6 +53,7 @@ public class UIManager : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
         tooltipPanel.SetActive(false);
         interactionPanel.SetActive(false);
         villagePanel.SetActive(false);
