@@ -215,26 +215,50 @@ public class UIManager : MonoBehaviour
 
     public void ChangeStatUI(StatType stat, float value)
     {
-        switch (stat)
+        try
         {
-            case StatType.Foi:
-                StatsFoi.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
-                break;
-            case StatType.Nemosis:
-                StatsNemosis.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
-                break;
-            case StatType.Human:
-                StatsHumain.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
-                break;
-            case StatType.Or:
-                StatsArgent.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
-                break;
-            case StatType.Food:
-                StatsFood.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
-                break;
-            default:
-                Debug.LogWarning($"Unknown stat type: {stat}");
-                break;
+            switch (stat)
+            {
+                case StatType.Foi:
+                    if (StatsFoi != null)
+                    {
+                        var txt = StatsFoi.GetComponentInChildren<TextMeshProUGUI>();
+                        if (txt != null) txt.text = $" {value}";
+                    }
+                    break;
+                case StatType.Nemosis:
+                    if (StatsNemosis != null)
+                    {
+                        var txt = StatsNemosis.GetComponentInChildren<TextMeshProUGUI>();
+                        if (txt != null) txt.text = $" {value}";
+                    }
+                    break;
+                case StatType.Human:
+                    if (StatsHumain != null)
+                    {
+                        var txt = StatsHumain.GetComponentInChildren<TextMeshProUGUI>();
+                        if (txt != null) txt.text = $" {value}";
+                    }
+                    break;
+                case StatType.Or:
+                    if (StatsArgent != null)
+                    {
+                        var txt = StatsArgent.GetComponentInChildren<TextMeshProUGUI>();
+                        if (txt != null) txt.text = $" {value}";
+                    }
+                    break;
+                case StatType.Food:
+                    if (StatsFood != null)
+                    {
+                        var txt = StatsFood.GetComponentInChildren<TextMeshProUGUI>();
+                        if (txt != null) txt.text = $" {value}";
+                    }
+                    break;
+            }
+        }
+        catch (MissingReferenceException)
+        {
+            Debug.LogWarning("[UIManager] ChangeStatUI appelé mais un objet UI a été détruit.");
         }
     }
 

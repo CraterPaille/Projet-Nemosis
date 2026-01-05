@@ -13,6 +13,7 @@ public class MiniGameLauncher : MonoBehaviour
     public void LaunchRhythmGame()
     {
         SceneManager.LoadScene("RhythmScene");
+        UIManager.Instance.HideAllUI();
     }
 
     public void LaunchNuitGlacialeGame()

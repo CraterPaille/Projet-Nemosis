@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TriGameManager : MonoBehaviour
 {
@@ -59,7 +60,6 @@ public class TriGameManager : MonoBehaviour
         IsPlaying = false;
         spawner.StopSpawning();
 
-        // Correction de la suppression des objets avec le tag "Soul"
         GameObject[] souls = GameObject.FindGameObjectsWithTag("Soul");
         foreach (GameObject soul in souls)
         {
@@ -67,5 +67,25 @@ public class TriGameManager : MonoBehaviour
         }
 
         uiManager.ShowEndScreen(score);
+
+        // Conversion score -> Or + Foi
+        if (GameManager.Instance != null)
+        {
+            float orGain  = score / 400f;  // à ajuster
+            float foiGain = score / 800f;  // à ajuster
+
+            if (orGain != 0f)
+                GameManager.Instance.changeStat(StatType.Or, orGain);
+            if (foiGain != 0f)
+                GameManager.Instance.changeStat(StatType.Foi, foiGain);
+
+            Debug.Log($"[Tri] Score={score} -> Or +{orGain}, Foi +{foiGain}");
+        }
     }
+
+    public void OnQuitMiniGame()
+    {
+        SceneManager.LoadScene("SampleScene");
+    }
+
 }

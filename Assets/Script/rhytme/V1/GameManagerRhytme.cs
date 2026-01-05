@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class GameManagerRhytme : MonoBehaviour
 {
@@ -24,7 +25,6 @@ public class GameManagerRhytme : MonoBehaviour
     public TMP_Text ScoreText;
     public TMP_Text MultiText;
 
-    // --- Stats globales pour intégration GameManager ---
     [Header("Stats performance")]
     public int normalHits;
     public int goodHits;
@@ -49,7 +49,6 @@ public class GameManagerRhytme : MonoBehaviour
         keyboardControls = InputManager.Instance.keyboardControls;
         gamepadControls = InputManager.Instance.gamepadControls;
 
-        // Callback clavier
         keyboardControls.Rhytm.Lane0.performed += _ => PressLane(0);
         keyboardControls.Rhytm.Lane0.canceled += _ => ReleaseLane(0);
 
@@ -62,7 +61,6 @@ public class GameManagerRhytme : MonoBehaviour
         keyboardControls.Rhytm.Lane3.performed += _ => PressLane(3);
         keyboardControls.Rhytm.Lane3.canceled += _ => ReleaseLane(3);
 
-        // Callback manette
         gamepadControls.Rhytm.Lane0.performed += _ => PressLane(0);
         gamepadControls.Rhytm.Lane0.canceled += _ => ReleaseLane(0);
         gamepadControls.Rhytm.Lane1.performed += _ => PressLane(1);
@@ -83,12 +81,12 @@ public class GameManagerRhytme : MonoBehaviour
     {
         keyboardControls?.Rhytm.Disable();
         gamepadControls?.Rhytm.Disable();
-        StopVibration(); // sécurité
+        StopVibration();
     }
 
     private void OnApplicationQuit()
     {
-        StopVibration(); // sécurité
+        StopVibration();
     }
 
     private void Start()
@@ -101,7 +99,6 @@ public class GameManagerRhytme : MonoBehaviour
 
         ScoreText.text = "Score : 0";
 
-        // --- Calibrage automatique de la vitesse à partir du BPM ---
         NoteSpawner spawner = FindFirstObjectByType<NoteSpawner>();
         Transform activator = GameObject.FindGameObjectWithTag("Activator")?.transform;
 
@@ -128,7 +125,6 @@ public class GameManagerRhytme : MonoBehaviour
             Invoke(nameof(StartMusic), 0.05f);
         }
 
-        // Fin automatique quand la musique se termine
         if (StartPlaying && theMusic != null && !theMusic.isPlaying)
         {
             StartPlaying = false;
@@ -169,7 +165,6 @@ public class GameManagerRhytme : MonoBehaviour
         }
     }
 
-    // --- SCORING ---
     public void NormalHit()
     {
         normalHits++;
@@ -232,10 +227,9 @@ public class GameManagerRhytme : MonoBehaviour
         Vibrate(0.6f, 0.6f, 0.12f);
     }
 
-    // --- Fin du mini-jeu (sans appel au GameManager global) ---
+    // --- Fin du mini-jeu ---
     public void EndSong()
     {
-        // Empêche d’appeler plusieurs fois
         if (theBS != null)
             theBS.HasStarted = false;
 
@@ -245,11 +239,24 @@ public class GameManagerRhytme : MonoBehaviour
 
         Debug.Log($"[Rhytme] Fin chanson - Score={currentScore}, Acc={accuracy:P1}");
 
-        // Ici tu peux aussi charger une scène, fermer le mini-jeu, etc.
-        // SceneManager.LoadScene("NomSceneRetour");
+        // Conversion score -> stats globales (Rythme -> Foi)
+        if (GameManager.Instance != null)
+        {
+            // Exemple : 500 points de score -> +1 Foi
+            float foiGain = currentScore / 500f;
+
+            if (foiGain != 0f)
+            {
+                GameManager.Instance.changeStat(StatType.Foi, foiGain);
+                Debug.Log($"[Rhytme] Score={currentScore} -> Foi +{foiGain}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[Rhytme] GameManager.Instance est null, impossible d'appliquer les stats.");
+        }
     }
 
-    // système de vibration
     public void Vibrate(float left, float right, float duration)
     {
         if (Gamepad.current == null)
@@ -278,7 +285,6 @@ public class GameManagerRhytme : MonoBehaviour
 
     public void AdjustNoteVisual(NoteObject note, NoteData data)
     {
-        // Optionnel maintenant que l'orientation est dans NoteObject.InitFromChart
         Transform visual = note.transform.Find("visual");
         if (visual != null)
         {
@@ -294,9 +300,15 @@ public class GameManagerRhytme : MonoBehaviour
 
     public void OnQuitMiniGame()
     {
-        if (GameManagerRhytme.instance != null)
-            GameManagerRhytme.instance.EndSong();
-        // Charger la scène principale, ou revenir au village
-        //SceneManager.LoadScene("Village");
+        // On applique les stats avec le score actuel avant de quitter
+        if (StartPlaying)
+        {
+            if (theMusic != null && theMusic.isPlaying)
+                theMusic.Stop();
+
+            EndSong();
+        }
+
+        SceneManager.LoadScene("SampleScene");
     }
 }

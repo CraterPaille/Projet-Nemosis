@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum WeatherMode
 {
@@ -239,5 +240,20 @@ public class GameManagerZeus : MonoBehaviour
                 $"Passés : {enemiesPassed}\n" +
                 $"Score : {finalScore}";
         }
+
+        // Conversion score -> Population (Human)
+        if (GameManager.Instance != null)
+        {
+            float humanGain = finalScore / 300f; // à ajuster
+            if (humanGain != 0f)
+                GameManager.Instance.changeStat(StatType.Human, humanGain);
+
+            Debug.Log($"[Zeus] Score={finalScore} -> Human +{humanGain}");
+        }
+    }
+
+    public void OnQuitMiniGame()
+    {
+        SceneManager.LoadScene("SampleScene");
     }
 }

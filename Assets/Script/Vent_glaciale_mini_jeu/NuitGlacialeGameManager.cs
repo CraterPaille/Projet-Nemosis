@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NuitGlacialeGameManager : MonoBehaviour
 {
@@ -226,6 +227,22 @@ public class NuitGlacialeGameManager : MonoBehaviour
         isRunning = false;
         StopAllCoroutines();
         UIManagerNuit.Instance.ShowWin();
+
+        if (GameManager.Instance != null)
+        {
+            // Exemple : temps restant comme "score" (plus il reste de temps, plus tu gagnes)
+            int finalScore = Mathf.CeilToInt(timeLeft);
+
+            float foodGain  = finalScore / 2f;  // à ajuster
+            float humanGain = finalScore / 5f;  // à ajuster
+
+            if (foodGain != 0f)
+                GameManager.Instance.changeStat(StatType.Food, foodGain);
+            if (humanGain != 0f)
+                GameManager.Instance.changeStat(StatType.Human, humanGain);
+
+            Debug.Log($"[NuitGlaciale] Score={finalScore} -> Food +{foodGain}, Human +{humanGain}");
+        }
     }
 
     void Lose()
@@ -234,5 +251,9 @@ public class NuitGlacialeGameManager : MonoBehaviour
         isRunning = false;
         StopAllCoroutines();
         UIManagerNuit.Instance.ShowLose();
+    }
+    public void OnQuitMiniGame()
+    {
+        SceneManager.LoadScene("SampleScene");
     }
 }

@@ -99,6 +99,22 @@ public class chyronGameManager : MonoBehaviour
         isGameOver = true;
         scrollSpeed = 0;
         Debug.Log("GAME OVER!");
+
+        int finalScore = Mathf.FloorToInt(score);
+
+        // Conversion score -> Or + Foi
+        if (GameManager.Instance != null)
+        {
+            float orGain  = finalScore / 500f; // à ajuster
+            float foiGain = finalScore / 700f; // à ajuster
+
+            if (orGain != 0f)
+                GameManager.Instance.changeStat(StatType.Or, orGain);
+            if (foiGain != 0f)
+                GameManager.Instance.changeStat(StatType.Foi, foiGain);
+
+            Debug.Log($"[Chyron] Score={finalScore} -> Or +{orGain}, Foi +{foiGain}");
+        }
     }
 
     // invincibilité et clignotement
