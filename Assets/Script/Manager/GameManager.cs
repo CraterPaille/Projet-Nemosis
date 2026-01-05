@@ -36,15 +36,18 @@ public class GameManager : MonoBehaviour
     private readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
     public EffectSO effet;
 
+
     void Awake()
     {
         if (Instance != null && Instance != this)
         {
+            Debug.LogWarning("[GameManager] Deuxième instance détectée, je me détruis.");
             Destroy(gameObject);
             return;
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        Debug.Log("[GameManager] Instance initialisée et marquée DontDestroyOnLoad.");
     }
 
     void Start()
