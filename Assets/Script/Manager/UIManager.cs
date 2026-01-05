@@ -98,6 +98,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void GameModeChoice()
+    {
+        dayModeChoicePanel.SetActive(true);
+    }
     public void HideAllUI()
     {
         HideTooltip();

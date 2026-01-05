@@ -4,7 +4,6 @@ using UnityEditor.EditorTools;
 
 public enum DayTime { Matin, Aprem }
 
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -103,7 +102,7 @@ public class GameManager : MonoBehaviour
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
-        UIManager.Instance.DayModeChoice(true);
+        UIManager.Instance.GameModeChoice();
     }
     public void ChooseVillage()
     {

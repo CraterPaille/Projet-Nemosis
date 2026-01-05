@@ -5,6 +5,7 @@ using TMPro;
 
 public class ChooseRelationUI : MonoBehaviour
 {
+    public static ChooseRelationUI Instance;
     [Header("Panel")]
     public GameObject ChooseGodPanel; // root panel to show/hide
     [Header("God list")]
@@ -16,9 +17,16 @@ public class ChooseRelationUI : MonoBehaviour
     public TMP_Text informationText;
     public TMP_Text niveauRelationText;
     public Button toTalkButton;
+    public TMP_Text talkButtonText;
 
-    private GodDataSO selectedGod;
+    public GodDataSO selectedGod;
+    private int NombreDialogues = 0;
+   
 
+    void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         ChooseGodPanel.SetActive(false);
@@ -33,12 +41,16 @@ public class ChooseRelationUI : MonoBehaviour
         ChooseGodPanel.SetActive(true);
         UIManager.Instance.DayModeChoice(false);
         PopulateGods();
+        talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
     }
 
     // Close the ChooseRelation panel
     public void CloseConversation()
     {
+        if(NombreDialogues>= 3){OnClosePressed_EndHalfDay(); return;}
         ChooseGodPanel.SetActive(true);
+        talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
+
         //UIManager.Instance.DayModeChoice(true);
     }
 
@@ -49,6 +61,7 @@ public class ChooseRelationUI : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.EndHalfDay();
         // Close the panel
         ChooseGodPanel.SetActive(false);
+        NombreDialogues = 0;
     }
 
     public void PopulateGods()
@@ -79,6 +92,7 @@ public class ChooseRelationUI : MonoBehaviour
 
     public void OnTalkButtonPressed()
     {
+        NombreDialogues++;
         if (selectedGod == null) return;
         ChooseGodPanel.SetActive(false);
         // choose a dialogue graph from tier

@@ -11,6 +11,7 @@ public class DialogueUI : MonoBehaviour
     public Transform responsesContainer; // parent for response prefabs
     public GameObject responseItemPrefab; // prefab that contains ResponseItemController
     public Button closeButton;
+    public Image GodIcon;
 
     private DialogueNode currentNode;
 
@@ -36,6 +37,7 @@ public class DialogueUI : MonoBehaviour
         panel.SetActive(true);
         currentNode = node;
         godText.text = node.godText;
+        GodIcon.sprite = ChooseRelationUI.Instance.selectedGod.icon;
 
         // clear old items
         foreach (Transform t in responsesContainer) Destroy(t.gameObject);
