@@ -36,8 +36,6 @@ public class GameManagerRhytme : MonoBehaviour
 
     private Coroutine vibrationCoroutine;
 
-    private bool songEnded = false;
-
     private void Awake()
     {
         instance = this;
@@ -93,8 +91,6 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
-        songEnded = false; // reset
-
         currentScore = 0;
         normalHits = 0;
         goodHits = 0;
@@ -129,10 +125,10 @@ public class GameManagerRhytme : MonoBehaviour
             Invoke(nameof(StartMusic), 0.05f);
         }
 
-        if (!songEnded && StartPlaying && theMusic != null && !theMusic.isPlaying)
+        if (StartPlaying && theMusic != null && !theMusic.isPlaying)
         {
             StartPlaying = false;
-            //EndSong();
+            EndSong();
         }
     }
 
@@ -234,9 +230,6 @@ public class GameManagerRhytme : MonoBehaviour
     // --- Fin du mini-jeu ---
     public void EndSong()
     {
-        if (songEnded) return;      // PROTECTION
-        songEnded = true;
-
         if (theBS != null)
             theBS.HasStarted = false;
 
@@ -308,7 +301,7 @@ public class GameManagerRhytme : MonoBehaviour
     public void OnQuitMiniGame()
     {
         // On applique les stats avec le score actuel avant de quitter
-        if (StartPlaying && !songEnded)
+        if (StartPlaying)
         {
             if (theMusic != null && theMusic.isPlaying)
                 theMusic.Stop();
@@ -316,9 +309,6 @@ public class GameManagerRhytme : MonoBehaviour
             EndSong();
         }
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.ReturnToMainScene();
-        else
-            SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("SampleScene");
     }
 }
