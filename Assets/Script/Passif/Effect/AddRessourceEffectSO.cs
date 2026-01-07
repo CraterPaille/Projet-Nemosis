@@ -34,6 +34,14 @@ public class Effect_AddRessource : Effect
         if (IsActive) return;
         IsActive = true;
 
+        // Vérifier que GameManager existe
+        if (GameManager.Instance == null)
+        {
+            Debug.LogWarning("[Effect_AddRessource] GameManager.Instance est null, impossible d'ajouter des ressources.");
+            DestroySelf();
+            return;
+        }
+
         // Parcourt la liste d'entrées sérialisées
         Debug.Log("[Effect_AddRessource] Activation de l'effet : ajout de ressources.");
         foreach (var entry in soData.RessourceToAdd)

@@ -87,12 +87,22 @@ public class UIManager : MonoBehaviour
         if (eventPanel != null) eventPanel.SetActive(false);
     }
 
+    private void EnsureEventSystem()
+    {
+        // Vérifie qu'un EventSystem existe dans la scène
+        if (UnityEngine.EventSystems.EventSystem.current == null)
+        {
+            Debug.LogWarning("[UIManager] Pas d'EventSystem trouvé, les interactions UI peuvent ne pas fonctionner.");
+        }
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // Réactiver l'UI uniquement sur la scène principale
         if (scene.name == MAIN_SCENE_NAME)
         {
             SetUIActive(true);
+            EnsureEventSystem();
             
             // Si on revient d'un mini-jeu, avancer le temps
             if (returningFromMiniGame)

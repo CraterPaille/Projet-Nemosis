@@ -61,7 +61,13 @@ public class Condition_StatLevelCheck : Condition
     }
     public override void Evaluate()
     {
-        
+        // Vérifier que GameManager existe
+        if (GameManager.Instance == null || !GameManager.Instance.Valeurs.ContainsKey(donnee.statType))
+        {
+            Debug.LogWarning($"[Condition] GameManager ou stat {donnee.statType} non disponible.");
+            return;
+        }
+
         float current = GameManager.Instance.Valeurs[donnee.statType];
         bool conditionMet = donnee.plusQue ? current >= donnee.requiredLevel : current < donnee.requiredLevel;
         Debug.Log($"[Condition] Évaluation de la condition pour {donnee.statType} (niveau requis : {(donnee.plusQue ? "≥" : "<")} {donnee.requiredLevel}) = conditionMet : {conditionMet}, niveau actuel : {current}");
@@ -69,11 +75,11 @@ public class Condition_StatLevelCheck : Condition
         if (donnee.autoDestruct && !conditionMet)
         {
             Unsubscribe();
-            linkedEffect.DestroySelf(); // méthode à ajouter dans Effect pour détruire proprement
-            Debug.Log("[Condition] Auto-destruct exécuté.");
+            if (linkedEffect != null)
+                linkedEffect.DestroySelf();
             return;
         }
+
         UpdateCondition(conditionMet);
-    
     }
 }
