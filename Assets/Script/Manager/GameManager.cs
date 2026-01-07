@@ -4,6 +4,7 @@ using UnityEditor.EditorTools;
 
 public enum DayTime { Matin, Aprem }
 
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -25,15 +26,17 @@ public class GameManager : MonoBehaviour
     public enum GameMode { village, VillageCard, Relation,  }
     public GameMode currentGameMode;
 
-
-    //public EventScheduler eventScheduler;
+    [Header("Event System")]
+    public EventScheduler eventScheduler;
 
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
 
 
-    private readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
+    
     public EffectSO effet;
+    public readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
+
 
     void Awake()
     {
@@ -134,15 +137,28 @@ public class GameManager : MonoBehaviour
         {
             currentTime = DayTime.Matin;
             currentDay++;
-            currentWeekDay = weekDays[(currentDay - 1) % 7];
+            currentWeekDay = weekDays[(currentDay - 1) % 7]; // C'est une responsibiliter que le Schen
             EndDay();
         }
 
         // Calcul du jour de la semaine
         
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
+        
+        // Vérifier si un événement doit se déclencher ou est actif
+        if (eventScheduler != null)
+        {
+            bool eventActive = eventScheduler.CheckAndTriggerEvent(currentDay, currentTime);
+            if (eventActive)
+            {
+                // Un événement est actif, on ne lance pas ChooseGameMode
+                Debug.Log("Événement actif, gameplay normal en pause.");
+                return;
+            }
+        }
+        
+        // Pas d'événement ou événement terminé, on continue normalement
         ChooseGameMode();
-        //eventScheduler.CheckAndTriggerEvents(currentDay, currentTime);
     }
 
 

@@ -41,6 +41,13 @@ public class UIManager : MonoBehaviour
     //[SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardUIPrefab;
 
+    [Header("Event Panel UI")]
+    [SerializeField] private GameObject eventPanel;
+    [SerializeField] private Image eventImage;
+    [SerializeField] private TextMeshProUGUI eventTitle;
+    [SerializeField] private TextMeshProUGUI eventDescription;
+    [SerializeField] private Button eventStartButton;
+
     public Vector2 offsetTooltip;
 
 
@@ -58,6 +65,7 @@ public class UIManager : MonoBehaviour
         interactionPanel.SetActive(false);
         villagePanel.SetActive(false);
         dayModeChoicePanel.SetActive(false);
+        if (eventPanel != null) eventPanel.SetActive(false);
     }
 
 
@@ -270,6 +278,44 @@ public class UIManager : MonoBehaviour
             var ui = Instantiate(cardUIPrefab, interactionContent);
             var entry = ui.GetComponent<CardUI>(); // Ton script sur le prefab
             entry.Setup(card);
+        }
+    }
+
+    /// <summary>
+    /// Affiche le panel d'événement avec image, titre et description.
+    /// </summary>
+    public void ShowEventPanel(Sprite image, string title, string description)
+    {
+        if (eventPanel == null)
+        {
+            Debug.LogWarning("UIManager: eventPanel n'est pas assigné!");
+            return;
+        }
+
+        eventPanel.SetActive(true);
+        
+        if (eventImage != null) eventImage.sprite = image;
+        if (eventTitle != null) eventTitle.text = title;
+        if (eventDescription != null) eventDescription.text = description;
+
+        // Le bouton "Commencer" fermera le panel (le mini-jeu se charge déjà)
+        if (eventStartButton != null)
+        {
+            eventStartButton.onClick.RemoveAllListeners();
+            eventStartButton.onClick.AddListener(HideEventPanel);
+        }
+
+        Debug.Log($"Panel d'événement affiché : {title}");
+    }
+
+    /// <summary>
+    /// Masque le panel d'événement.
+    /// </summary>
+    public void HideEventPanel()
+    {
+        if (eventPanel != null)
+        {
+            eventPanel.SetActive(false);
         }
     }
 
