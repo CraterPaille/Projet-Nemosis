@@ -244,12 +244,14 @@ public class GameManagerZeus : MonoBehaviour
         // Conversion score -> Population (Human)
         if (GameManager.Instance != null)
         {
-            float humanGain = finalScore / 300f; // à ajuster
-            if (humanGain != 0f)
+            float humanGain = finalScore / 2; // à ajuster
+            if (humanGain != 0)
                 GameManager.Instance.changeStat(StatType.Human, humanGain);
 
             Debug.Log($"[Zeus] Score={finalScore} -> Human +{humanGain}");
         }
+        SceneManager.LoadScene("SampleScene");
+
     }
 
     public void OnQuitMiniGame()

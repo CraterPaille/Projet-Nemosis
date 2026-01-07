@@ -123,11 +123,11 @@ public class GameManager : MonoBehaviour
 
     private void LaunchSundayMiniGame()
     {
-        Debug.Log("[GameManager] Dimanche matin : lancement automatique du mini-jeu Rhythm !");
-        
+        Debug.Log("[GameManager] Dimanche matin : lancement automatique d'un mini-jeu aléatoire !");
+
         if (miniGameLauncher != null)
         {
-            miniGameLauncher.LaunchRhythmGame();
+            miniGameLauncher.LaunchRandomSundayMiniGame();
         }
         else
         {

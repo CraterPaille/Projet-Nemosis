@@ -71,16 +71,19 @@ public class TriGameManager : MonoBehaviour
         // Conversion score -> Or + Foi
         if (GameManager.Instance != null)
         {
-            float orGain  = score / 400f;  // à ajuster
-            float foiGain = score / 800f;  // à ajuster
+            float orGain  = score / 2;  // à ajuster
+            float foiGain = score / 10;  // à ajuster
 
-            if (orGain != 0f)
+            if (orGain != 0)
                 GameManager.Instance.changeStat(StatType.Or, orGain);
-            if (foiGain != 0f)
+            if (foiGain != 0)
                 GameManager.Instance.changeStat(StatType.Foi, foiGain);
 
             Debug.Log($"[Tri] Score={score} -> Or +{orGain}, Foi +{foiGain}");
         }
+
+        SceneManager.LoadScene("SampleScene");
+
     }
 
     public void OnQuitMiniGame()

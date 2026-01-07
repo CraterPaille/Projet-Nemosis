@@ -1597,6 +1597,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 263483255}
   m_CullTransparentMesh: 1
+--- !u!1 &269408036
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 269408038}
+  - component: {fileID: 269408037}
+  m_Layer: 0
+  m_Name: MiniGameLauncher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &269408037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269408036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9a83075852936d40b1f599e45cbb06e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameLauncher
+  sundayMiniGameScenes:
+  - ChyronTraverse
+  - RhythmScene
+  - NuitGlaciale
+  - Zeus_gameScene
+  - Tri
+--- !u!4 &269408038
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269408036}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.97914, y: 1.44032, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &304079089
 GameObject:
   m_ObjectHideFlags: 0
@@ -2543,7 +2593,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -229, y: 0}
+  m_AnchoredPosition: {x: -228.99998, y: 0}
   m_SizeDelta: {x: -472.93, y: -16.18}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &452657276
@@ -4312,7 +4362,7 @@ MonoBehaviour:
   currentGameMode: 0
   eventScheduler: {fileID: 0}
   villageCardCollection: {fileID: 11400000, guid: 93468e6a6c3fc784294dc63c43c75e58, type: 2}
-  miniGameLauncher: {fileID: 0}
+  miniGameLauncher: {fileID: 269408037}
   effet: {fileID: 11400000, guid: 74dbf43db9a468f4d80425442eb2579d, type: 2}
 --- !u!4 &755093717
 Transform:
@@ -6520,7 +6570,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -401.6, y: -0.0025024414}
+  m_AnchoredPosition: {x: -401.59998, y: -0.0025024414}
   m_SizeDelta: {x: -803.19, y: -0.01}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1299466921
@@ -63040,3 +63090,4 @@ SceneRoots:
   - {fileID: 478176648}
   - {fileID: 1894375142}
   - {fileID: 1374447347}
+  - {fileID: 269408038}

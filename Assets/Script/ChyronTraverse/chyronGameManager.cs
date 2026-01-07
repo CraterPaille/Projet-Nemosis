@@ -1,7 +1,8 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class chyronGameManager : MonoBehaviour
 {
@@ -102,19 +103,23 @@ public class chyronGameManager : MonoBehaviour
 
         int finalScore = Mathf.FloorToInt(score);
 
+
         // Conversion score -> Or + Foi
         if (GameManager.Instance != null)
         {
-            float orGain  = finalScore / 500f; // à ajuster
-            float foiGain = finalScore / 700f; // à ajuster
+       
+            float foiGain = finalScore / 700; // à ajuster
 
-            if (orGain != 0f)
-                GameManager.Instance.changeStat(StatType.Or, orGain);
-            if (foiGain != 0f)
+            if (coinScore != 0)
+                GameManager.Instance.changeStat(StatType.Or, coinScore);
+            if (foiGain != 0)
                 GameManager.Instance.changeStat(StatType.Foi, foiGain);
 
-            Debug.Log($"[Chyron] Score={finalScore} -> Or +{orGain}, Foi +{foiGain}");
+            Debug.Log($"[Chyron] Score={finalScore} -> Or +{coinScore}, Foi +{foiGain}");
         }
+
+        SceneManager.LoadScene("SampleScene");
+
     }
 
     // invincibilité et clignotement

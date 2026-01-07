@@ -243,7 +243,7 @@ public class GameManagerRhytme : MonoBehaviour
         if (GameManager.Instance != null)
         {
             // Exemple : 500 points de score -> +1 Foi
-            float foiGain = currentScore / 500f;
+            float foiGain = currentScore / 500;
 
             if (foiGain != 0f)
             {

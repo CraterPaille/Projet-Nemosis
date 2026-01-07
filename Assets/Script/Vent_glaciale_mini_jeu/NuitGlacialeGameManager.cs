@@ -243,6 +243,8 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
             Debug.Log($"[NuitGlaciale] Score={finalScore} -> Food +{foodGain}, Human +{humanGain}");
         }
+        SceneManager.LoadScene("SampleScene");
+
     }
 
     void Lose()
@@ -251,6 +253,8 @@ public class NuitGlacialeGameManager : MonoBehaviour
         isRunning = false;
         StopAllCoroutines();
         UIManagerNuit.Instance.ShowLose();
+        SceneManager.LoadScene("SampleScene");
+
     }
     public void OnQuitMiniGame()
     {
