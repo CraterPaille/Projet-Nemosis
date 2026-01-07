@@ -1,9 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.EditorTools;
+using UnityEngine.SceneManagement; // <-- nécessaire pour charger les scènes
 
 public enum DayTime { Matin, Aprem }
 
+// Représente un mini-jeu dans l'inspector
+[System.Serializable]
+public class MiniGameInfo
+{
+    public string displayName; // pour l'UI
+    public string sceneName;   // nom exact de la scène du mini-jeu
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -23,19 +30,20 @@ public class GameManager : MonoBehaviour
     public int currentDay = 1;
     public DayTime currentTime = DayTime.Matin;
     public string currentWeekDay = "Lundi";
-    public enum GameMode { village, VillageCard, Relation,  }
+    public enum GameMode { village, VillageCard, Relation, MiniJeu }
     public GameMode currentGameMode;
-
 
     //public EventScheduler eventScheduler;
 
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
 
-
     private readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
     public EffectSO effet;
 
+    // ---------- MINI-JEUX ----------
+    [Header("Mini-jeux disponibles (Dimanche matin uniquement)")]
+    public List<MiniGameInfo> availableMiniGames = new List<MiniGameInfo>(); // AJOUT
 
     void Awake()
     {
@@ -61,7 +69,6 @@ public class GameManager : MonoBehaviour
         // initialise le dictionnaire : chaque clé est un élément de StatType, valeur initiale 
         foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
-            
             Multiplicateur[stat] = 1f;
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
             // initial value
@@ -69,8 +76,11 @@ public class GameManager : MonoBehaviour
             changeStat(stat, 0f);
         }
         changeStat(StatType.Nemosis, -50f);
-        ChooseGameMode();
 
+        // On initialise le nom du jour correctement
+        currentWeekDay = weekDays[(currentDay - 1) % 7];
+
+        ChooseGameMode();
     }
 
     public void addHumain()
@@ -102,12 +112,20 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Stat {type} changed by {delta}, new value: {Valeurs[type]}");
     }
 
-
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
-        UIManager.Instance.DayModeChoice(true);
+        // Dimanche matin uniquement : mini-jeu automatique
+        if (currentWeekDay == "Dimanche" && currentTime == DayTime.Matin)
+        {
+            LaunchSundayMorningMiniGame();
+            return;
+        }
+
+        // Tous les autres moments (y compris dimanche après-midi) : choix normal
+        UIManager.Instance.GameModeChoice();
     }
+
     public void ChooseVillage()
     {
         currentGameMode = GameMode.village;
@@ -128,7 +146,6 @@ public class GameManager : MonoBehaviour
     public void EndHalfDay()
     {
         // Passage à la demi-journée suivante
-        
         if (currentTime == DayTime.Matin)
         {
             currentTime = DayTime.Aprem;
@@ -142,13 +159,12 @@ public class GameManager : MonoBehaviour
             EndDay();
         }
 
-        // Calcul du jour de la semaine
-        
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
+
+        // On redemande le "mode de jeu" adapté (y compris la logique Dimanche/mini-jeu)
         ChooseGameMode();
         //eventScheduler.CheckAndTriggerEvents(currentDay, currentTime);
     }
-
 
     public void EndDay()
     {
@@ -169,7 +185,78 @@ public class GameManager : MonoBehaviour
         Valeurs[StatType.Food] -= foodLoss;
         GameEvents.TriggerDayEnd();
     }
-    
 
+    // ---------- LOGIQUE MINI-JEUX ----------
 
+    void LaunchSundayMorningMiniGame()
+    {
+        if (availableMiniGames == null || availableMiniGames.Count == 0)
+        {
+            Debug.LogWarning("[GameManager] Aucun mini-jeu configuré (availableMiniGames vide).");
+            UIManager.Instance.GameModeChoice(); // fallback
+            return;
+        }
+
+        // Choix aléatoire
+        int index = Random.Range(0, availableMiniGames.Count);
+        MiniGameInfo selected = availableMiniGames[index];
+
+        Debug.Log($"[GameManager] Dimanche matin -> lancement auto du mini-jeu {selected.displayName} (scene {selected.sceneName})");
+
+        LaunchMiniGame(selected);
+    }
+
+    public void LaunchMiniGame(MiniGameInfo info)
+    {
+        if (string.IsNullOrEmpty(info.sceneName))
+        {
+            Debug.LogError("[GameManager] MiniGameInfo.sceneName est vide.");
+            return;
+        }
+
+        currentGameMode = GameMode.MiniJeu;
+        Debug.Log($"[GameManager] Chargement de la scène de mini-jeu : {info.sceneName}");
+        SceneManager.LoadScene(info.sceneName);
+    }
+
+    // Appelé par les mini-jeux quand ils veulent revenir au hub
+    public void ReturnToMainScene()
+    {
+        currentGameMode = GameMode.village; // ou ce que tu veux
+        SceneManager.LoadScene("SampleScene");
+
+        // Attendre que la scène soit chargée, puis passer à la demi-journée suivante
+        SceneManager.sceneLoaded += OnReturnedToMainScene;
+    }
+
+    private void OnReturnedToMainScene(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "SampleScene")
+        {
+            SceneManager.sceneLoaded -= OnReturnedToMainScene;
+            EndHalfDay(); // Passe à la demi-journée suivante (dimanche aprem -> lundi matin, etc.)
+        }
+    }
+
+    public void SkipToNextSundayMorning()
+    {
+        // Cherche le prochain dimanche (en conservant le fait que le jeu est en cours)
+        while (currentWeekDay != "Dimanche")
+        {
+            currentDay++;
+            currentWeekDay = weekDays[(currentDay - 1) % 7];
+        }
+
+        currentTime = DayTime.Matin;
+
+        Debug.Log($"[GameManager] Debug: passage forcé au dimanche matin - Jour {currentDay}, {currentWeekDay} {currentTime}");
+
+        // Met à jour l'UI de date
+        GameEvents.TriggerDayEnd();   // ou un event plus précis si tu préfères
+        GameEvents.TriggerMorningEnd();
+
+        // Laisse la logique existante gérer le dimanche matin (mini-jeu auto)
+        ChooseGameMode();
+    }
 }
+

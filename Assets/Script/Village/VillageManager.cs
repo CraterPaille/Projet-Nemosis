@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class BuildingPlacement
@@ -40,19 +41,97 @@ public class VillageManager : MonoBehaviour
     private List<Building2D> instantiatedBuildings2D = new List<Building2D>();
     private bool[,] gridOccupancy; // Grille de suivi des cellules occupées
 
+    // Noms pour retrouver les références après changement de scène
+    private const string VILLAGE_GRID_NAME = "VillageGrid";
+    private const string CLOSE_BUTTON_NAME = "CloseVillageButton";
+    private const string BUILDINGS_PARENT_NAME = "BuildingsParent";
+
     void Awake()
     {
+        // Singleton SANS DontDestroyOnLoad - se recrée à chaque chargement de scène
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            // Si une ancienne instance existe (DontDestroyOnLoad d'un autre manager),
+            // on la remplace par celle de la scène
+            Instance = this;
         }
-        Instance = this;
-        CloseButton.SetActive(false);
-        villageGrid.SetActive(false);
+        else
+        {
+            Instance = this;
+        }
+
+        InitializeReferences();
     }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Retrouve les références dans la nouvelle scène
+        if (scene.name == "SampleScene")
+        {
+            FindSceneReferences();
+            InitializeReferences();
+        }
+    }
+
+    private void FindSceneReferences()
+    {
+        // Cherche les objets même s'ils sont désactivés
+        villageGrid = FindInactiveObjectByName(VILLAGE_GRID_NAME);
+        CloseButton = FindInactiveObjectByName(CLOSE_BUTTON_NAME);
+        
+        var parentGO = FindInactiveObjectByName(BUILDINGS_PARENT_NAME);
+        if (parentGO != null)
+            buildingsParent = parentGO.transform;
+    }
+
+    private GameObject FindInactiveObjectByName(string name)
+    {
+        foreach (var rootGO in SceneManager.GetActiveScene().GetRootGameObjects())
+        {
+            var result = FindInChildren(rootGO.transform, name);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+
+    private GameObject FindInChildren(Transform parent, string name)
+    {
+        if (parent.name == name)
+            return parent.gameObject;
+
+        foreach (Transform child in parent)
+        {
+            var result = FindInChildren(child, name);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+
+    private void InitializeReferences()
+    {
+        if (CloseButton != null)
+            CloseButton.SetActive(false);
+        if (villageGrid != null)
+            villageGrid.SetActive(false);
+    }
+
     public void AfficheBuildings()
     {
+        // Vérifie que les références sont valides
+        if (villageGrid == null || CloseButton == null)
+        {
+            Debug.LogWarning("[VillageManager] Références UI manquantes, tentative de récupération...");
+            FindSceneReferences();
+        }
+
         // Toujours utiliser le placement auto en 2D isométrique
         if (building2DPrefab != null)
         {
@@ -98,11 +177,13 @@ public class VillageManager : MonoBehaviour
     private void AfficheBuildings2D()
     {
         // Nettoie les anciens bâtiments 2D
-        CloseButton.SetActive(true);
-        villageGrid.SetActive(true);
+        if (CloseButton != null)
+            CloseButton.SetActive(true);
+        if (villageGrid != null)
+            villageGrid.SetActive(true);
         
         // Réinitialise la position et l'échelle de la grille
-        var gridController = villageGrid.GetComponent<VillageGridController>();
+        var gridController = villageGrid?.GetComponent<VillageGridController>();
         if (gridController != null)
         {
             gridController.ResetPosition();
