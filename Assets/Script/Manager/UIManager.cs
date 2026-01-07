@@ -26,8 +26,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject VillageContent;
 
     [Header("Stats UI")]
-    [SerializeField] private GameObject PanelStats;
-
     [SerializeField] private GameObject StatsFoi;
     [SerializeField] private GameObject StatsNemosis;
     [SerializeField] private GameObject StatsHumain;
@@ -67,7 +65,6 @@ public class UIManager : MonoBehaviour
         interactionPanel.SetActive(false);
         villagePanel.SetActive(false);
         dayModeChoicePanel.SetActive(false);
-        PanelStats.SetActive(true);
         if (eventPanel != null) eventPanel.SetActive(false);
     }
 
@@ -280,9 +277,6 @@ public class UIManager : MonoBehaviour
     public void VillageCardChoice(VillageCardCollectionSO cardCollection, int cardsToDraw)
     {
         HideAllUI();
-        Debug.Log("UIManager: Affichage du choix de cartes de village.");
-        PanelStats.SetActive(true);
-
         interactionPanel.SetActive(true);
 
         interactionHeader.GetComponentInChildren<TextMeshProUGUI>().text = "Quelle carte jouer ?";
@@ -349,30 +343,5 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Cache TOUTE l'UI (utilisé lors du chargement d'un mini-jeu)
-    /// </summary>
-    public void HideAllUIForMiniGame()
-    {
-        HideAllUI();
-        dayModeChoicePanel.SetActive(false);
-        PanelStats.SetActive(false); // Cache aussi les stats
-        Date.gameObject.SetActive(false);
-        
-        // Cache le Canvas entier si besoin
-        // GetComponent<Canvas>().enabled = false;
-    }
 
-    /// <summary>
-    /// Réaffiche l'UI principale (utilisé au retour du mini-jeu)
-    /// </summary>
-    public void ShowMainUI()
-    {
-        PanelStats.SetActive(true);
-        GameModeChoice();
-        dayModeChoicePanel.SetActive(true);
-        Date.gameObject.SetActive(true);
-        // Réactive le Canvas si vous l'aviez désactivé
-        // GetComponent<Canvas>().enabled = true;
-    }
 }

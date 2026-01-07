@@ -15,9 +15,9 @@ public class ExampleHarvestFestivalEvent : BaseGameEvent
     public int goldThreshold = 90;
 
     [Header("Récompenses (exemple)")]
-    public EffectSO bronzeEffect;
-    public EffectSO silverEffect;
-    public EffectSO goldEffect;
+    public int bronzeFood = 20;
+    public int silverFood = 50;
+    public int goldFood = 100;
 
     public override void StartEvent()
     {
@@ -38,21 +38,21 @@ public class ExampleHarvestFestivalEvent : BaseGameEvent
         Debug.Log($"Application des récompenses pour score : {score}");
 
         // Déterminer les récompenses selon le score
-        EffectSO foodReward = null;
+        int foodReward = 0;
 
         if (score >= goldThreshold)
         {
-            foodReward = goldEffect;
+            foodReward = goldFood;
             Debug.Log("🥇 Médaille d'OR!");
         }
         else if (score >= silverThreshold)
         {
-            foodReward = silverEffect;
+            foodReward = silverFood;
             Debug.Log("🥈 Médaille d'ARGENT!");
         }
         else if (score >= bronzeThreshold)
         {
-            foodReward = bronzeEffect;
+            foodReward = bronzeFood;
             Debug.Log("🥉 Médaille de BRONZE!");
         }
         else
@@ -61,9 +61,9 @@ public class ExampleHarvestFestivalEvent : BaseGameEvent
         }
 
         // Appliquer les récompenses au GameManager
-        if (GameManager.Instance != null && foodReward != null)
+        if (GameManager.Instance != null && foodReward > 0)
         {
-            foodReward.CreateInstance();
+            GameManager.Instance.changeStat(StatType.Food, foodReward);
             Debug.Log($"✅ +{foodReward} nourriture ajoutée!");
         }
     }
