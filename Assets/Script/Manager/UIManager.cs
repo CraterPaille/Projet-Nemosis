@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -50,7 +51,11 @@ public class UIManager : MonoBehaviour
 
     public Vector2 offsetTooltip;
 
+    // Nom de la scène principale où l'UI doit être active
+    private const string MAIN_SCENE_NAME = "SampleScene";
 
+    // Flag pour savoir si on revient d'un mini-jeu
+    private bool returningFromMiniGame = false;
 
     private void Awake()
     {
@@ -61,11 +66,70 @@ public class UIManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        tooltipPanel.SetActive(false);
-        interactionPanel.SetActive(false);
-        villagePanel.SetActive(false);
-        dayModeChoicePanel.SetActive(false);
+        
+        InitializePanels();
+
+        // S'abonner aux changements de scène
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void InitializePanels()
+    {
+        if (tooltipPanel != null) tooltipPanel.SetActive(false);
+        if (interactionPanel != null) interactionPanel.SetActive(false);
+        if (villagePanel != null) villagePanel.SetActive(false);
+        if (dayModeChoicePanel != null) dayModeChoicePanel.SetActive(false);
         if (eventPanel != null) eventPanel.SetActive(false);
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Réactiver l'UI uniquement sur la scène principale
+        if (scene.name == MAIN_SCENE_NAME)
+        {
+            SetUIActive(true);
+            
+            // Si on revient d'un mini-jeu, avancer le temps
+            if (returningFromMiniGame)
+            {
+                returningFromMiniGame = false;
+                
+                // Avancer le temps d'une demi-journée
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.EndHalfDay();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Marque qu'on va lancer un mini-jeu (pour avancer le temps au retour).
+    /// </summary>
+    public void MarkMiniGameLaunch()
+    {
+        returningFromMiniGame = true;
+    }
+
+    /// <summary>
+    /// Active ou désactive le GameObject racine de l'UIManager (et tout son contenu).
+    /// </summary>
+    public void SetUIActive(bool active)
+    {
+        gameObject.SetActive(active);
+    }
+
+    /// <summary>
+    /// Vérifie si les références UI sont valides.
+    /// </summary>
+    private bool AreReferencesValid()
+    {
+        return tooltipPanel != null && interactionPanel != null && villagePanel != null && dayModeChoicePanel != null;
     }
 
 
@@ -83,6 +147,9 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        // Vérifier que les références sont valides avant d'accéder
+        if (tooltipPanel == null) return;
+
         // Positionne le tooltip à côté de la souris
         if (tooltipPanel.activeSelf)
         {
@@ -108,7 +175,8 @@ public class UIManager : MonoBehaviour
 
     public void GameModeChoice()
     {
-        dayModeChoicePanel.SetActive(true);
+        if (dayModeChoicePanel != null)
+            dayModeChoicePanel.SetActive(true);
     }
     public void HideAllUI()
     {
@@ -122,47 +190,62 @@ public class UIManager : MonoBehaviour
     // --- TOOLTIP ---
     public void ShowBuildingTooltip(BuildingData data)
     {
+        if (tooltipPanel == null) return;
+
         // Évite de rafraîchir si c'est le même bâtiment
         if (currentTooltipData == data && tooltipPanel.activeSelf)
             return;
 
         currentTooltipData = data;
         tooltipPanel.SetActive(true);
-        tooltipTitle.text = data.buildingName;
-        tooltipDescription.text = data.description;
+        if (tooltipTitle != null) tooltipTitle.text = data.buildingName;
+        if (tooltipDescription != null) tooltipDescription.text = data.description;
     }
 
     public void HideTooltip()
     {
         currentTooltipData = null;
-        tooltipPanel.SetActive(false);
+        if (tooltipPanel != null)
+            tooltipPanel.SetActive(false);
     }
 
     // --- INTERACTIONS ---
     public void ShowInteractionMenu(BuildingData data)
     {
+        if (interactionPanel == null) return;
+
         HideAllUI();
         interactionPanel.SetActive(true);
 
-        interactionHeader.GetComponentInChildren<TextMeshProUGUI>().text = data.buildingName;
-        interactionHeader.GetComponentInChildren<Image>().sprite = data.icon;
+        if (interactionHeader != null)
+        {
+            var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();
+            if (headerText != null) headerText.text = data.buildingName;
+            
+            var headerImage = interactionHeader.GetComponentInChildren<Image>();
+            if (headerImage != null) headerImage.sprite = data.icon;
+        }
 
         // Clear previous buttons
-        foreach (Transform child in interactionContent)
-            Destroy(child.gameObject);
-
-        // Create one button per interaction effect
-        foreach (var effect in data.interactionEffects)
+        if (interactionContent != null)
         {
-            var interactionGO = Instantiate(interactionButtonPrefab, interactionContent);
-            var Ui = interactionGO.GetComponent<InteractionEntryUI>();
-            Ui.Setup(effect);
+            foreach (Transform child in interactionContent)
+                Destroy(child.gameObject);
+
+            // Create one button per interaction effect
+            foreach (var effect in data.interactionEffects)
+            {
+                var interactionGO = Instantiate(interactionButtonPrefab, interactionContent);
+                var Ui = interactionGO.GetComponent<InteractionEntryUI>();
+                Ui.Setup(effect);
+            }
         }
     }
 
     public void HideInteractionMenu()
     {
-        interactionPanel.SetActive(false);
+        if (interactionPanel != null)
+            interactionPanel.SetActive(false);
     }
 
     public bool IsInteractionMenuOpen()
@@ -172,7 +255,7 @@ public class UIManager : MonoBehaviour
 
     public void closeInteractionMenu()
     {
-        if (GameManager.Instance.currentGameMode == GameManager.GameMode.village) 
+        if (GameManager.Instance != null && GameManager.Instance.currentGameMode == GameManager.GameMode.village) 
         { 
             // Retour au mode village (UI ou 2D selon la config)
             ShowVillage2DView(); 
@@ -184,7 +267,8 @@ public class UIManager : MonoBehaviour
     public void SHowVillageUI()
     {
         HideAllUI();
-        villagePanel.SetActive(true);
+        if (villagePanel != null)
+            villagePanel.SetActive(true);
     }
 
     // Mode 2D isométrique - cache tout l'UI pour voir le monde
@@ -198,14 +282,16 @@ public class UIManager : MonoBehaviour
 
     public void HideVillageUI()
     {
-        villagePanel.SetActive(false);
+        if (villagePanel != null)
+            villagePanel.SetActive(false);
         //GameManager.Instance.EndHalfDay();
     }
 
     public void closeVillageUI()
     {
         HideVillageUI();
-        GameManager.Instance.EndHalfDay();
+        if (GameManager.Instance != null)
+            GameManager.Instance.EndHalfDay();
     }
 
     // Les pilier du jeu 
@@ -261,7 +347,7 @@ public class UIManager : MonoBehaviour
 
     public void changeDateUI()
     {
-        if (GameManager.Instance != null)
+        if (GameManager.Instance != null && Date != null)
         {
             Date.text = $"{GameManager.Instance.currentTime}  {GameManager.Instance.currentWeekDay}  {GameManager.Instance.currentDay}";
         }
@@ -271,16 +357,23 @@ public class UIManager : MonoBehaviour
     //// Day Mode Choice Menu
     public void DayModeChoice(bool active)
     {
-        dayModeChoicePanel.SetActive(active);
+        if (dayModeChoicePanel != null)
+            dayModeChoicePanel.SetActive(active);
     }
 
     public void VillageCardChoice(VillageCardCollectionSO cardCollection, int cardsToDraw)
     {
+        if (interactionPanel == null || interactionContent == null) return;
+
         HideAllUI();
         interactionPanel.SetActive(true);
 
-        interactionHeader.GetComponentInChildren<TextMeshProUGUI>().text = "Quelle carte jouer ?";
-        //interactionHeader.GetComponentInChildren<Button>().interactable = false;
+        if (interactionHeader != null)
+        {
+            var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();
+            if (headerText != null) headerText.text = "Quelle carte jouer ?";
+        }
+        
         // Clear previous buttons
         foreach (Transform child in interactionContent)
             Destroy(child.gameObject);

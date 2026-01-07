@@ -6,32 +6,44 @@ public class MiniGameLauncher : MonoBehaviour
     // Méthode pour lancer le mini-jeu Chyron
     public void LaunchChyronGame()
     {
-        SceneManager.LoadScene("ChyronTraverse");
+        DisableUIAndLoadScene("ChyronTraverse");
     }
 
     // Méthode pour lancer le mini-jeu Rhythm
     public void LaunchRhythmGame()
     {
-        SceneManager.LoadScene("RhythmScene");
-        UIManager.Instance.HideAllUI();
+        DisableUIAndLoadScene("RhythmScene");
     }
 
     public void LaunchNuitGlacialeGame()
     {
-        SceneManager.LoadScene("NuitGlaciale");
+        DisableUIAndLoadScene("NuitGlaciale");
     }   
 
     public void LaunchZeusGame()
     {
-        SceneManager.LoadScene("Zeus_gameScene");
+        DisableUIAndLoadScene("Zeus_gameScene");
     }
 
     public void LaunchTriGame()
     {
-        SceneManager.LoadScene("Tri");
+        DisableUIAndLoadScene("Tri");
     }
+
     public void ReturnToMainMenu()
     {
         SceneManager.LoadScene("Menu_principal");
-    }   
+    }
+
+    private void DisableUIAndLoadScene(string sceneName)
+    {
+        if (UIManager.Instance != null)
+        {
+            // Marquer qu'on lance un mini-jeu (pour avancer le temps au retour)
+            UIManager.Instance.MarkMiniGameLaunch();
+            UIManager.Instance.SetUIActive(false);
+        }
+        
+        SceneManager.LoadScene(sceneName);
+    }
 }

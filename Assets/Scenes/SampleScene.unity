@@ -1120,42 +1120,6 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!1 &187275557
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 187275558}
-  m_Layer: 0
-  m_Name: ManagerS
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &187275558
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 187275557}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.81273, y: -0.8851, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1612588657}
-  - {fileID: 755093717}
-  - {fileID: 478176648}
-  - {fileID: 1894375142}
-  - {fileID: 1374447347}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &188737319
 GameObject:
   m_ObjectHideFlags: 0
@@ -2782,12 +2746,12 @@ Transform:
   m_GameObject: {fileID: 478176647}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.81273, y: 0.8851, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 566111458}
-  m_Father: {fileID: 187275558}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &478176649
 MonoBehaviour:
@@ -2818,6 +2782,11 @@ MonoBehaviour:
   Date: {fileID: 771949603}
   dayModeChoicePanel: {fileID: 1193778001}
   cardUIPrefab: {fileID: 8489466369155986184, guid: a1bab47e6f4922b41a1b99d669d532e0, type: 3}
+  eventPanel: {fileID: 0}
+  eventImage: {fileID: 0}
+  eventTitle: {fileID: 0}
+  eventDescription: {fileID: 0}
+  eventStartButton: {fileID: 0}
   offsetTooltip: {x: 50, y: 25}
 --- !u!1 &519420028
 GameObject:
@@ -4341,7 +4310,9 @@ MonoBehaviour:
   currentTime: 0
   currentWeekDay: Lundi
   currentGameMode: 0
+  eventScheduler: {fileID: 0}
   villageCardCollection: {fileID: 11400000, guid: 93468e6a6c3fc784294dc63c43c75e58, type: 2}
+  miniGameLauncher: {fileID: 0}
   effet: {fileID: 11400000, guid: 74dbf43db9a468f4d80425442eb2579d, type: 2}
 --- !u!4 &755093717
 Transform:
@@ -4352,11 +4323,11 @@ Transform:
   m_GameObject: {fileID: 755093715}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.45967, y: 2.81986, z: 0}
+  m_LocalPosition: {x: 1.6469402, y: 1.93476, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 187275558}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &771949601
 GameObject:
@@ -6775,50 +6746,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1353040463}
   m_CullTransparentMesh: 1
---- !u!1 &1366144317
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1366144319}
-  - component: {fileID: 1366144318}
-  m_Layer: 0
-  m_Name: MiniGameLauncher
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1366144318
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1366144317}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9a83075852936d40b1f599e45cbb06e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MiniGameLauncher
---- !u!4 &1366144319
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1366144317}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.81273, y: -0.8851, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1366906774
 GameObject:
   m_ObjectHideFlags: 0
@@ -6908,12 +6835,12 @@ Transform:
   m_GameObject: {fileID: 1374447346}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.81273, y: 0.8851, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1790340650}
-  m_Father: {fileID: 187275558}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1374447348
 MonoBehaviour:
@@ -6958,6 +6885,7 @@ MonoBehaviour:
   responsesContainer: {fileID: 149245652}
   responseItemPrefab: {fileID: 1183980993561059456, guid: 9b127d90d32dcdc4a8d73264a500e050, type: 3}
   closeButton: {fileID: 2141431867}
+  GodIcon: {fileID: 0}
 --- !u!114 &1374447351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6977,6 +6905,8 @@ MonoBehaviour:
   informationText: {fileID: 1581791252}
   niveauRelationText: {fileID: 1831148963}
   toTalkButton: {fileID: 304079091}
+  talkButtonText: {fileID: 0}
+  selectedGod: {fileID: 0}
 --- !u!1 &1387952473
 GameObject:
   m_ObjectHideFlags: 0
@@ -60037,12 +59967,12 @@ Transform:
   m_GameObject: {fileID: 1612588656}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.81273, y: 0.8851, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1518172678}
-  m_Father: {fileID: 187275558}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1612588658
 MonoBehaviour:
@@ -61723,11 +61653,11 @@ Transform:
   m_GameObject: {fileID: 1894375141}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.81273, y: 0.8851, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 187275558}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1894375143
 MonoBehaviour:
@@ -62165,9 +62095,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1366144318}
-        m_TargetAssemblyTypeName: MiniGameLauncher, Assembly-CSharp
-        m_MethodName: LaunchRhythmGame
+      - m_Target: {fileID: 755093716}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: DebugSkipToSunday
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -63105,5 +63035,8 @@ SceneRoots:
   - {fileID: 1232326403}
   - {fileID: 1589673641}
   - {fileID: 832262523}
-  - {fileID: 1366144319}
-  - {fileID: 187275558}
+  - {fileID: 1612588657}
+  - {fileID: 755093717}
+  - {fileID: 478176648}
+  - {fileID: 1894375142}
+  - {fileID: 1374447347}

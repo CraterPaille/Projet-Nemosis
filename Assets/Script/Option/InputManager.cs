@@ -8,6 +8,16 @@ public class InputManager : MonoBehaviour
     public PlayerControls keyboardControls;
     public PlayerControls gamepadControls;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Initialize()
+    {
+        if (Instance == null)
+        {
+            GameObject go = new GameObject("InputManager");
+            go.AddComponent<InputManager>();
+        }
+    }
+
     private void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
@@ -50,8 +60,4 @@ public class InputManager : MonoBehaviour
             PlayerPrefs.SetString("rebinds_gamepad", gamepadControls.asset.SaveBindingOverridesAsJson());
         }
     }
-
-
-
-
 }

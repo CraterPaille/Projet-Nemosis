@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
     [Header("Cartes disponibles (Set Village)")]
     public VillageCardCollectionSO villageCardCollection;
 
+    [Header("Mini-jeu du dimanche")]
+    public MiniGameLauncher miniGameLauncher;
 
     
     public EffectSO effet;
@@ -109,8 +111,34 @@ public class GameManager : MonoBehaviour
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
+        // Vérifier si c'est dimanche matin -> lancer le mini-jeu automatiquement
+        if (currentWeekDay == "Dimanche" && currentTime == DayTime.Matin)
+        {
+            LaunchSundayMiniGame();
+            return;
+        }
+
         UIManager.Instance.GameModeChoice();
     }
+
+    private void LaunchSundayMiniGame()
+    {
+        Debug.Log("[GameManager] Dimanche matin : lancement automatique du mini-jeu Rhythm !");
+        
+        if (miniGameLauncher != null)
+        {
+            miniGameLauncher.LaunchRhythmGame();
+        }
+        else
+        {
+            // Fallback si le launcher n'est pas assigné
+            if (UIManager.Instance != null)
+                UIManager.Instance.SetUIActive(false);
+            
+            UnityEngine.SceneManagement.SceneManager.LoadScene("RhythmScene");
+        }
+    }
+
     public void ChooseVillage()
     {
         currentGameMode = GameMode.village;
@@ -185,7 +213,33 @@ public class GameManager : MonoBehaviour
         Valeurs[StatType.Food] -= foodLoss;
         GameEvents.TriggerDayEnd();
     }
-    
 
+    #region DEBUG
+    /// <summary>
+    /// [DEBUG] Avance directement au dimanche matin et lance le mini-jeu.
+    /// Peut être appelé depuis un bouton UI.
+    /// </summary>
+    public void DebugSkipToSunday()
+    {
+        // Calculer combien de jours jusqu'au prochain dimanche
+        int currentDayIndex = (currentDay - 1) % 7; // 0 = Lundi, 6 = Dimanche
+        int daysUntilSunday = (6 - currentDayIndex + 7) % 7;
+        
+        // Si on est déjà dimanche après-midi, aller au dimanche suivant
+        if (daysUntilSunday == 0 && currentTime == DayTime.Aprem)
+            daysUntilSunday = 7;
 
+        currentDay += daysUntilSunday;
+        currentTime = DayTime.Matin;
+        currentWeekDay = "Dimanche";
+
+        Debug.Log($"[DEBUG] Saut au dimanche matin ! Jour {currentDay}");
+        
+        // Mettre à jour l'UI de la date
+        UIManager.Instance?.changeDateUI();
+        
+        // Lancer le choix de mode (qui détectera dimanche matin)
+        ChooseGameMode();
+    }
+    #endregion
 }
