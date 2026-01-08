@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f0ab22fd225db0f459aebdd4275e1cbd
+guid: 95345620b606f9f419df99406af72da4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2419397873911808195
-    second: maisonX256V2_0
+      213: 3900807737030852681
+    second: maison_destroyX256_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maisonX256V2_0
+      name: maison_destroyX256_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3c049dc3c8d639120800000000000000
-      internalID: 2419397873911808195
+      spriteID: 940c1de28f3722630800000000000000
+      internalID: 3900807737030852681
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      maisonX256V2_0: 2419397873911808195
+      maison_destroyX256_0: 3900807737030852681
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
