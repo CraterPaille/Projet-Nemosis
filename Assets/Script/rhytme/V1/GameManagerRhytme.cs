@@ -103,8 +103,13 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
+
+
         // Effet carte mini-jeu, si présent
         ApplyMiniGameCardIfAny();
+
+        theMusic.pitch = _speedMultiplier;   // 2f => double tempo audio
+        Debug.Log($"[Rhytme] Musique pitch réglé à {_speedMultiplier}x");
 
         currentScore = 0;
         normalHits = 0;

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+
 
 public class MiniGameCardPanelManager : MonoBehaviour
 {
     [Header("Source de cartes")]
     [SerializeField] private MiniGameCardCollectionSO cardCollection;
+    public MiniGameCardCollectionSO CardCollection => cardCollection;
 
     [Header("Boutons de cartes dans le panel")]
     [SerializeField] private MiniGameCardButton[] cardButtons;
@@ -31,10 +34,8 @@ public class MiniGameCardPanelManager : MonoBehaviour
             return;
         }
 
-        // Nombre réel de cartes à tirer
         int drawCount = Mathf.Min(cardsToDraw, cardButtons.Length, cardCollection.allMiniGameCards.Count);
 
-        // Tirage sans remise (comme VillageCardChoice)
         List<MiniGameCardEffectSO> pool = new List<MiniGameCardEffectSO>(cardCollection.allMiniGameCards);
         List<MiniGameCardEffectSO> currentChoices = new List<MiniGameCardEffectSO>();
 
@@ -46,7 +47,6 @@ public class MiniGameCardPanelManager : MonoBehaviour
             currentChoices.Add(card);
         }
 
-        // Assigner les cartes tirées aux boutons
         for (int i = 0; i < cardButtons.Length; i++)
         {
             if (i < currentChoices.Count)
@@ -56,9 +56,15 @@ public class MiniGameCardPanelManager : MonoBehaviour
             }
             else
             {
-                // Désactiver les boutons en trop
                 cardButtons[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    public void ClosePanel()
+    {
+        gameObject.SetActive(false);
+        UIManager.Instance.GameModeChoice();
+        GameManager.Instance.EndHalfDay();
     }
 }

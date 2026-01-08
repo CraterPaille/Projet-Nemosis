@@ -137,6 +137,7 @@ public class GameManager : MonoBehaviour
         if (miniGameLauncher != null)
         {
             miniGameLauncher.LaunchRandomSundayMiniGame();
+            Debug.Log("[GameManager] Mini-jeu lancé via MiniGameLauncher.");
         }
         else
         {

@@ -17,7 +17,7 @@ MonoBehaviour:
     vite, mais le score potentiel explose."
   icon: {fileID: 0}
   targetMiniGame: 1
-  speedMultiplier: 2
+  speedMultiplier: 1.2
   difficultyMultiplier: 1.5
   invertControls: 0
   moreEnemies: 0
