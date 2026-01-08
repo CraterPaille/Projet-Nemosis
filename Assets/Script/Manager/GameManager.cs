@@ -1,6 +1,7 @@
-using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor.EditorTools;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum DayTime { Matin, Aprem }
 
@@ -35,7 +36,15 @@ public class GameManager : MonoBehaviour
     [Header("Mini-jeu du dimanche")]
     public MiniGameLauncher miniGameLauncher;
 
-    
+    [Header("Durée de la campagne")]
+    [Tooltip("Nombre total de jours dans une partie (1 mois = 28 jours)")]
+    public int totalDays = 28;
+    [Tooltip("Scène chargée quand la campagne est terminée")]
+    public string endSceneName = "Menu_principal";
+
+    private bool campaignFinished = false;
+
+
     public EffectSO effet;
     public readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
 
@@ -69,7 +78,7 @@ public class GameManager : MonoBehaviour
             
             Multiplicateur[stat] = 1f;
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
-            // initial value
+            // valeur de départ
             Valeurs[stat] = 50f;
             changeStat(stat, 0f);
         }
@@ -111,7 +120,20 @@ public class GameManager : MonoBehaviour
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()
     {
-        // Vérifier si c'est dimanche matin -> lancer le mini-jeu automatiquement
+        if (campaignFinished) return;
+
+        // Exemple : si c’est samedi après-midi, on affiche directement les cartes de mini-jeu
+        if (currentWeekDay == "Samedi" && currentTime == DayTime.Aprem)
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.SetUIActive(true);
+                UIManager.Instance.ShowMiniJeuCardPanel();
+            }
+            return;
+        }
+
+        // Dimanche matin -> mini-jeu auto
         if (currentWeekDay == "Dimanche" && currentTime == DayTime.Matin)
         {
             LaunchSundayMiniGame();
@@ -158,8 +180,12 @@ public class GameManager : MonoBehaviour
 
     public void EndHalfDay()
     {
+
+        //verifier si la campagne est finie
+        if (campaignFinished) return;
+
         // Passage à la demi-journée suivante
-        
+
         if (currentTime == DayTime.Matin)
         {
             currentTime = DayTime.Aprem;
@@ -176,7 +202,15 @@ public class GameManager : MonoBehaviour
         // Calcul du jour de la semaine
         
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
-        
+
+        //Fin de la campagne après le dernier jour
+        // Fin de campagne après la dernière journée
+        if (currentDay > totalDays)
+        {
+            EndCampaign();
+            return;
+        }
+
         // Vérifier si un événement doit se déclencher ou est actif
         if (eventScheduler != null)
         {
@@ -196,6 +230,7 @@ public class GameManager : MonoBehaviour
 
     public void EndDay()
     {
+        if (campaignFinished) return;
         // Actions à effectuer à la fin de la journée
         currentWeekDay = weekDays[(currentDay - 1) % 7];
         // arrondi à l'entier le plus proche
@@ -212,8 +247,24 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Fin de journée : Perte de nourriture de {foodLoss}, Nourriture restante : {Valeurs[StatType.Food]}");
         Valeurs[StatType.Food] -= foodLoss;
         GameEvents.TriggerDayEnd();
+        if (currentDay >= totalDays && currentTime == DayTime.Aprem)
+        {
+            EndCampaign();
+        }
     }
 
+    private void EndCampaign()
+    {
+        if (campaignFinished) return;
+        campaignFinished = true;
+
+        Debug.Log($"[GameManager] Fin de campagne : {totalDays} jours écoulés.");
+
+        UIManager.Instance?.SetUIActive(false);
+
+        if (!string.IsNullOrEmpty(endSceneName))
+            SceneManager.LoadScene(endSceneName);
+    }
     #region DEBUG
     /// <summary>
     /// [DEBUG] Avance directement au dimanche matin et lance le mini-jeu.
@@ -221,6 +272,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void DebugSkipToSunday()
     {
+        if (campaignFinished) return;
         // Calculer combien de jours jusqu'au prochain dimanche
         int currentDayIndex = (currentDay - 1) % 7; // 0 = Lundi, 6 = Dimanche
         int daysUntilSunday = (6 - currentDayIndex + 7) % 7;

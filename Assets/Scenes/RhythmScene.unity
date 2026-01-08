@@ -227,6 +227,10 @@ MonoBehaviour:
   buttonNormal: {fileID: 21300000, guid: 1bbda9210988dfd4db252a09838d254f, type: 3}
   buttonPressed: {fileID: 21300000, guid: cacc39dd2a4e88a43aadeddd73e9b1e2, type: 3}
   lane: 1
+  punchScale: 1.15
+  punchDuration: 0.1
+  pressedColor: {r: 1, g: 1, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!61 &42740292
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -458,6 +462,10 @@ MonoBehaviour:
   buttonNormal: {fileID: 21300000, guid: ed2984e24d5df6f46a80ead6ad2964fa, type: 3}
   buttonPressed: {fileID: 21300000, guid: 8f47ff751b3bdec48862adf0100c74fa, type: 3}
   lane: 2
+  punchScale: 1.15
+  punchDuration: 0.1
+  pressedColor: {r: 1, g: 1, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!61 &335185283
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -688,6 +696,10 @@ MonoBehaviour:
   buttonNormal: {fileID: 21300000, guid: ad187f74f2d0cc4499f39a0267b9eda8, type: 3}
   buttonPressed: {fileID: 21300000, guid: 18bf226de2d59284e904c26430f659c9, type: 3}
   lane: 0
+  punchScale: 1.15
+  punchDuration: 0.1
+  pressedColor: {r: 1, g: 1, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!61 &450328918
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -773,6 +785,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -898,6 +911,20 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1baefa8020971fa4d8594ffa6e4a5de0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraShakeRhytm
+  duration: 0.15
+  magnitude: 0.1
 --- !u!1 &720792291
 GameObject:
   m_ObjectHideFlags: 0
@@ -1098,13 +1125,15 @@ MonoBehaviour:
   ScorePerPerfectNote: 150
   currentMultiplier: 1
   multiplierTracker: 0
-  multiplierThresholds: 03000000040000000800000010000000
+  multiplierThresholds: 0300000004000000080000001000000020000000
   ScoreText: {fileID: 1987577343}
   MultiText: {fileID: 1647178491}
   normalHits: 0
   goodHits: 0
   perfectHits: 0
   missedHits: 0
+  laneHighlights: []
+  missShake: {fileID: 519420034}
 --- !u!4 &1112917756
 Transform:
   m_ObjectHideFlags: 0
@@ -1391,6 +1420,7 @@ GameObject:
   - component: {fileID: 1647178490}
   - component: {fileID: 1647178492}
   - component: {fileID: 1647178491}
+  - component: {fileID: 1647178493}
   m_Layer: 5
   m_Name: MulltiText
   m_TagString: Untagged
@@ -1516,6 +1546,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1647178489}
   m_CullTransparentMesh: 1
+--- !u!114 &1647178493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647178489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08d34da9fb352074cb80ae06aacf615a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PunchScale
+  punchScale: 1.2
+  duration: 0.15
 --- !u!1 &1665987925
 GameObject:
   m_ObjectHideFlags: 0
@@ -2191,6 +2235,10 @@ MonoBehaviour:
   buttonNormal: {fileID: 21300000, guid: c3c13b1f8baa5dd4a86d3dc186668178, type: 3}
   buttonPressed: {fileID: 21300000, guid: 2d10ec486261df445b73774ff82f1b69, type: 3}
   lane: 3
+  punchScale: 1.15
+  punchDuration: 0.1
+  pressedColor: {r: 1, g: 1, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!61 &1954822629
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2275,6 +2323,7 @@ GameObject:
   - component: {fileID: 1987577342}
   - component: {fileID: 1987577344}
   - component: {fileID: 1987577343}
+  - component: {fileID: 1987577345}
   m_Layer: 5
   m_Name: ScoreText
   m_TagString: Untagged
@@ -2400,6 +2449,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1987577341}
   m_CullTransparentMesh: 1
+--- !u!114 &1987577345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1987577341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08d34da9fb352074cb80ae06aacf615a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PunchScale
+  punchScale: 1.2
+  duration: 0.15
 --- !u!1 &2067393426
 GameObject:
   m_ObjectHideFlags: 0

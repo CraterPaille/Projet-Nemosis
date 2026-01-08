@@ -25,6 +25,9 @@ public class GameManagerRhytme : MonoBehaviour
     public TMP_Text ScoreText;
     public TMP_Text MultiText;
 
+    private PunchScale _scorePunch;
+    private PunchScale _multiPunch;
+
     [Header("Stats performance")]
     public int normalHits;
     public int goodHits;
@@ -35,6 +38,15 @@ public class GameManagerRhytme : MonoBehaviour
     private PlayerControls gamepadControls;
 
     private Coroutine vibrationCoroutine;
+
+    [Header("Feedback lanes")]
+    [SerializeField] private LaneHighlight[] laneHighlights; // taille 4 dans l’Inspector
+
+    [Header("Feedback global")]
+    [SerializeField] private CameraShakeRhytm missShake;
+
+    private float _speedMultiplier = 1f;
+    private float _difficultyMultiplier = 1f;
 
     private void Awake()
     {
@@ -91,6 +103,9 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
+        // Effet carte mini-jeu, si présent
+        ApplyMiniGameCardIfAny();
+
         currentScore = 0;
         normalHits = 0;
         goodHits = 0;
@@ -98,6 +113,9 @@ public class GameManagerRhytme : MonoBehaviour
         missedHits = 0;
 
         ScoreText.text = "Score : 0";
+
+        _scorePunch = ScoreText != null ? ScoreText.GetComponent<PunchScale>() : null;
+        _multiPunch = MultiText != null ? MultiText.GetComponent<PunchScale>() : null;
 
         NoteSpawner spawner = FindFirstObjectByType<NoteSpawner>();
         Transform activator = GameObject.FindGameObjectWithTag("Activator")?.transform;
@@ -111,9 +129,33 @@ public class GameManagerRhytme : MonoBehaviour
 
             if (spawnLeadTime > 0.01f)
             {
-                theBS.beatTempo = distance / spawnLeadTime;
+                theBS.beatTempo = distance / spawnLeadTime * _speedMultiplier;
             }
         }
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Rhythm)
+            return;
+
+        _speedMultiplier = Mathf.Max(0.1f, card.speedMultiplier);
+        _difficultyMultiplier = Mathf.Max(0.5f, card.difficultyMultiplier);
+
+        // Exemple : augmenter le score par note avec la difficulté
+        ScorePerNote = Mathf.RoundToInt(ScorePerNote * _difficultyMultiplier);
+        ScorePerGoodNote = Mathf.RoundToInt(ScorePerGoodNote * _difficultyMultiplier);
+        ScorePerPerfectNote = Mathf.RoundToInt(ScorePerPerfectNote * _difficultyMultiplier);
+
+        Debug.Log($"[Rhytme] Carte appliquée : {card.cardName}, speed x{_speedMultiplier}, diff x{_difficultyMultiplier}");
+
+        // On consomme la carte pour ce mini-jeu
+        runtime.Clear();
     }
 
     private void Update()
@@ -139,6 +181,9 @@ public class GameManagerRhytme : MonoBehaviour
 
     void PressLane(int lane)
     {
+        if (laneHighlights != null && lane >= 0 && lane < laneHighlights.Length)
+            laneHighlights[lane]?.Trigger();
+
         NoteObject note = NoteObject.GetClosestNoteInLane(lane);
         if (note == null) return;
 
@@ -193,6 +238,8 @@ public class GameManagerRhytme : MonoBehaviour
     {
         currentScore += baseScore * currentMultiplier;
         ScoreText.text = "Score : " + currentScore;
+
+        _scorePunch?.Play();
     }
 
     void HandleMultiplier()
@@ -215,6 +262,7 @@ public class GameManagerRhytme : MonoBehaviour
         }
 
         MultiText.text = "Multiplier X" + currentMultiplier;
+        _multiPunch?.Play();
     }
 
     public void NoteMissed()
@@ -225,6 +273,7 @@ public class GameManagerRhytme : MonoBehaviour
         MultiText.text = "Multiplier X1";
 
         Vibrate(0.6f, 0.6f, 0.12f);
+        missShake?.Play();
     }
 
     // --- Fin du mini-jeu ---

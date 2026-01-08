@@ -9,15 +9,23 @@ public class ButtonController : MonoBehaviour
     [Tooltip("0 à 3")]
     public int lane; // correspond à la lane dans InputManager
 
-    // public bool useGamepad = false; // plus besoin
+    [Header("Animation")]
+    public float punchScale = 1.15f;
+    public float punchDuration = 0.1f;
+    public Color pressedColor = Color.white;     // teinte quand pressé
+    public Color normalColor = Color.white;      // couleur par défaut
 
     private SpriteRenderer spriteRenderer;
     private PlayerControls keyboardControls;
     private PlayerControls gamepadControls;
 
+    private Vector3 _baseScale;
+    private float _punchTimer = 0f;
+
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        _baseScale = transform.localScale;
 
         if (InputManager.Instance == null)
         {
@@ -95,26 +103,44 @@ public class ButtonController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (_punchTimer > 0f)
+        {
+            _punchTimer -= Time.deltaTime;
+            float t = 1f - Mathf.Clamp01(_punchTimer / punchDuration);
+            // petit overshoot
+            float s = Mathf.Lerp(punchScale, 1f, t);
+            transform.localScale = _baseScale * s;
+
+            if (_punchTimer <= 0f)
+                transform.localScale = _baseScale;
+        }
+    }
+
     private void Press(InputAction.CallbackContext ctx)
     {
         spriteRenderer.sprite = buttonPressed;
+        spriteRenderer.color = pressedColor;
+        _punchTimer = punchDuration;
     }
 
     private void Release(InputAction.CallbackContext ctx)
     {
         spriteRenderer.sprite = buttonNormal;
+        spriteRenderer.color = normalColor;
     }
 
-    // Feedback déclenché depuis InputManager
+    // Feedback déclenché depuis InputManager (optionnel)
     public void PressFeedback()
     {
-        spriteRenderer.sprite = buttonPressed;
+        Press(default);
         CancelInvoke(nameof(ResetSprite));
         Invoke(nameof(ResetSprite), 0.1f);
     }
 
     private void ResetSprite()
     {
-        spriteRenderer.sprite = buttonNormal;
+        Release(default);
     }
 }

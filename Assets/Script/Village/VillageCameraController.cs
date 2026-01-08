@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class VillageCameraController : MonoBehaviour
 {
@@ -58,8 +59,15 @@ public class VillageCameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.D))
             moveDirection += Vector3.right;
 
-        // Déplacement avec flèches
+        // Déplacement avec flèches (Input Manager classique)
         moveDirection += new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+
+        // Ajout manette (nouveau Input System)
+        if (Gamepad.current != null)
+        {
+            Vector2 stick = Gamepad.current.leftStick.ReadValue();
+            moveDirection += new Vector3(stick.x, stick.y, 0f);
+        }
 
         // Edge scrolling (bord de l'écran)
         Vector3 mousePos = Input.mousePosition;

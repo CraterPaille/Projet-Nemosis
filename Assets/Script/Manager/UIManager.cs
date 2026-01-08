@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class UIManager : MonoBehaviour
 {
@@ -35,8 +36,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Date;
 
     [Header("Day Mode Choice UI")]
-
     [SerializeField] private GameObject dayModeChoicePanel;
+    [SerializeField] private GameObject dayModeFirstSelected; // bouton par défaut à assigner dans l’Inspector
+
+    [Header("Mini-jeu - Cartes")]
+    [SerializeField] private GameObject miniJeuCardPanel;      // <-- TON PANEL DE CARTES
+    [SerializeField] private GameObject miniJeuCardFirstSelected; // bouton par défaut (optionnel)
 
     [Header("Village Card Choice UI")]
     //[SerializeField] private Transform cardContainer;
@@ -85,6 +90,7 @@ public class UIManager : MonoBehaviour
         if (villagePanel != null) villagePanel.SetActive(false);
         if (dayModeChoicePanel != null) dayModeChoicePanel.SetActive(false);
         if (eventPanel != null) eventPanel.SetActive(false);
+        if (miniJeuCardPanel != null) miniJeuCardPanel.SetActive(false); // <-- ajouté
     }
 
     private void EnsureEventSystem()
@@ -183,11 +189,49 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Force la sélection d’un élément pour la navigation manette.
+    /// </summary>
+    private void SetDefaultSelected(GameObject toSelect)
+    {
+        if (EventSystem.current == null || toSelect == null)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(toSelect);
+    }
+
     public void GameModeChoice()
     {
         if (dayModeChoicePanel != null)
+        {
             dayModeChoicePanel.SetActive(true);
+
+            // Sélectionner le bouton par défaut pour navigation manette
+            SetDefaultSelected(dayModeFirstSelected);
+        }
     }
+
+    public void ShowMiniJeuCardPanel()
+    {
+        if (miniJeuCardPanel == null) return;
+
+        // Optionnel : masquer les autres UI
+        HideAllUI();
+
+        miniJeuCardPanel.SetActive(true);
+        SetDefaultSelected(miniJeuCardFirstSelected);
+    }
+
+    public void CloseMiniJeuCardPanelAndBackToModeChoice()
+    {
+        if (miniJeuCardPanel != null)
+            miniJeuCardPanel.SetActive(false);
+
+        // Retour au panel ModeChoiceUI
+        GameModeChoice();
+    }
+
     public void HideAllUI()
     {
         HideTooltip();

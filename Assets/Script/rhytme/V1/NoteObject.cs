@@ -145,6 +145,30 @@ public class NoteObject : MonoBehaviour
             // on a tenu assez longtemps -> success = true
             FinishHold(true);
         }
+
+        UpdateApproachScaleAndGlow();
+    }
+
+    private void UpdateApproachScaleAndGlow()
+    {
+        if (activator == null || noteBody == null) return;
+
+        // distance verticale jusqu'à la ligne d'activation
+        float dy = Mathf.Abs(transform.position.y - activator.position.y);
+
+        // plus la note est proche (dy -> 0), plus elle est grosse
+        float maxScale = 1.15f;
+        float minScale = 0.9f;
+        float maxDistance = 2.5f; // distance sur laquelle l’effet agit (à adapter à ta scène)
+
+        float t = Mathf.Clamp01(1f - (dy / maxDistance));
+        float scale = Mathf.Lerp(minScale, maxScale, t);
+        noteBody.transform.localScale = new Vector3(scale, scale, 1f);
+
+        // Optionnel : légère variation de couleur (ex: plus blanche près de la ligne)
+        Color baseColor = Color.white;
+        Color targetColor = Color.Lerp(baseColor, Color.yellow, t * 0.4f);
+        noteBody.color = targetColor;
     }
 
     private void OnEnable()
