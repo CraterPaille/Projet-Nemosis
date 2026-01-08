@@ -12,8 +12,10 @@ public struct EventInfo
     public int durationHalfDays;
 }
 
-public abstract class BaseGameEvent : EffectSO
+public abstract class BaseGameEvent : ScriptableObject
 {
+
+
     public EventInfo eventInfo;
 
     // Appelé quand l'événement commence (charge la scène, etc.)

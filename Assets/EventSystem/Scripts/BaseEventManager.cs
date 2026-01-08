@@ -45,16 +45,16 @@ public abstract class BaseEventManager : MonoBehaviour
     /// </summary>
     public void CompleteEvent()
     {
-        finalScore = CalculateScore();
-        Debug.Log($"Mini-jeu terminé avec score : {finalScore}");
-
-        // Envoyer le score au scheduler
-        if (EventScheduler.Instance != null)
+        if (finalScore != 0)
+        {
+            Debug.Log($"Mini-jeu terminé avec score : {finalScore}");
+            finalScore = CalculateScore();
+            if (EventScheduler.Instance != null)
         {
             EventScheduler.Instance.SetEventScore(finalScore);
         }
 
-        // Retourner à la scène principale
+        }
         ReturnToBaseGame();
     }
 
@@ -65,10 +65,9 @@ public abstract class BaseEventManager : MonoBehaviour
     {
         // Charger la scène principale (à adapter selon votre projet)
         // Option 1: Si vous connaissez le nom de votre scène principale
-        SceneManager.LoadScene("MainScene"); // À remplacer par le nom de votre scène
+        SceneManager.LoadScene("SampleScene"); // À remplacer par le nom de votre scène
         
-        // Option 2: Si vous voulez revenir à la scène précédente (à implémenter)
-        // SceneManager.LoadScene(previousSceneIndex);
+        UIManager.Instance.ShowMainUI();
         
         Debug.Log("Retour à la scène principale");
     }

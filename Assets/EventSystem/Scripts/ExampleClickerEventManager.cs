@@ -35,7 +35,7 @@ public class ExampleClickerEventManager : BaseEventManager
         if (finishButton != null)
         {
             finishButton.onClick.AddListener(CompleteEvent);
-            finishButton.gameObject.SetActive(false); // Caché jusqu'à la fin
+            finishButton.gameObject.SetActive(true); // Caché jusqu'à la fin
         }
     }
 
@@ -89,10 +89,5 @@ public class ExampleClickerEventManager : BaseEventManager
         return normalizedScore;
     }
 
-    protected override void ReturnToBaseGame()
-    {
-        // Retourner à votre scène principale
-        // Remplacez "MainScene" par le nom de votre scène principale
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainScene");
-    }
+
 }

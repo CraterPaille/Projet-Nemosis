@@ -11,7 +11,7 @@ public class GodDataSO : ScriptableObject
     public bool unlocked = false;
     public int relation = 0;
     // Interaction tracking
-    public int lastInteractionDay = 0;
+    public float lastInteractionDay = 0;
     public int interactionsToday = 0;
 
     [Header("Dialogues (petits graphs)")]

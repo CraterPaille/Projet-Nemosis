@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
 
     // Effet pour le jeu global
     [Header("Jour actuel")]
-    public int currentDay = 1;
+    public float currentDay = 1;
     public DayTime currentTime = DayTime.Matin;
     public string currentWeekDay = "Lundi";
     public enum GameMode { village, VillageCard, Relation,  }
@@ -136,8 +136,8 @@ public class GameManager : MonoBehaviour
         else
         {
             currentTime = DayTime.Matin;
-            currentDay++;
-            currentWeekDay = weekDays[(currentDay - 1) % 7]; // C'est une responsibiliter que le Schen
+            currentDay += 1f;
+            currentWeekDay = weekDays[((int)currentDay - 1) % 7]; // C'est une responsibiliter que le Schen
             EndDay();
         }
 
@@ -148,7 +148,8 @@ public class GameManager : MonoBehaviour
         // Vérifier si un événement doit se déclencher ou est actif
         if (eventScheduler != null)
         {
-            bool eventActive = eventScheduler.CheckAndTriggerEvent(currentDay, currentTime);
+            Debug.Log("Vérification des événements...");
+            bool eventActive = eventScheduler.CheckAndTriggerEvent((int)currentDay, currentTime);
             if (eventActive)
             {
                 // Un événement est actif, on ne lance pas ChooseGameMode
@@ -165,7 +166,7 @@ public class GameManager : MonoBehaviour
     public void EndDay()
     {
         // Actions à effectuer à la fin de la journée
-        currentWeekDay = weekDays[(currentDay - 1) % 7];
+        currentWeekDay = weekDays[((int)currentDay - 1) % 7];
         // arrondi à l'entier le plus proche
         float foodLoss = Mathf.Round(Valeurs[StatType.Human] * 0.1f);
         if (Valeurs[StatType.Food] >= foodLoss)
