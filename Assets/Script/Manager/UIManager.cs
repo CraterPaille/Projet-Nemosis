@@ -28,6 +28,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject VillageContent;
 
     [Header("Stats UI")]
+    [SerializeField] private GameObject PanelStats;
     [SerializeField] private GameObject StatsFoi;
     [SerializeField] private GameObject StatsNemosis;
     [SerializeField] private GameObject StatsHumain;
@@ -40,11 +41,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject dayModeFirstSelected; // bouton par défaut à assigner dans l’Inspector
 
     [Header("Mini-jeu - Cartes")]
-    [SerializeField] private GameObject miniJeuCardPanel;      // <-- TON PANEL DE CARTES
-    [SerializeField] private GameObject miniJeuCardFirstSelected; // bouton par défaut (optionnel)
+    [SerializeField] private GameObject miniJeuCardPanel;
+    [SerializeField] private GameObject miniJeuCardFirstSelected;
 
     [Header("Village Card Choice UI")]
-    //[SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardUIPrefab;
 
     [Header("Event Panel UI")]
@@ -71,10 +71,9 @@ public class UIManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        
+
         InitializePanels();
 
-        // S'abonner aux changements de scène
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -90,13 +89,13 @@ public class UIManager : MonoBehaviour
         if (villagePanel != null) villagePanel.SetActive(false);
         if (dayModeChoicePanel != null) dayModeChoicePanel.SetActive(false);
         if (eventPanel != null) eventPanel.SetActive(false);
-        if (miniJeuCardPanel != null) miniJeuCardPanel.SetActive(false); // <-- ajouté
+        if (miniJeuCardPanel != null) miniJeuCardPanel.SetActive(false);
+        if (PanelStats != null) PanelStats.SetActive(true);
     }
 
     private void EnsureEventSystem()
     {
-        // Vérifie qu'un EventSystem existe dans la scène
-        if (UnityEngine.EventSystems.EventSystem.current == null)
+        if (EventSystem.current == null)
         {
             Debug.LogWarning("[UIManager] Pas d'EventSystem trouvé, les interactions UI peuvent ne pas fonctionner.");
         }
@@ -104,18 +103,15 @@ public class UIManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Réactiver l'UI uniquement sur la scène principale
         if (scene.name == MAIN_SCENE_NAME)
         {
             SetUIActive(true);
             EnsureEventSystem();
-            
-            // Si on revient d'un mini-jeu, avancer le temps
+
             if (returningFromMiniGame)
             {
                 returningFromMiniGame = false;
-                
-                // Avancer le temps d'une demi-journée
+
                 if (GameManager.Instance != null)
                 {
                     GameManager.Instance.EndHalfDay();
@@ -124,74 +120,56 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Marque qu'on va lancer un mini-jeu (pour avancer le temps au retour).
-    /// </summary>
+    /// <summary>Marque qu'on va lancer un mini-jeu (pour avancer le temps au retour).</summary>
     public void MarkMiniGameLaunch()
     {
         returningFromMiniGame = true;
     }
 
-    /// <summary>
-    /// Active ou désactive le GameObject racine de l'UIManager (et tout son contenu).
-    /// </summary>
+    /// <summary>Active ou désactive le GameObject racine de l'UIManager (et tout son contenu).</summary>
     public void SetUIActive(bool active)
     {
         gameObject.SetActive(active);
     }
 
-    /// <summary>
-    /// Vérifie si les références UI sont valides.
-    /// </summary>
     private bool AreReferencesValid()
     {
         return tooltipPanel != null && interactionPanel != null && villagePanel != null && dayModeChoicePanel != null;
     }
 
-
     private void Start()
     {
-        // Subscribe to events (try common manager singletons)
-    
-        
         GameEvents.OnDayEnd += changeDateUI;
         GameEvents.OnStatChanged += ChangeStatUI;
         GameEvents.OnMorningEnd += changeDateUI;
-
     }
-    
 
     private void Update()
     {
-        // Vérifier que les références sont valides avant d'accéder
         if (tooltipPanel == null) return;
 
-        // Positionne le tooltip à côté de la souris
         if (tooltipPanel.activeSelf)
         {
             RectTransform canvasRect = tooltipPanel.transform.parent.GetComponent<RectTransform>();
             RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
-            
+
             if (canvasRect != null && tooltipRect != null)
             {
                 Vector2 localPoint;
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect, 
-                    Input.mousePosition, 
-                    Camera.main, 
+                    canvasRect,
+                    Input.mousePosition,
+                    Camera.main,
                     out localPoint
                 );
-                
-                // Offset fixe en pixels : décale à droite et légèrement en bas
+
                 Vector2 offset = offsetTooltip;
                 tooltipRect.anchoredPosition = localPoint + offset;
             }
         }
     }
 
-    /// <summary>
-    /// Force la sélection d’un élément pour la navigation manette.
-    /// </summary>
+    /// <summary>Force la sélection d’un élément pour la navigation manette.</summary>
     private void SetDefaultSelected(GameObject toSelect)
     {
         if (EventSystem.current == null || toSelect == null)
@@ -206,8 +184,6 @@ public class UIManager : MonoBehaviour
         if (dayModeChoicePanel != null)
         {
             dayModeChoicePanel.SetActive(true);
-
-            // Sélectionner le bouton par défaut pour navigation manette
             SetDefaultSelected(dayModeFirstSelected);
         }
     }
@@ -216,9 +192,7 @@ public class UIManager : MonoBehaviour
     {
         if (miniJeuCardPanel == null) return;
 
-        // Optionnel : masquer les autres UI
         HideAllUI();
-
         miniJeuCardPanel.SetActive(true);
         SetDefaultSelected(miniJeuCardFirstSelected);
     }
@@ -228,7 +202,6 @@ public class UIManager : MonoBehaviour
         if (miniJeuCardPanel != null)
             miniJeuCardPanel.SetActive(false);
 
-        // Retour au panel ModeChoiceUI
         GameModeChoice();
     }
 
@@ -237,16 +210,14 @@ public class UIManager : MonoBehaviour
         HideTooltip();
         HideInteractionMenu();
         HideVillageUI();
-        
         DayModeChoice(false);
-
     }
+
     // --- TOOLTIP ---
     public void ShowBuildingTooltip(BuildingData data)
     {
         if (tooltipPanel == null) return;
 
-        // Évite de rafraîchir si c'est le même bâtiment
         if (currentTooltipData == data && tooltipPanel.activeSelf)
             return;
 
@@ -275,23 +246,21 @@ public class UIManager : MonoBehaviour
         {
             var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();
             if (headerText != null) headerText.text = data.buildingName;
-            
+
             var headerImage = interactionHeader.GetComponentInChildren<Image>();
             if (headerImage != null) headerImage.sprite = data.icon;
         }
 
-        // Clear previous buttons
         if (interactionContent != null)
         {
             foreach (Transform child in interactionContent)
                 Destroy(child.gameObject);
 
-            // Create one button per interaction effect
             foreach (var effect in data.interactionEffects)
             {
                 var interactionGO = Instantiate(interactionButtonPrefab, interactionContent);
-                var Ui = interactionGO.GetComponent<InteractionEntryUI>();
-                Ui.Setup(effect);
+                var ui = interactionGO.GetComponent<InteractionEntryUI>();
+                ui.Setup(effect);
             }
         }
     }
@@ -309,12 +278,14 @@ public class UIManager : MonoBehaviour
 
     public void closeInteractionMenu()
     {
-        if (GameManager.Instance != null && GameManager.Instance.currentGameMode == GameManager.GameMode.village) 
-        { 
-            // Retour au mode village (UI ou 2D selon la config)
-            ShowVillage2DView(); 
+        if (GameManager.Instance != null && GameManager.Instance.currentGameMode == GameManager.GameMode.village)
+        {
+            ShowVillage2DView();
         }
-        else { HideAllUI(); }
+        else
+        {
+            HideAllUI();
+        }
     }
 
     // --- VILLAGE UI ---
@@ -325,11 +296,9 @@ public class UIManager : MonoBehaviour
             villagePanel.SetActive(true);
     }
 
-    // Mode 2D isométrique - cache tout l'UI pour voir le monde
     public void ShowVillage2DView()
     {
         HideAllUI();
-        // S'assure que le panel village UI est bien désactivé
         if (villagePanel != null)
             villagePanel.SetActive(false);
     }
@@ -338,7 +307,6 @@ public class UIManager : MonoBehaviour
     {
         if (villagePanel != null)
             villagePanel.SetActive(false);
-        //GameManager.Instance.EndHalfDay();
     }
 
     public void closeVillageUI()
@@ -348,8 +316,7 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.EndHalfDay();
     }
 
-    // Les pilier du jeu 
-
+    // --- STATS UI ---
     public void ChangeStatUI(StatType stat, float value)
     {
         try
@@ -407,8 +374,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-
-    //// Day Mode Choice Menu
+    // --- Day Mode Choice Menu ---
     public void DayModeChoice(bool active)
     {
         if (dayModeChoicePanel != null)
@@ -427,12 +393,9 @@ public class UIManager : MonoBehaviour
             var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();
             if (headerText != null) headerText.text = "Quelle carte jouer ?";
         }
-        
-        // Clear previous buttons
+
         foreach (Transform child in interactionContent)
             Destroy(child.gameObject);
-
-        // Create one button per interaction effect
 
         List<VillageCard> pool = new List<VillageCard>(cardCollection.allVillageCards);
         List<VillageCard> currentChoices = new List<VillageCard>();
@@ -447,14 +410,12 @@ public class UIManager : MonoBehaviour
         foreach (var card in currentChoices)
         {
             var ui = Instantiate(cardUIPrefab, interactionContent);
-            var entry = ui.GetComponent<CardUI>(); // Ton script sur le prefab
+            var entry = ui.GetComponent<CardUI>();
             entry.Setup(card);
         }
     }
 
-    /// <summary>
-    /// Affiche le panel d'événement avec image, titre et description.
-    /// </summary>
+    // --- PANEL D'ÉVÉNEMENT ---
     public void ShowEventPanel(Sprite image, string title, string description)
     {
         if (eventPanel == null)
@@ -464,12 +425,11 @@ public class UIManager : MonoBehaviour
         }
 
         eventPanel.SetActive(true);
-        
+
         if (eventImage != null) eventImage.sprite = image;
         if (eventTitle != null) eventTitle.text = title;
         if (eventDescription != null) eventDescription.text = description;
 
-        // Le bouton "Commencer" fermera le panel (le mini-jeu se charge déjà)
         if (eventStartButton != null)
         {
             eventStartButton.onClick.RemoveAllListeners();
@@ -479,9 +439,6 @@ public class UIManager : MonoBehaviour
         Debug.Log($"Panel d'événement affiché : {title}");
     }
 
-    /// <summary>
-    /// Masque le panel d'événement.
-    /// </summary>
     public void HideEventPanel()
     {
         if (eventPanel != null)
@@ -490,5 +447,21 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // --- Utilitaires pour mini-jeux (ancienne version conservée) ---
+    /// <summary>Cache toute l'UI (utilisé lors du chargement d'un mini-jeu manuel).</summary>
+    public void HideAllUIForMiniGame()
+    {
+        HideAllUI();
+        if (dayModeChoicePanel != null) dayModeChoicePanel.SetActive(false);
+        if (PanelStats != null) PanelStats.SetActive(false);
+        if (Date != null) Date.gameObject.SetActive(false);
+    }
 
+    /// <summary>Réaffiche l'UI principale (utilisé au retour d'un mini-jeu manuel).</summary>
+    public void ShowMainUI()
+    {
+        if (PanelStats != null) PanelStats.SetActive(true);
+        if (Date != null) Date.gameObject.SetActive(true);
+        GameModeChoice();
+    }
 }

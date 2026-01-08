@@ -16,6 +16,11 @@ public class TriGameManager : MonoBehaviour
     public Spawner spawner;
     public UIManagerTri uiManager;
 
+    // Bases pour les modifs de carte
+    private float _baseGameDuration;
+    private float _baseSpawnInterval;
+    private int _baseScorePerSoul;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -24,6 +29,16 @@ public class TriGameManager : MonoBehaviour
 
     private void Start()
     {
+        // Mémoriser les valeurs de base
+        _baseGameDuration = gameDuration;
+
+        if (spawner != null)
+        {
+            _baseSpawnInterval = spawner.spawnInterval;
+            _baseScorePerSoul = spawner.scorePerSoul; // adapte si ton Spawner stocke le score ailleurs
+        }
+
+        ApplyMiniGameCardIfAny();
         StartGame();
     }
 
@@ -71,7 +86,7 @@ public class TriGameManager : MonoBehaviour
         // Conversion score -> Or + Foi
         if (GameManager.Instance != null)
         {
-            float orGain  = score / 2;  // à ajuster
+            float orGain  = score / 2;   // à ajuster
             float foiGain = score / 10;  // à ajuster
 
             if (orGain != 0)
@@ -83,7 +98,6 @@ public class TriGameManager : MonoBehaviour
         }
 
         SceneManager.LoadScene("SampleScene");
-
     }
 
     public void OnQuitMiniGame()
@@ -91,4 +105,31 @@ public class TriGameManager : MonoBehaviour
         SceneManager.LoadScene("SampleScene");
     }
 
+    // --- Cartes mini-jeu ---
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Tri)
+            return;
+
+        float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
+        float diffMult  = Mathf.Max(0.5f, card.difficultyMultiplier);
+
+        // Exemple : plus de vitesse => âmes plus fréquentes, partie plus courte
+        gameDuration = _baseGameDuration / speedMult;
+
+        if (spawner != null)
+        {
+            spawner.spawnInterval = _baseSpawnInterval / speedMult;
+            spawner.scorePerSoul  = Mathf.RoundToInt(_baseScorePerSoul * diffMult);
+        }
+
+        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={spawner.scorePerSoul}");
+
+        runtime.Clear();
+    }
 }

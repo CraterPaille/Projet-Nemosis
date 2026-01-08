@@ -53,6 +53,9 @@ TagManager:
   - name: UI
     uniqueID: 4116095493
     locked: 0
+  - name: Pillier
+    uniqueID: 3930811079
+    locked: 0
   - name: "Fl\xE8ches"
     uniqueID: 74593903
     locked: 0

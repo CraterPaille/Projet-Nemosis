@@ -45,13 +45,15 @@ public class EventScheduler : MonoBehaviour
         }
 
         // Chercher un événement pour ce jour
+        Debug.Log("Recherche d'un événement pour le jour " + currentDay);
         BaseGameEvent eventToTrigger = GetEventForDay(currentDay);
         if (eventToTrigger != null)
         {
+            UIManager.Instance.HideAllUIForMiniGame(); // S'assurer que le panel est caché avant de démarrer un nouvel événement
             StartEvent(eventToTrigger, currentDay, currentTime);
             return true; // Événement démarré, on bloque le gameplay
         }
-
+        Debug.Log("Aucun événement prévu pour le jour " + currentDay);
         return false; // Pas d'événement
     }
 
@@ -129,7 +131,7 @@ public class EventScheduler : MonoBehaviour
         if (currentEvent != null)
         {
             Debug.Log($"Événement '{currentEvent.eventInfo.eventName}' terminé avec score : {eventScore}");
-            
+
             // Appliquer les récompenses selon le score
             currentEvent.ApplyRewards(eventScore);
 
@@ -165,5 +167,7 @@ public class EventDay
 {
     [Range(1, 28)]
     public int day;
+    public DayTime triggerTime = DayTime.Matin; // Ajouter pour choisir matin ou après-midi
     public BaseGameEvent gameEvent;
-}
+
+}   
