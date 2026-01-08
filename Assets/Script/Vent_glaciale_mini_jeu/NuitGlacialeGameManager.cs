@@ -29,6 +29,9 @@ public class NuitGlacialeGameManager : MonoBehaviour
     private float timeLeft;
     public bool isRunning = false;
 
+    private float _baseDuration;
+    private float _baseIntervalDecrease;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -37,9 +40,33 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     void Start()
     {
+        _baseDuration = duration;
+        _baseIntervalDecrease = intervalDecrease;
+        ApplyMiniGameCardIfAny();
+
         GenerateRandomHouses();
         houses = housesParent.GetComponentsInChildren<House>();
         StartMiniGame();
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.NuitGlaciale)
+            return;
+
+        float diffMult = Mathf.Max(0.5f, card.difficultyMultiplier);
+
+        duration = _baseDuration / diffMult;         // plus dur => moins de temps
+        intervalDecrease = Mathf.Lerp(1f, _baseIntervalDecrease, diffMult); // accélération plus forte
+
+        Debug.Log($"[NuitGlaciale] Carte appliquée : {card.cardName}, duration={duration}, intervalDecrease={intervalDecrease}");
+
+        runtime.Clear();
     }
 
     public void StartMiniGame()

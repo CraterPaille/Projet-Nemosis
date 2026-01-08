@@ -48,6 +48,7 @@ public class GameManagerZeus : MonoBehaviour
     private int enemiesPassed = 0;
     private int score = 0;          // score selon ta règle
     private bool isRunning = false;
+    private float _baseSpawnRateCached;
 
     void Awake()
     {
@@ -57,11 +58,35 @@ public class GameManagerZeus : MonoBehaviour
 
     void Start()
     {
+        _baseSpawnRateCached = baseSpawnRate;
+        ApplyMiniGameCardIfAny();
+
         // Lance automatiquement le mini-jeu si demandé (utile lorsqu'on charge la scène via SceneManager.LoadScene)
         if (autoStartOnLoad && Application.isPlaying)
         {
             StartGame();
         }
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Zeus)
+            return;
+
+        float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
+        baseSpawnRate = _baseSpawnRateCached / speedMult;
+
+        if (card.moreEnemies) currentWeather = WeatherMode.Orage;
+        if (card.lessEnemies) currentWeather = WeatherMode.Pluie;
+
+        Debug.Log($"[Zeus] Carte appliquée : {card.cardName}, baseSpawnRate={baseSpawnRate}, météo={currentWeather}");
+
+        runtime.Clear();
     }
 
     public void StartGame()

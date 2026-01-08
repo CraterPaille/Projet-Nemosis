@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
-  m_Name: MiniGameCardEffect
+  m_Name: Fragile Boat
   m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
-  cardName: Vitessex2
-  description: 
+  cardName: Fragile Boat
+  description: le bateau il est fragile
   icon: {fileID: 0}
-  targetMiniGame: 1
-  speedMultiplier: 2
-  difficultyMultiplier: 1
+  targetMiniGame: 2
+  speedMultiplier: 1
+  difficultyMultiplier: 1.5
   invertControls: 0
-  moreEnemies: 0
+  moreEnemies: 1
   lessEnemies: 0

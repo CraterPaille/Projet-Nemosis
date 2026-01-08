@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class chyronGameManager : MonoBehaviour
 {
     public float scrollSpeed = 3f;
+    private float _baseScrollSpeed;
     public float score = 0f;
 
     public int maxLives = 3;
@@ -36,6 +37,9 @@ public class chyronGameManager : MonoBehaviour
 
     void Start()
     {
+        _baseScrollSpeed = scrollSpeed;
+        ApplyMiniGameCardIfAny();
+
         currentLives = maxLives;
         player = FindFirstObjectByType<PlayerLaneMovement>();
 
@@ -195,5 +199,33 @@ public class chyronGameManager : MonoBehaviour
     public void AddCoin(int amount)
     {
         coinScore += amount;
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Chyron)
+            return;
+
+        float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
+        scrollSpeed = _baseScrollSpeed * speedMult;
+
+        if (card.difficultyMultiplier > 1f)
+        {
+            maxLives = Mathf.Max(1, Mathf.RoundToInt(maxLives / card.difficultyMultiplier));
+        }
+        else if (card.difficultyMultiplier < 1f)
+        {
+            maxLives = Mathf.RoundToInt(maxLives / card.difficultyMultiplier); // plus facile => plus de vies
+        }
+        currentLives = maxLives;
+
+        Debug.Log($"[Chyron] Carte appliquée : {card.cardName}, scroll x{speedMult}, maxLives={maxLives}");
+
+        runtime.Clear();
     }
 }

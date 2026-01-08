@@ -22,8 +22,8 @@ public class MiniGameCardEffectSO : ScriptableObject
     public MiniGameType targetMiniGame = MiniGameType.Any;
 
     [Header("Paramètres génériques")]
-    public float speedMultiplier = 1f;     // vitesse notes, scroll, etc.
-    public float difficultyMultiplier = 1f;
+    public float speedMultiplier = 1f;      // vitesse notes / scroll / spawn
+    public float difficultyMultiplier = 1f; // pénalité / gains / etc.
     public bool invertControls = false;
 
     // Tu peux ajouter d'autres flags/spécifiques

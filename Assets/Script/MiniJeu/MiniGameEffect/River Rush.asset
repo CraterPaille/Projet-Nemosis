@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
-  m_Name: MiniGameCardEffect 2
+  m_Name: River Rush
   m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
-  cardName: Chill
-  description: 
+  cardName: River Rush
+  description: "la rivi\xE8re elle est violente"
   icon: {fileID: 0}
-  targetMiniGame: 0
-  speedMultiplier: 1
-  difficultyMultiplier: 0.8
+  targetMiniGame: 2
+  speedMultiplier: 1.5
+  difficultyMultiplier: 1
   invertControls: 0
-  moreEnemies: 0
-  lessEnemies: 1
+  moreEnemies: 1
+  lessEnemies: 0
