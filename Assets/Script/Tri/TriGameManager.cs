@@ -35,7 +35,7 @@ public class TriGameManager : MonoBehaviour
         if (spawner != null)
         {
             _baseSpawnInterval = spawner.spawnInterval;
-            _baseScorePerSoul = spawner.scorePerSoul; // adapte si ton Spawner stocke le score ailleurs
+            _baseScorePerSoul = score; // adapte si ton Spawner stocke le score ailleurs
         }
 
         ApplyMiniGameCardIfAny();
@@ -125,10 +125,10 @@ public class TriGameManager : MonoBehaviour
         if (spawner != null)
         {
             spawner.spawnInterval = _baseSpawnInterval / speedMult;
-            spawner.scorePerSoul  = Mathf.RoundToInt(_baseScorePerSoul * diffMult);
+            score = Mathf.RoundToInt(_baseScorePerSoul * diffMult);
         }
 
-        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={spawner.scorePerSoul}");
+        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={score}");
 
         runtime.Clear();
     }

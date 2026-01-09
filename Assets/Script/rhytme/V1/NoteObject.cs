@@ -32,6 +32,7 @@ public class NoteObject : MonoBehaviour
 
     // --- Mouvement / chute ---
     private BeatScroller globalBeatScroller;
+    private float _baseBeatTempo;
 
     // --- Jugement hold ---
     // 0 = aucune, 1 = Normal, 2 = Good, 3 = Perfect
@@ -58,6 +59,10 @@ public class NoteObject : MonoBehaviour
 
         // Récupère le BeatScroller GLOBAL dans la scène
         globalBeatScroller = FindFirstObjectByType<BeatScroller>();
+        if (globalBeatScroller != null)
+        {
+            _baseBeatTempo = globalBeatScroller.beatTempo;
+        }
     }
 
     // Appelé par le spawner juste après avoir set duration + lane
@@ -244,6 +249,12 @@ public class NoteObject : MonoBehaviour
         isHolding = true;
         holdTime = 0f;
         hasBeenHit = true; // on ne veut plus que TryHit() soit appelée
+
+        // Empêche le retour à la vitesse 1 pendant un hold
+        if (globalBeatScroller != null && GameManagerRhytme.instance != null)
+        {
+            globalBeatScroller.beatTempo = _baseBeatTempo * GameManagerRhytme.instance.SpeedMultiplier;
+        }
     }
 
     public void ReleaseHold()
@@ -253,6 +264,9 @@ public class NoteObject : MonoBehaviour
 
         // On ne force plus la réussite ici, c'est FinishHold qui décide selon le ratio
         FinishHold(true);
+
+        // NE PAS remettre beatTempo à 1 ici
+        // Laisse BeatScroller gérer sa vitesse globale une fois pour toutes
     }
 
     void FinishHold(bool success)

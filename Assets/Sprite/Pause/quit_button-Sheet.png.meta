@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 6b85c18adbc71d54a8830a0c4782b374
+guid: c0864a2c2ef20db469e94fa8dc822cb4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2006618450637734658
-    second: fond_jeuX10_final_0
+      213: 2948470997744460220
+    second: quit_button-Sheet_0
+  - first:
+      213: -8442576878153800462
+    second: quit_button-Sheet_1
+  - first:
+      213: 8438620984579705260
+    second: quit_button-Sheet_2
+  - first:
+      213: 5178875942204218570
+    second: quit_button-Sheet_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: fond_jeuX10_final_0
+      name: quit_button-Sheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 5
+        y: 4
+        width: 70
+        height: 22
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 203c10e69d0f8db10800000000000000
-      internalID: 2006618450637734658
+      spriteID: cb1a91330c21be820800000000000000
+      internalID: 2948470997744460220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: quit_button-Sheet_1
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 4
+        width: 70
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f467bc5f01f5da80800000000000000
+      internalID: -8442576878153800462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: quit_button-Sheet_2
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 4
+        width: 70
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca9c70463110c1570800000000000000
+      internalID: 8438620984579705260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: quit_button-Sheet_3
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 4
+        width: 70
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acc16e60b301fd740800000000000000
+      internalID: 5178875942204218570
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      fond_jeuX10_final_0: 2006618450637734658
+      quit_button-Sheet_0: 2948470997744460220
+      quit_button-Sheet_1: -8442576878153800462
+      quit_button-Sheet_2: 8438620984579705260
+      quit_button-Sheet_3: 5178875942204218570
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

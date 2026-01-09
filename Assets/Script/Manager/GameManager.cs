@@ -77,7 +77,12 @@ public class GameManager : MonoBehaviour
 
         changeStat(StatType.Nemosis, -50f);
 
-        ChooseGameMode();
+        if (SceneManager.GetActiveScene().name == "SampleScene" && UIManager.Instance != null)
+        {
+            ChooseGameMode();
+        }
+
+
     }
 
     public void addHumain()  { changeStat(StatType.Human, 10); }

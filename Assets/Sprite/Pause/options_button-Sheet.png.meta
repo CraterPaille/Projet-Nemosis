@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 6b85c18adbc71d54a8830a0c4782b374
+guid: 9163cb2baeea4e34090220c359ce63b9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2006618450637734658
-    second: fond_jeuX10_final_0
+      213: -692408316761144482
+    second: options_button-Sheet_0
+  - first:
+      213: 4366688565884736174
+    second: options_button-Sheet_1
+  - first:
+      213: 3409285778127367232
+    second: options_button-Sheet_2
+  - first:
+      213: 635880175868361744
+    second: options_button-Sheet_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: fond_jeuX10_final_0
+      name: options_button-Sheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 5
+        y: 4
+        width: 70
+        height: 22
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 203c10e69d0f8db10800000000000000
-      internalID: 2006618450637734658
+      spriteID: e530defed421466f0800000000000000
+      internalID: -692408316761144482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: options_button-Sheet_1
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 4
+        width: 70
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea2d15e6d18999c30800000000000000
+      internalID: 4366688565884736174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: options_button-Sheet_2
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 4
+        width: 70
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04ca21f1a57305f20800000000000000
+      internalID: 3409285778127367232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: options_button-Sheet_3
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 4
+        width: 70
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01cb852a6a913d800800000000000000
+      internalID: 635880175868361744
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      fond_jeuX10_final_0: 2006618450637734658
+      options_button-Sheet_0: -692408316761144482
+      options_button-Sheet_1: 4366688565884736174
+      options_button-Sheet_2: 3409285778127367232
+      options_button-Sheet_3: 635880175868361744
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

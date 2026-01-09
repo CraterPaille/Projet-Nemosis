@@ -46,6 +46,7 @@ public class GameManagerRhytme : MonoBehaviour
     [SerializeField] private CameraShakeRhytm missShake;
 
     private float _speedMultiplier = 1f;
+    public float SpeedMultiplier => _speedMultiplier; // pour que NoteObject puisse le lire
     private float _difficultyMultiplier = 1f;
 
     private void Awake()

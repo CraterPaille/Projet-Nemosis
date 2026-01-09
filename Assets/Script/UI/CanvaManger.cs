@@ -30,32 +30,44 @@ public class CanvasCameraAssigner : MonoBehaviour
         
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-    
+
     void Start()
     {
+        // Ne lance la coroutine que si le Canvas est actif dans la scène
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"[CanvasCameraAssigner] Canvas '{gameObject.name}' inactif au Start, AssignCameraCoroutine non démarrée.");
+            return;
+        }
+
         StartCoroutine(AssignCameraCoroutine());
     }
-    
+
     void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-    
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[CanvasCameraAssigner] Scène '{scene.name}' chargée - Réassignation pour '{gameObject.name}'");
-        
-        // IMPORTANT : Force le mode Camera si c'était le mode initial
-        // Car Unity peut l'avoir basculé en Overlay automatiquement
+
         if (wasScreenSpaceCamera && canvas.renderMode != RenderMode.ScreenSpaceCamera)
         {
             Debug.Log($"[CanvasCameraAssigner] Restauration du mode Camera pour '{gameObject.name}' (était passé en {canvas.renderMode})");
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
         }
-        
+
+        // Ne pas lancer de coroutine si ce Canvas est inactif
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"[CanvasCameraAssigner] Canvas '{gameObject.name}' inactif, AssignCameraCoroutine non démarrée.");
+            return;
+        }
+
         StartCoroutine(AssignCameraCoroutine());
     }
-    
+
     private IEnumerator AssignCameraCoroutine()
     {
         // Attend que tout soit initialisé
