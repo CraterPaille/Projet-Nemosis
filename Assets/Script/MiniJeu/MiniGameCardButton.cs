@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -30,9 +29,11 @@ public class MiniGameCardButton : MonoBehaviour
             RefreshUI();
     }
 
-    public void SetCard(MiniGameCardEffectSO newCard)
+    // => on passe maintenant aussi le panelManager explicitement
+    public void SetCard(MiniGameCardEffectSO newCard, MiniGameCardPanelManager panel)
     {
         cardData = newCard;
+        _panelManager = panel;
         RefreshUI();
     }
 
@@ -55,19 +56,19 @@ public class MiniGameCardButton : MonoBehaviour
         if (MiniGameCardRuntime.Instance != null)
             MiniGameCardRuntime.Instance.SelectCard(cardData);
 
-        // 2) Retirer définitivement la carte de la collection (elle ne pourra plus être tirée)
-        if (_panelManager != null && _panelManager.CardCollection != null)
+        // 2) NE PLUS SUPPRIMER de la collection, juste marquer comme utilisée
+        if (_panelManager != null)
         {
-            _panelManager.CardCollection.RemoveCard(cardData);
+            _panelManager.MarkCardUsed(cardData);
         }
 
-        // 3) Avancer le temps (Matin -> Aprem, Aprem -> jour suivant) via GameManager
+        // 3) Avancer le temps (Matin -> Aprem, Aprem -> jour suivant)
         if (GameManager.Instance != null)
         {
             GameManager.Instance.EndHalfDay();
         }
 
-        // 4) Fermer le panel mini-jeu et revenir au ModeChoiceUI (qui se rouvrira via ChooseGameMode si besoin)
+        // 4) Fermer le panel mini-jeu et revenir au ModeChoiceUI
         if (UIManager.Instance != null)
             UIManager.Instance.CloseMiniJeuCardPanelAndBackToModeChoice();
     }

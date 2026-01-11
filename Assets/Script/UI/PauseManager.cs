@@ -130,6 +130,7 @@ public class PauseManager : MonoBehaviour
     // Bouton "Options"
     public void OnOptionsButton()
     {
+        
         Time.timeScale = 1f;
         _isPaused = false;
 
@@ -166,5 +167,20 @@ public class PauseManager : MonoBehaviour
             SceneManager.LoadScene(mainMenuSceneName);
         else
             Debug.LogWarning("PauseManager : mainMenuSceneName non défini.");
+    }
+
+    public void OnScheduleButton()
+    {
+        Time.timeScale = 1f;
+        _isPaused = false;
+
+        if (pauseMenuRoot != null)
+            pauseMenuRoot.SetActive(false);
+
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(false);
+
+        UIManager.Instance?.HideAllUI();
+        SceneManager.LoadScene("EmploiDuTemps");
     }
 }

@@ -463,4 +463,29 @@ public class UIManager : MonoBehaviour
         if (Date != null) Date.gameObject.SetActive(true);
         GameModeChoice();
     }
+
+    // --- BOUTONS DE SAUVEGARDE / CHARGEMENT ---
+    public void OnSaveButtonClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SaveGame();
+        }
+        else
+        {
+            Debug.LogWarning("[UIManager] Impossible de sauvegarder : GameManager.Instance est null.");
+        }
+    }
+
+    public void OnLoadButtonClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadGame();
+        }
+        else
+        {
+            Debug.LogWarning("[UIManager] Impossible de charger : GameManager.Instance est null.");
+        }
+    }
 }

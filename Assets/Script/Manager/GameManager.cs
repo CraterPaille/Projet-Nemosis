@@ -174,6 +174,12 @@ public class GameManager : MonoBehaviour
     {
         if (campaignFinished) return;
 
+        var schedule = FindFirstObjectByType<ScheduleShow>();
+        if (schedule != null)
+        {
+            schedule.UpdateWeekText();
+        }
+
         if (currentTime == DayTime.Matin)
         {
             currentTime = DayTime.Aprem;
@@ -211,6 +217,12 @@ public class GameManager : MonoBehaviour
     public void EndDay()
     {
         if (campaignFinished) return;
+
+        var schedule = FindFirstObjectByType<ScheduleShow>();
+        if (schedule != null)
+        {
+            schedule.UpdateWeekText();
+        }
 
         currentWeekDay = weekDays[(currentDay - 1) % 7];
 
@@ -272,4 +284,104 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
+
+    // --- SAUVEGARDE / CHARGEMENT ---
+    [System.Serializable]
+    private class SaveData
+    {
+        public int currentDay;
+        public int currentTime;      // cast de l'enum DayTime
+        public string currentWeekDay;
+
+        public Dictionary<StatType, float> stats;
+    }
+
+    private const string SAVE_KEY = "GAME_SAVE_v1";
+
+    public void SaveGame()
+    {
+        var data = new SaveData
+        {
+            currentDay = currentDay,
+            currentTime = (int)currentTime,
+            currentWeekDay = currentWeekDay,
+            stats = new Dictionary<StatType, float>(Valeurs)
+        };
+
+        // PlayerPrefs ne sait pas stocker un Dictionary directement, on passe par du JSON simple.
+        // Comme Unity ne sérialise pas les Dictionary dans JsonUtility, on fait une petite structure intermédiaire.
+        var wrapper = new SaveWrapper();
+        wrapper.currentDay = data.currentDay;
+        wrapper.currentTime = data.currentTime;
+        wrapper.currentWeekDay = data.currentWeekDay;
+
+        wrapper.statKeys = new List<string>();
+        wrapper.statValues = new List<float>();
+
+        foreach (var kvp in data.stats)
+        {
+            wrapper.statKeys.Add(kvp.Key.ToString());
+            wrapper.statValues.Add(kvp.Value);
+        }
+
+        string json = JsonUtility.ToJson(wrapper);
+        PlayerPrefs.SetString(SAVE_KEY, json);
+        PlayerPrefs.Save();
+
+        Debug.Log("[GameManager] Partie sauvegardée : " + json);
+    }
+
+    public void LoadGame()
+    {
+        if (!PlayerPrefs.HasKey(SAVE_KEY))
+        {
+            Debug.LogWarning("[GameManager] Aucune sauvegarde trouvée.");
+            return;
+        }
+
+        string json = PlayerPrefs.GetString(SAVE_KEY);
+        var wrapper = JsonUtility.FromJson<SaveWrapper>(json);
+        if (wrapper == null)
+        {
+            Debug.LogError("[GameManager] Échec du chargement de la sauvegarde.");
+            return;
+        }
+
+        currentDay = wrapper.currentDay;
+        currentTime = (DayTime)wrapper.currentTime;
+        currentWeekDay = wrapper.currentWeekDay;
+
+        // Reconstruire le dictionnaire de stats
+        Valeurs.Clear();
+        Multiplicateur.Clear();
+
+        for (int i = 0; i < wrapper.statKeys.Count; i++)
+        {
+            if (System.Enum.TryParse(wrapper.statKeys[i], out StatType stat))
+            {
+                float value = wrapper.statValues[i];
+                Valeurs[stat] = value;
+                // On remet un multiplicateur par défaut si besoin
+                if (!Multiplicateur.ContainsKey(stat))
+                    Multiplicateur[stat] = 1f;
+
+                GameEvents.TriggerStatChanged(stat, value);
+            }
+        }
+
+        UIManager.Instance?.changeDateUI();
+
+        Debug.Log("[GameManager] Partie chargée : " + json);
+    }
+
+    [System.Serializable]
+    private class SaveWrapper
+    {
+        public int currentDay;
+        public int currentTime;
+        public string currentWeekDay;
+
+        public List<string> statKeys;
+        public List<float> statValues;
+    }
 }

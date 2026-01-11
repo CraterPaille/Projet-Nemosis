@@ -157,6 +157,14 @@ public class EventScheduler : MonoBehaviour
     {
         return currentEvent;
     }
+
+    /// <summary>
+    /// Retourne la liste des jours avec événements, pour affichage dans un calendrier.
+    /// </summary>
+    public IReadOnlyList<EventDay> GetScheduledEvents()
+    {
+        return scheduledEvents;
+    }
 }
 
 /// <summary>
@@ -170,4 +178,4 @@ public class EventDay
     public DayTime triggerTime = DayTime.Matin; // Ajouter pour choisir matin ou après-midi
     public BaseGameEvent gameEvent;
 
-}   
+}

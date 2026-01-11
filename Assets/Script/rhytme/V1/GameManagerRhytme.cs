@@ -45,9 +45,15 @@ public class GameManagerRhytme : MonoBehaviour
     [Header("Feedback global")]
     [SerializeField] private CameraShakeRhytm missShake;
 
+    [Header("Layout & Infos UI")]
+    [SerializeField] private RhythmLaneLayout laneLayout;
+    [SerializeField] private TMP_Text invertInfoText;
+
     private float _speedMultiplier = 1f;
     public float SpeedMultiplier => _speedMultiplier; // pour que NoteObject puisse le lire
     private float _difficultyMultiplier = 1f;
+
+    private bool _invertControlsRhythm = false;
 
     private void Awake()
     {
@@ -104,10 +110,14 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
-
-
         // Effet carte mini-jeu, si présent
         ApplyMiniGameCardIfAny();
+
+        // Met à jour le layout visuel + texte d’info
+        if (laneLayout != null)
+            laneLayout.ApplyInverted(_invertControlsRhythm);
+        if (invertInfoText != null)
+            invertInfoText.gameObject.SetActive(_invertControlsRhythm);
 
         theMusic.pitch = _speedMultiplier;   // 2f => double tempo audio
         Debug.Log($"[Rhytme] Musique pitch réglé à {_speedMultiplier}x");
@@ -158,7 +168,10 @@ public class GameManagerRhytme : MonoBehaviour
         ScorePerGoodNote = Mathf.RoundToInt(ScorePerGoodNote * _difficultyMultiplier);
         ScorePerPerfectNote = Mathf.RoundToInt(ScorePerPerfectNote * _difficultyMultiplier);
 
-        Debug.Log($"[Rhytme] Carte appliquée : {card.cardName}, speed x{_speedMultiplier}, diff x{_difficultyMultiplier}");
+        // --- nouveau : inversion des contrôles ---
+        _invertControlsRhythm = card.invertControls;
+
+        Debug.Log($"[Rhytme] Carte appliquée : {card.cardName}, speed x{_speedMultiplier}, diff x{_difficultyMultiplier}, invert={_invertControlsRhythm}");
 
         // On consomme la carte pour ce mini-jeu
         runtime.Clear();
@@ -185,12 +198,37 @@ public class GameManagerRhytme : MonoBehaviour
         theMusic.Play();
     }
 
+    // --- mapping lane si inversion active ---
+    private int MapLane(int lane)
+    {
+        if (!_invertControlsRhythm)
+            return lane;
+
+        // 0 <-> 3, 1 <-> 2 (pour 4 lanes)
+        switch (lane)
+        {
+            case 0: return 3;
+            case 1: return 2;
+            case 2: return 1;
+            case 3: return 0;
+            default: return lane;
+        }
+    }
+
+    // Permet aux autres scripts (NoteSpawner, etc.) de récupérer la lane logique
+    public int GetLogicalLane(int chartLane)
+    {
+        return MapLane(chartLane);
+    }
+
     void PressLane(int lane)
     {
-        if (laneHighlights != null && lane >= 0 && lane < laneHighlights.Length)
-            laneHighlights[lane]?.Trigger();
+        int logicLane = MapLane(lane);
 
-        NoteObject note = NoteObject.GetClosestNoteInLane(lane);
+        if (laneHighlights != null && logicLane >= 0 && logicLane < laneHighlights.Length)
+            laneHighlights[logicLane]?.Trigger();
+
+        NoteObject note = NoteObject.GetClosestNoteInLane(logicLane);
         if (note == null) return;
 
         if (note.duration > 0f)
@@ -207,7 +245,9 @@ public class GameManagerRhytme : MonoBehaviour
 
     void ReleaseLane(int lane)
     {
-        NoteObject note = NoteObject.GetClosestNoteInLane(lane);
+        int logicLane = MapLane(lane);
+
+        NoteObject note = NoteObject.GetClosestNoteInLane(logicLane);
         if (note == null) return;
 
         if (note.duration > 0f && !note.finished)

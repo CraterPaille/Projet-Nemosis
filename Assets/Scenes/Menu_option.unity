@@ -8507,6 +8507,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9a83075852936d40b1f599e45cbb06e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiniGameLauncher
+  sundayMiniGameScenes:
+  - ChyronTraverse
+  - RhythmScene
+  - NuitGlaciale
+  - Zeus_gameScene
+  - Tri
 --- !u!4 &921762392
 Transform:
   m_ObjectHideFlags: 0

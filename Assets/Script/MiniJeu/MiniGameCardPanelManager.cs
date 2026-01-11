@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-
 public class MiniGameCardPanelManager : MonoBehaviour
 {
     [Header("Source de cartes")]
@@ -15,6 +14,9 @@ public class MiniGameCardPanelManager : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int cardsToDraw = 3;
 
+    // Cartes déjà utilisées (pour la journée / session en cours)
+    private readonly HashSet<MiniGameCardEffectSO> _usedCards = new HashSet<MiniGameCardEffectSO>();
+
     private void OnEnable()
     {
         RandomizeCards();
@@ -22,37 +24,39 @@ public class MiniGameCardPanelManager : MonoBehaviour
 
     public void RandomizeCards()
     {
-        if (cardCollection == null || cardCollection.allMiniGameCards == null || cardCollection.allMiniGameCards.Count == 0)
+        if (cardCollection == null || cardButtons == null || cardButtons.Length == 0)
         {
-            Debug.LogWarning("[MiniGameCardPanelManager] Pas de collection ou de cartes configurées.");
+            Debug.LogWarning("[MiniGameCardPanelManager] cardCollection ou cardButtons non assignés.");
             return;
         }
 
-        if (cardButtons == null || cardButtons.Length == 0)
+        // Pool de cartes disponibles = toutes les cartes - celles déjà utilisées
+        List<MiniGameCardEffectSO> pool = new List<MiniGameCardEffectSO>();
+        foreach (var c in cardCollection.allMiniGameCards)
         {
-            Debug.LogWarning("[MiniGameCardPanelManager] Aucun MiniGameCardButton assigné.");
-            return;
+            if (c != null && !_usedCards.Contains(c))
+                pool.Add(c);
         }
 
-        int drawCount = Mathf.Min(cardsToDraw, cardButtons.Length, cardCollection.allMiniGameCards.Count);
-
-        List<MiniGameCardEffectSO> pool = new List<MiniGameCardEffectSO>(cardCollection.allMiniGameCards);
-        List<MiniGameCardEffectSO> currentChoices = new List<MiniGameCardEffectSO>();
-
-        for (int i = 0; i < drawCount && pool.Count > 0; i++)
+        // Si plus aucune carte dispo, tu peux soit vider, soit autoriser de nouveau toutes les cartes
+        if (pool.Count == 0)
         {
-            int index = Random.Range(0, pool.Count);
-            var card = pool[index];
-            pool.RemoveAt(index);
-            currentChoices.Add(card);
+            Debug.Log("[MiniGameCardPanelManager] Plus de cartes disponibles, réinitialisation du pool.");
+            _usedCards.Clear();
+            pool.AddRange(cardCollection.allMiniGameCards);
         }
 
+        // Tirage aléatoire
         for (int i = 0; i < cardButtons.Length; i++)
         {
-            if (i < currentChoices.Count)
+            if (i < cardsToDraw && pool.Count > 0)
             {
+                int index = Random.Range(0, pool.Count);
+                var card = pool[index];
+                pool.RemoveAt(index);
+
                 cardButtons[i].gameObject.SetActive(true);
-                cardButtons[i].SetCard(currentChoices[i]);
+                cardButtons[i].SetCard(card, this);
             }
             else
             {
@@ -61,10 +65,16 @@ public class MiniGameCardPanelManager : MonoBehaviour
         }
     }
 
+    public void MarkCardUsed(MiniGameCardEffectSO card)
+    {
+        if (card != null)
+            _usedCards.Add(card);
+    }
+
     public void ClosePanel()
     {
         gameObject.SetActive(false);
         UIManager.Instance.GameModeChoice();
-        GameManager.Instance.EndHalfDay();
+        GameManager.Instance.EndHalfDay();  
     }
 }
