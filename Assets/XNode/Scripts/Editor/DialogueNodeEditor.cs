@@ -53,8 +53,8 @@ public class DialogueNodeEditor : NodeEditor
             {
                 SerializedProperty responseProp = responsesProp.GetArrayElementAtIndex(i);
                 SerializedProperty responseTextProp = responseProp.FindPropertyRelative("responseText");
-                SerializedProperty conditionProp = responseProp.FindPropertyRelative("condition");
-                SerializedProperty effectProp = responseProp.FindPropertyRelative("effect");
+                SerializedProperty conditionsProp = responseProp.FindPropertyRelative("conditions");
+                SerializedProperty effectsProp = responseProp.FindPropertyRelative("effects");
 
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.BeginHorizontal();
@@ -67,8 +67,8 @@ public class DialogueNodeEditor : NodeEditor
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.PropertyField(responseTextProp, new GUIContent("Texte"));
-                EditorGUILayout.PropertyField(conditionProp, new GUIContent("Condition (SO)"));
-                EditorGUILayout.PropertyField(effectProp, new GUIContent("Effet (SO)"));
+                EditorGUILayout.PropertyField(conditionsProp, new GUIContent("Conditions (SO)"));
+                EditorGUILayout.PropertyField(effectsProp, new GUIContent("Effets (SO)"));
 
                 // Affiche le port dynamique correspondant (response_i)
                 string portName = $"response_{i}";
@@ -105,8 +105,8 @@ public class DialogueNodeEditor : NodeEditor
             responsesProp.arraySize = responsesProp.arraySize + 1;
             SerializedProperty newElem = responsesProp.GetArrayElementAtIndex(newIndex);
             newElem.FindPropertyRelative("responseText").stringValue = "Nouvelle réponse";
-            newElem.FindPropertyRelative("condition").objectReferenceValue = null;
-            newElem.FindPropertyRelative("effect").objectReferenceValue = null;
+            newElem.FindPropertyRelative("conditions").arraySize = 0;
+            newElem.FindPropertyRelative("effects").arraySize = 0;
             // les ports seront mis à jour après ApplyModifiedProperties
         }
         if (GUILayout.Button("Suppr. dernière", GUILayout.ExpandWidth(true)))

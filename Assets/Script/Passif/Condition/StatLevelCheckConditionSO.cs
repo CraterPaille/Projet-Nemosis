@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using NUnit.Framework;
 
 [CreateAssetMenu(menuName = "Conditions/Stat Level Check")]
 public class StatLevelCheckConditionSO : ConditionSO
@@ -18,6 +17,16 @@ public class StatLevelCheckConditionSO : ConditionSO
     // Standalone evaluation used by DialogueRunner (no Effect parent)
     public override bool EvaluateStandalone()
     {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogWarning($"[Condition Standalone] GameManager not available for {conditionName ?? name}. Defaulting to true.");
+            return true;
+        }
+        if (!GameManager.Instance.Valeurs.ContainsKey(statType))
+        {
+            Debug.LogWarning($"[Condition Standalone] Stat {statType} not initialized. Defaulting to true.");
+            return true;
+        }
         float current = GameManager.Instance.Valeurs[statType];
         bool conditionMet = plusQue ? current >= requiredLevel : current < requiredLevel;
         Debug.Log($"[Condition Standalone] {conditionName ?? name}: required {requiredLevel} => met: {conditionMet} (current: {current})");
@@ -31,7 +40,7 @@ public class Condition_StatLevelCheck : Condition
     {
         this.donnee = data;
         Subscribe();
-        //Evaluate(); // Première évaluation directe
+        Evaluate(); // Première évaluation directe
     }
 
     public override void Subscribe()
@@ -52,7 +61,13 @@ public class Condition_StatLevelCheck : Condition
     }
     public override void Evaluate()
     {
-        
+        // Vérifier que GameManager existe
+        if (GameManager.Instance == null || !GameManager.Instance.Valeurs.ContainsKey(donnee.statType))
+        {
+            Debug.LogWarning($"[Condition] GameManager ou stat {donnee.statType} non disponible.");
+            return;
+        }
+
         float current = GameManager.Instance.Valeurs[donnee.statType];
         bool conditionMet = donnee.plusQue ? current >= donnee.requiredLevel : current < donnee.requiredLevel;
         Debug.Log($"[Condition] Évaluation de la condition pour {donnee.statType} (niveau requis : {(donnee.plusQue ? "≥" : "<")} {donnee.requiredLevel}) = conditionMet : {conditionMet}, niveau actuel : {current}");
@@ -60,11 +75,11 @@ public class Condition_StatLevelCheck : Condition
         if (donnee.autoDestruct && !conditionMet)
         {
             Unsubscribe();
-            linkedEffect.DestroySelf(); // méthode à ajouter dans Effect pour détruire proprement
-            Debug.Log("[Condition] Auto-destruct exécuté.");
+            if (linkedEffect != null)
+                linkedEffect.DestroySelf();
             return;
         }
+
         UpdateCondition(conditionMet);
-    
     }
 }

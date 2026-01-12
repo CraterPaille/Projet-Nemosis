@@ -9,7 +9,8 @@ public class PassiveManager : MonoBehaviour
 
     public void AddEffect(Effect effect)
     {
-        activeEffects.Add(effect);
+        if (!activeEffects.Contains(effect))
+            activeEffects.Add(effect);
     }
 
     public void RemoveEffect(Effect effect)

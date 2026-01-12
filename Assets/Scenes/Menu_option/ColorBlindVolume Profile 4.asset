@@ -424,7 +424,6 @@ MonoBehaviour:
   m_Name: ColorBlindVolume Profile 4
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
   components:
-  - {fileID: 3097821756611965963}
   - {fileID: 2681884129219518355}
   - {fileID: -7793686951397069685}
   - {fileID: 4176745384789817778}

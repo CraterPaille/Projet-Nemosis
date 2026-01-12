@@ -11,14 +11,25 @@ public class DialogueUI : MonoBehaviour
     public Transform responsesContainer; // parent for response prefabs
     public GameObject responseItemPrefab; // prefab that contains ResponseItemController
     public Button closeButton;
+    public Image GodIcon;
 
     private DialogueNode currentNode;
 
     void Start()
     {
         panel.SetActive(false);
+        
+        // Se désabonner d'abord au cas où on se réabonnerait (redémarrage de scène)
+        if (DialogueRunner.Instance != null)
+        {
+            DialogueRunner.Instance.OnNodeEnter -= OnNodeEnter;
+            DialogueRunner.Instance.OnConversationEnd -= OnConversationEnd;
+        }
+        
+        // Puis se réabonner
         DialogueRunner.Instance.OnNodeEnter += OnNodeEnter;
         DialogueRunner.Instance.OnConversationEnd += OnConversationEnd;
+        
         if (closeButton != null) closeButton.onClick.AddListener(() => DialogueRunner.Instance.EndConversation());
     }
 
@@ -36,9 +47,18 @@ public class DialogueUI : MonoBehaviour
         panel.SetActive(true);
         currentNode = node;
         godText.text = node.godText;
+        
+        // Assigner l'icône du dieu si disponible
+        if (ChooseRelationUI.Instance != null && ChooseRelationUI.Instance.selectedGod != null)
+        {
+            GodIcon.sprite = ChooseRelationUI.Instance.selectedGod.icon;
+        }
 
         // clear old items
-        foreach (Transform t in responsesContainer) Destroy(t.gameObject);
+        foreach (Transform t in responsesContainer) 
+        {
+            Destroy(t.gameObject);
+        }
 
         // create response prefab instances
         for (int i = 0; i < availableResponseIndices.Count; i++)
@@ -49,7 +69,10 @@ public class DialogueUI : MonoBehaviour
                 Debug.LogError("DialogueUI: responseItemPrefab is not assigned.");
                 break;
             }
+            
             var go = Instantiate(responseItemPrefab, responsesContainer);
+            go.SetActive(true);
+            
             var ctrl = go.GetComponent<ResponseItemController>();
             if (ctrl != null)
             {
@@ -61,6 +84,14 @@ public class DialogueUI : MonoBehaviour
                 var t = go.GetComponentInChildren<TMP_Text>();
                 if (t != null) t.text = node.responses[responseIndex].responseText;
             }
+        }
+        
+        // Force le layout du Canvas à se recalculer
+        Canvas.ForceUpdateCanvases();
+        var layoutGroup = responsesContainer.GetComponent<LayoutGroup>();
+        if (layoutGroup != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(responsesContainer as RectTransform);
         }
     }
 

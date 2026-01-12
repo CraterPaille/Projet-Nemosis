@@ -32,6 +32,7 @@ public class NoteObject : MonoBehaviour
 
     // --- Mouvement / chute ---
     private BeatScroller globalBeatScroller;
+    private float _baseBeatTempo;
 
     // --- Jugement hold ---
     // 0 = aucune, 1 = Normal, 2 = Good, 3 = Perfect
@@ -58,6 +59,10 @@ public class NoteObject : MonoBehaviour
 
         // Récupère le BeatScroller GLOBAL dans la scène
         globalBeatScroller = FindFirstObjectByType<BeatScroller>();
+        if (globalBeatScroller != null)
+        {
+            _baseBeatTempo = globalBeatScroller.beatTempo;
+        }
     }
 
     // Appelé par le spawner juste après avoir set duration + lane
@@ -145,6 +150,30 @@ public class NoteObject : MonoBehaviour
             // on a tenu assez longtemps -> success = true
             FinishHold(true);
         }
+
+        UpdateApproachScaleAndGlow();
+    }
+
+    private void UpdateApproachScaleAndGlow()
+    {
+        if (activator == null || noteBody == null) return;
+
+        // distance verticale jusqu'à la ligne d'activation
+        float dy = Mathf.Abs(transform.position.y - activator.position.y);
+
+        // plus la note est proche (dy -> 0), plus elle est grosse
+        float maxScale = 1.15f;
+        float minScale = 0.9f;
+        float maxDistance = 2.5f; // distance sur laquelle l’effet agit (à adapter à ta scène)
+
+        float t = Mathf.Clamp01(1f - (dy / maxDistance));
+        float scale = Mathf.Lerp(minScale, maxScale, t);
+        noteBody.transform.localScale = new Vector3(scale, scale, 1f);
+
+        // Optionnel : légère variation de couleur (ex: plus blanche près de la ligne)
+        Color baseColor = Color.white;
+        Color targetColor = Color.Lerp(baseColor, Color.yellow, t * 0.4f);
+        noteBody.color = targetColor;
     }
 
     private void OnEnable()
@@ -220,6 +249,12 @@ public class NoteObject : MonoBehaviour
         isHolding = true;
         holdTime = 0f;
         hasBeenHit = true; // on ne veut plus que TryHit() soit appelée
+
+        // Empêche le retour à la vitesse 1 pendant un hold
+        if (globalBeatScroller != null && GameManagerRhytme.instance != null)
+        {
+            globalBeatScroller.beatTempo = _baseBeatTempo * GameManagerRhytme.instance.SpeedMultiplier;
+        }
     }
 
     public void ReleaseHold()
@@ -229,6 +264,9 @@ public class NoteObject : MonoBehaviour
 
         // On ne force plus la réussite ici, c'est FinishHold qui décide selon le ratio
         FinishHold(true);
+
+        // NE PAS remettre beatTempo à 1 ici
+        // Laisse BeatScroller gérer sa vitesse globale une fois pour toutes
     }
 
     void FinishHold(bool success)

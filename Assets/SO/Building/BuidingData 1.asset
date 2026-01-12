@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: BuidingData 1
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingName: Hotel
-  icon: {fileID: -5041592810142915036, guid: 45bf0f84cd37805458b577e28b2c1036, type: 3}
-  description: On peut dormir
+  icon: {fileID: 21300000, guid: b9d178f372f666543b109b87b9b630c3, type: 3}
+  description: 1
+  gridSize: 1
   passiveEffects: []
   interactionEffects: []
-  upgradeEffects: []

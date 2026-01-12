@@ -1,11 +1,13 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class chyronGameManager : MonoBehaviour
 {
     public float scrollSpeed = 3f;
+    private float _baseScrollSpeed;
     public float score = 0f;
 
     public int maxLives = 3;
@@ -33,8 +35,17 @@ public class chyronGameManager : MonoBehaviour
 
     private Coroutine vibrationCoroutine;
 
+    // dérivé de la carte
+    private float _chaosLevel = 0f;
+    private float _rewardMult = 1f;
+    private float _rewardFlat = 0f;
+    private bool _oneMistakeFail = false;
+
     void Start()
     {
+        _baseScrollSpeed = scrollSpeed;
+        ApplyMiniGameCardIfAny();
+
         currentLives = maxLives;
         player = FindFirstObjectByType<PlayerLaneMovement>();
 
@@ -57,7 +68,8 @@ public class chyronGameManager : MonoBehaviour
         score += scrollSpeed * Time.deltaTime;
         scoreText.text = "Score : " + Mathf.FloorToInt(score);
         lifeText.text = "Vies : " + currentLives + "/" + maxLives;
-        coinText.text = "Pièces : " + coinScore;
+        if (coinText != null)
+            coinText.text = "Pièces : " + coinScore;
     }
 
     public void HitObstacle()
@@ -65,12 +77,18 @@ public class chyronGameManager : MonoBehaviour
         if (!isInvincible)
         {
             Vibrate(0.3f, 0.3f, 0.5f);
-
-            // >>> jouer le son de bateau qui craque <<<
             PlayBoatHitSfx();
         }
 
         if (isInvincible || isGameOver) return;
+
+        // --- ONE MISTAKE FAIL ---
+        if (_oneMistakeFail)
+        {
+            Debug.Log("[Chyron] Mode oneMistakeFail : obstacle touché -> GameOver immédiat.");
+            GameOver();
+            return;
+        }
 
         currentLives--;
 
@@ -80,7 +98,10 @@ public class chyronGameManager : MonoBehaviour
             return;
         }
 
-        scrollSpeed -= obstaclePenalty;
+        float chaosFactor = 1f + Random.Range(-_chaosLevel, _chaosLevel);
+        float actualPenalty = obstaclePenalty * chaosFactor;
+
+        scrollSpeed -= actualPenalty;
         if (scrollSpeed < 0) scrollSpeed = 0;
 
         StartCoroutine(InvincibilityRoutine());
@@ -99,6 +120,28 @@ public class chyronGameManager : MonoBehaviour
         isGameOver = true;
         scrollSpeed = 0;
         Debug.Log("GAME OVER!");
+
+        int finalScore = Mathf.FloorToInt(score);
+
+
+        // Conversion score -> Or + Foi avec rewardMultiplier / rewardFlatBonus
+        if (GameManager.Instance != null)
+        {
+            float baseFoi = finalScore / 700f;
+            float foiGain = baseFoi * _rewardMult + _rewardFlat;
+
+            float orGain = coinScore * _rewardMult + _rewardFlat;
+
+            if (orGain != 0)
+                GameManager.Instance.changeStat(StatType.Or, orGain);
+            if (foiGain != 0)
+                GameManager.Instance.changeStat(StatType.Foi, foiGain);
+
+            Debug.Log($"[Chyron] Score={finalScore} -> Or +{orGain}, Foi +{foiGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
+        }
+
+        SceneManager.LoadScene("SampleScene");
+
     }
 
     // invincibilité et clignotement
@@ -174,5 +217,40 @@ public class chyronGameManager : MonoBehaviour
     public void AddCoin(int amount)
     {
         coinScore += amount;
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Chyron)
+            return;
+
+        float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
+        scrollSpeed = _baseScrollSpeed * speedMult;
+
+        float diffMult = Mathf.Max(0.5f, card.difficultyMultiplier);
+
+        if (diffMult > 1f)
+        {
+            maxLives = Mathf.Max(1, Mathf.RoundToInt(maxLives / diffMult));
+        }
+        else if (diffMult < 1f)
+        {
+            maxLives = Mathf.RoundToInt(maxLives / diffMult);
+        }
+        currentLives = maxLives;
+
+        _chaosLevel = Mathf.Clamp01(card.chaosLevel);
+        _rewardMult = Mathf.Max(0.1f, card.rewardMultiplier);
+        _rewardFlat = card.rewardFlatBonus;
+        _oneMistakeFail = card.oneMistakeFail;   // <--- AJOUT
+
+        Debug.Log($"[Chyron] Carte appliquée : {card.cardName}, scroll x{speedMult}, maxLives={maxLives}, chaos={_chaosLevel}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}");
+
+        runtime.Clear();
     }
 }

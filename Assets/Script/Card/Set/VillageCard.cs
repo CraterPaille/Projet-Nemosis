@@ -7,7 +7,13 @@ public class VillageCard : Card
 
     public void PlayCard()
     {
-        effectSO.CreateInstance(); 
+        var eff = effectSO.CreateInstance();
+        if (eff != null)
+        {
+            PassiveManager.Instance.AddEffect(eff);
+            eff.CheckConditions();
+            Debug.Log($"[Effect] Applied {effectSO.effectName} via VillageCard.PlayCard().");
+        }
     }
 
 }

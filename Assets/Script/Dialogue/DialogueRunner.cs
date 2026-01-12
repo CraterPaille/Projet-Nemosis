@@ -83,16 +83,24 @@ public class DialogueRunner : MonoBehaviour
     private void EnterNode(DialogueNode node)
     {
         currentNode = node;
-        // Determine available responses (simple: condition == null -> available)
+        // Determine available responses: ALL conditions must be true for response to be available
         var availableIndices = new List<int>();
         for (int i = 0; i < node.responses.Length; i++)
         {
             var r = node.responses[i];
             if (r == null) continue;
             bool ok = true;
-            if (r.condition != null)
+            // Check all conditions: if ANY fails, response is not available
+            if (r.conditions.Length > 0)
             {
-                try { ok = r.condition.EvaluateStandalone(); } catch { ok = true; }
+                foreach (var condition in r.conditions)
+                {
+                    if (condition != null)
+                    {
+                        try { if (!condition.EvaluateStandalone()) { ok = false; break; } }
+                        catch { ok = true; }
+                    }
+                }
             }
             if (ok) availableIndices.Add(i);
         }
@@ -107,11 +115,22 @@ public class DialogueRunner : MonoBehaviour
         if (responseIndex < 0 || responseIndex >= currentNode.responses.Length) return;
         var response = currentNode.responses[responseIndex];
 
-        // apply effect if any
-        if (response.effect != null)
+        // apply all effects in order
+        if (response.effects.Length > 0)
         {
-            var eff = response.effect.CreateInstance();
-            // many Effect implementations apply themselves immediately in constructor/Activate
+            foreach (var effectSO in response.effects)
+            {
+                if (effectSO != null)
+                {
+                    var eff = effectSO.CreateInstance();
+                    if (eff != null)
+                    {
+                        PassiveManager.Instance.AddEffect(eff);
+                        eff.CheckConditions();
+                        Debug.Log($"[Effect] Applied {effectSO.effectName} via DialogueRunner.");
+                    }
+                }
+            }
         }
 
         // persist immediate effect on relation if any effect code changes god.relation

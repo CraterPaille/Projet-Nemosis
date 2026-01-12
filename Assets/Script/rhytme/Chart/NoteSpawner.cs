@@ -51,15 +51,32 @@ public class NoteSpawner : MonoBehaviour
 
     void SpawnNote(NoteData data)
     {
+        if (lanePositions == null || lanePositions.Length == 0)
+        {
+            Debug.LogWarning("[NoteSpawner] lanePositions non configuré.");
+            return;
+        }
 
-        Vector3 spawnPos = new Vector3(lanePositions[data.lane], transform.position.y, 0f);
+        // Lane venant du chart (0..3)
+        int chartLane = Mathf.Clamp(data.lane, 0, lanePositions.Length - 1);
+
+        // Lane logique (après inversion éventuelle par la carte)
+        int logicLane = chartLane;
+        if (GameManagerRhytme.instance != null)
+        {
+            logicLane = Mathf.Clamp(GameManagerRhytme.instance.GetLogicalLane(chartLane),
+                                    0, lanePositions.Length - 1);
+        }
+
+        // Position X en fonction de la lane logique
+        Vector3 spawnPos = new Vector3(lanePositions[logicLane], transform.position.y, 0f);
         GameObject note = Instantiate(notePrefab, spawnPos, Quaternion.identity, spawnParent);
 
         if (note.TryGetComponent(out NoteObject noteObj))
         {
-            noteObj.lane = data.lane;
+            noteObj.lane = logicLane;       // IMPORTANT : la lane logique sert à l'input
             noteObj.duration = data.duration;
-            noteObj.InitFromChart(); // orientation + hold
+            noteObj.InitFromChart();        // orientation + hold
         }
     }
 }

@@ -20,6 +20,7 @@ public class AddRessourceEffectSO : EffectSO
         return new Effect_AddRessource(this);
     }
 }
+// Effet TOUJOURS instantané : ajoute des ressources puis se détruit automatiquement
 public class Effect_AddRessource : Effect
 {
     private AddRessourceEffectSO soData;
@@ -27,14 +28,19 @@ public class Effect_AddRessource : Effect
     public Effect_AddRessource(AddRessourceEffectSO soData) : base(soData)
     {
         this.soData = soData;
-
-        PassiveManager.Instance.AddEffect(this);
-        if (conditions.Count == 0) Activate();
     }
     public override void Activate()
     {
         if (IsActive) return;
         IsActive = true;
+
+        // Vérifier que GameManager existe
+        if (GameManager.Instance == null)
+        {
+            Debug.LogWarning("[Effect_AddRessource] GameManager.Instance est null, impossible d'ajouter des ressources.");
+            DestroySelf();
+            return;
+        }
 
         // Parcourt la liste d'entrées sérialisées
         Debug.Log("[Effect_AddRessource] Activation de l'effet : ajout de ressources.");
@@ -45,7 +51,8 @@ public class Effect_AddRessource : Effect
             GameManager.Instance.changeStat(stat, amount);
             Debug.Log($"Add resource {stat}: {amount}");
         }
-        Deactivate();
+        // Toujours instantané : se détruit après application
+        DestroySelf();
     }
     public override void Deactivate()
     {

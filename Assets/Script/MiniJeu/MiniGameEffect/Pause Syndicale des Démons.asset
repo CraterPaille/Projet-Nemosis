@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
+  m_Name: "Pause Syndicale des D\xE9mons"
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
+  cardName: "R\xE8gles absurdes d\u2019Had\xE8s"
+  description: "Les d\xE9mons du bureau du jugement sont en pause caf\xE9. Moins
+    d\u2019\xE2mes \xE0 trier, moins de r\xE9compenses aussi."
+  icon: {fileID: 0}
+  targetMiniGame: 5
+  speedMultiplier: 0.8
+  difficultyMultiplier: 0.8
+  invertControls: 0
+  spawnRateMultiplier: 0.6
+  chaosLevel: 0.1
+  rewardFlatBonus: 1
+  rewardMultiplier: 0.7
+  moreEnemies: 0
+  lessEnemies: 1
+  visualChaos: 0
+  oneMistakeFail: 0

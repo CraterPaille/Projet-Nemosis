@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class VillageCameraController : MonoBehaviour
 {
@@ -17,10 +18,17 @@ public class VillageCameraController : MonoBehaviour
     [SerializeField] private Vector2 maxBounds = new Vector2(10, 10);
 
     private Camera cam;
+    private float defaultZoom;
+    private Vector3 defaultPosition;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
+        if (cam != null)
+        {
+            defaultZoom = cam.orthographicSize;
+        }
+        defaultPosition = transform.position;
     }
 
     private void Update()
@@ -51,8 +59,15 @@ public class VillageCameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.D))
             moveDirection += Vector3.right;
 
-        // Déplacement avec flèches
+        // Déplacement avec flèches (Input Manager classique)
         moveDirection += new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+
+        // Ajout manette (nouveau Input System)
+        if (Gamepad.current != null)
+        {
+            Vector2 stick = Gamepad.current.leftStick.ReadValue();
+            moveDirection += new Vector3(stick.x, stick.y, 0f);
+        }
 
         // Edge scrolling (bord de l'écran)
         Vector3 mousePos = Input.mousePosition;
@@ -97,5 +112,28 @@ public class VillageCameraController : MonoBehaviour
     public void FocusOn(Vector3 position)
     {
         transform.position = new Vector3(position.x, position.y, transform.position.z);
+    }
+
+    /// <summary>
+    /// Réinitialise le zoom à la valeur de départ
+    /// </summary>
+    public void ResetZoom()
+    {
+        if (cam != null)
+        {
+            cam.orthographicSize = defaultZoom;
+        }
+    }
+
+    /// <summary>
+    /// Réinitialise la position et le zoom de la caméra
+    /// </summary>
+    public void ResetCamera()
+    {
+        transform.position = defaultPosition;
+        if (cam != null)
+        {
+            cam.orthographicSize = defaultZoom;
+        }
     }
 }

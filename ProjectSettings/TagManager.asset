@@ -7,17 +7,16 @@ TagManager:
   - Soul
   - Activator
   - Enemy
-  - DeathZone
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Background
+  - 
   - Water
   - UI
-  - buttons
-  - arrows
-  - joueur
+  - 
+  - 
+  - 
   - 
   - 
   - 
@@ -42,20 +41,23 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: buttons
-    uniqueID: 2430317487
-    locked: 0
   - name: Background
-    uniqueID: 1966872029
+    uniqueID: 2196745869
+    locked: 0
+  - name: Buttons
+    uniqueID: 3413274237
     locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: joueur
-    uniqueID: 3918060267
+  - name: UI
+    uniqueID: 4116095493
     locked: 0
-  - name: arrows
-    uniqueID: 44212749
+  - name: Pillier
+    uniqueID: 3930811079
+    locked: 0
+  - name: "Fl\xE8ches"
+    uniqueID: 74593903
     locked: 0
   m_RenderingLayers:
   - Default

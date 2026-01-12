@@ -20,15 +20,25 @@ public class VillageManager : MonoBehaviour
     public GameObject building2DPrefab; // Le prefab avec Building2D script
     public Transform buildingsParent; // Parent pour organiser la hiérarchie
     public GameObject villageGrid; // La grille à activer/désactiver
-    public List<BuildingPlacement> buildingPlacements; // Liste des bâtiments avec positions
+    [HideInInspector] public List<BuildingPlacement> buildingPlacements = new List<BuildingPlacement>(); // Calculé automatiquement
 
     public GameObject CloseButton;
+
+    [Header("Paramètres de placement automatique")]
+    public bool autoSizeGrid = true; // Calcule une grille carrée selon le nombre et la taille des bâtiments
+    public float isoTileWidth = 1f;  // Largeur visuelle d'une tuile iso (monde)
+    public float isoTileHeight = 0.5f; // Hauteur visuelle d'une tuile iso (monde)
+    public float isoYOffset = 0f; // Décalage vertical pour aligner visuellement avec la grille Unity
+    public int gridWidth = 16;  // Largeur de la grille en cellules (utilisé si autoSizeGrid = false)
+    public int gridHeight = 12; // Hauteur de la grille en cellules (utilisé si autoSizeGrid = false)
+    public Vector3 gridOrigin = Vector3.zero; // Point d'origine de la grille
 
     [Header("Fallback (si buildingPlacements vide)")]
     public List<BuildingData> currentBuildings;
 
     private List<BuildingUI> instantiatedBuildingsUI = new List<BuildingUI>();
     private List<Building2D> instantiatedBuildings2D = new List<Building2D>();
+    private bool[,] gridOccupancy; // Grille de suivi des cellules occupées
 
     void Awake()
     {
@@ -43,20 +53,21 @@ public class VillageManager : MonoBehaviour
     }
     public void AfficheBuildings()
     {
-        // Mode 2D Isométrique
-        if (building2DPrefab != null && buildingPlacements != null && buildingPlacements.Count > 0)
+        // Toujours utiliser le placement auto en 2D isométrique
+        if (building2DPrefab != null)
         {
             AfficheBuildings2D();
+            return;
         }
-        // Mode UI (ancien système, fallback)
-        else if (buildingUIPrefab != null && currentBuildings != null && currentBuildings.Count > 0)
+
+        // Fallback éventuel sur l'ancien système UI si aucun prefab 2D
+        if (buildingUIPrefab != null && currentBuildings != null && currentBuildings.Count > 0)
         {
             AfficheBuildingsUI();
+            return;
         }
-        else
-        {
-            Debug.LogWarning("[VillageManager] Aucun b�timent configur� !");
-        }
+
+        Debug.LogWarning("[VillageManager] Aucun bâtiment configuré !");
     }
 
     private void AfficheBuildingsUI()
@@ -89,6 +100,13 @@ public class VillageManager : MonoBehaviour
         // Nettoie les anciens bâtiments 2D
         CloseButton.SetActive(true);
         villageGrid.SetActive(true);
+        
+        // Réinitialise la position et l'échelle de la grille
+        var gridController = villageGrid.GetComponent<VillageGridController>();
+        if (gridController != null)
+        {
+            gridController.ResetPosition();
+        }
         for (int i = instantiatedBuildings2D.Count - 1; i >= 0; i--)
         {
             var building = instantiatedBuildings2D[i];
@@ -97,14 +115,25 @@ public class VillageManager : MonoBehaviour
         }
         instantiatedBuildings2D.Clear();
 
+        // Calcule toujours le placement automatiquement (ignore les positions éditables)
+        if (currentBuildings != null && currentBuildings.Count > 0)
+        {
+            CalculateAutomaticPlacement();
+        }
+        else
+        {
+            Debug.LogWarning("[VillageManager] Aucun bâtiment à placer !");
+            return;
+        }
+
         // Active la vue 2D (cache les panels UI)
         UIManager.Instance.ShowVillage2DView();
 
-        // Active la grille et le contrôle caméra
         // Active la grille
         if (villageGrid != null)
             villageGrid.SetActive(true);
-        // Instancie chaque b�timent � sa position
+        
+        // Instancie chaque bâtiment à sa position
         foreach (var placement in buildingPlacements)
         {
             if (placement.buildingData == null)
@@ -133,6 +162,122 @@ public class VillageManager : MonoBehaviour
         Debug.Log($"[VillageManager] {instantiatedBuildings2D.Count} bâtiments 2D instanciés.");
     }
 
+    /// <summary>
+    /// Calcule automatiquement les positions des bâtiments selon leur taille
+    /// </summary>
+    private void CalculateAutomaticPlacement()
+    {
+        // Détermine la taille de grille (option carrée automatique)
+        int totalArea = 0;
+        int maxSize = 1;
+        foreach (var b in currentBuildings)
+        {
+            int size = Mathf.Max(1, b.gridSize);
+            totalArea += size * size;
+            maxSize = Mathf.Max(maxSize, size);
+        }
+
+        if (autoSizeGrid)
+        {
+            int side = Mathf.CeilToInt(Mathf.Sqrt(totalArea));
+            gridWidth = Mathf.Max(side, maxSize + 1);
+            gridHeight = Mathf.Max(Mathf.CeilToInt((float)totalArea / gridWidth) + maxSize, side);
+        }
+
+        // Initialise la grille d'occupation
+        gridOccupancy = new bool[gridWidth, gridHeight];
+        
+        // Trie les bâtiments par taille décroissante (les plus grands en premier)
+        List<BuildingData> sortedBuildings = new List<BuildingData>(currentBuildings);
+        sortedBuildings.Sort((a, b) => (b.gridSize * b.gridSize).CompareTo(a.gridSize * a.gridSize));
+        
+        buildingPlacements.Clear();
+        
+        foreach (var building in sortedBuildings)
+        {
+            Vector3 placedPosition = FindBestPlacement(building);
+            if (placedPosition != Vector3.zero || !HasPlacedBuilding(building))
+            {
+                buildingPlacements.Add(new BuildingPlacement 
+                { 
+                    buildingData = building, 
+                    worldPosition = placedPosition 
+                });
+                Debug.Log($"[VillageManager] Placed {building.buildingName} at {placedPosition}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Trouve la meilleure position pour placer un bâtiment
+    /// </summary>
+    private Vector3 FindBestPlacement(BuildingData building)
+    {
+        int size = Mathf.Max(1, building.gridSize);
+        
+        // Cherche une position libre en commençant par le haut-gauche
+        for (int y = 0; y < gridHeight - size + 1; y++)
+        {
+            for (int x = 0; x < gridWidth - size + 1; x++)
+            {
+                if (CanPlaceBuilding(x, y, size, size))
+                {
+                    // Marque les cellules comme occupées
+                    for (int dy = 0; dy < size; dy++)
+                    {
+                        for (int dx = 0; dx < size; dx++)
+                        {
+                            gridOccupancy[x + dx, y + dy] = true;
+                        }
+                    }
+                    
+                    // Convertit les coordonnées de grille en position mondiale isométrique
+                    Vector3 worldPos = GridToIsoPosition(x, y);
+                    return worldPos;
+                }
+            }
+        }
+        
+        Debug.LogWarning($"[VillageManager] Impossible de placer {building.buildingName} : pas assez d'espace !");
+        return Vector3.zero;
+    }
+
+    /// <summary>
+    /// Vérifie si on peut placer un bâtiment à une position donnée
+    /// </summary>
+    private bool CanPlaceBuilding(int x, int y, int width, int height)
+    {
+        if (x + width > gridWidth || y + height > gridHeight)
+            return false;
+        
+        for (int dy = 0; dy < height; dy++)
+        {
+            for (int dx = 0; dx < width; dx++)
+            {
+                if (gridOccupancy[x + dx, y + dy])
+                    return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /// <summary>
+    /// Vérifie si un bâtiment a déjà été placé
+    /// </summary>
+    private bool HasPlacedBuilding(BuildingData building)
+    {
+        return buildingPlacements.Exists(p => p.buildingData == building);
+    }
+
+    // Convertit des coordonnées de grille (cartésiennes) vers une position monde isométrique
+    private Vector3 GridToIsoPosition(int x, int y)
+    {
+        float worldX = (x - y) * (isoTileWidth * 0.5f);
+        float worldY = -(x + y) * (isoTileHeight * 0.5f) + isoYOffset;
+        return gridOrigin + new Vector3(worldX, worldY, 0f);
+    }
+
     public void CloseVillage()
     {
         // Nettoie les bâtiments 2D
@@ -146,9 +291,24 @@ public class VillageManager : MonoBehaviour
 
         // Désactive la grille et le bouton
         if (villageGrid != null)
+        {
+            // Réinitialise la position et l'échelle de la grille avant de désactiver
+            var gridController = villageGrid.GetComponent<VillageGridController>();
+            if (gridController != null)
+            {
+                gridController.ResetPosition();
+            }
             villageGrid.SetActive(false);
+        }
         if (CloseButton != null)
             CloseButton.SetActive(false);
+
+        // Réinitialise la position et le zoom de la caméra village
+        var camController = FindAnyObjectByType<VillageCameraController>();
+        if (camController != null)
+        {
+            camController.ResetCamera();
+        }
 
         // Retour au choix de mode
         UIManager.Instance.HideAllUI();

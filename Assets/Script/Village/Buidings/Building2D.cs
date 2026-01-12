@@ -70,7 +70,7 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     }
 
     /// <summary>
-    /// Initialise le bâtiment avec ses données
+    /// Initialise le bâtiment avec ses données et adapte le sprite à la taille
     /// </summary>
     public void Init(BuildingData data, VillageManager villageManager)
     {
@@ -81,9 +81,46 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (spriteRenderer != null && data.icon != null)
         {
             spriteRenderer.sprite = data.icon;
+            
+            // Auto-scale le sprite selon la taille du footprint
+            ScaleSpriteToFootprint(data.gridSize, villageManager);
         }
         
         Debug.Log($"[Building2D] Initialized {data.buildingName} at position {transform.position}");
+    }
+
+    /// <summary>
+    /// Adapte l'échelle du sprite pour qu'il occupe exactement la taille du footprint en monde
+    /// </summary>
+    private void ScaleSpriteToFootprint(int gridSize, VillageManager villageManager)
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null)
+            return;
+
+        // Calcule la taille visuelle en monde isométrique
+        // Footprint carré (gridSize x gridSize) correspond à :
+        float worldWidth = gridSize * villageManager.isoTileWidth;   // Largeur iso
+        float worldHeight = gridSize * villageManager.isoTileHeight;  // Hauteur iso
+
+        // Récupère la taille du sprite en unités monde
+        Sprite sprite = spriteRenderer.sprite;
+        float spriteWidth = sprite.bounds.size.x;
+        float spriteHeight = sprite.bounds.size.y;
+
+        if (spriteWidth > 0 && spriteHeight > 0)
+        {
+            // Calcule l'échelle nécessaire
+            float scaleX = worldWidth / spriteWidth;
+            float scaleY = worldHeight / spriteHeight;
+            
+            // Utilise l'échelle moyenne ou le minimum selon votre préférence
+            // Ici on utilise le minimum pour bien rentrer dans le carré
+            float scale = Mathf.Min(scaleX, scaleY);
+            
+            transform.localScale = new Vector3(scale, scale, 1f);
+            
+            Debug.Log($"[Building2D] Scaled {buildingData.buildingName} to {scale:F2}x (footprint {gridSize}x{gridSize})");
+        }
     }
 
     /// <summary>

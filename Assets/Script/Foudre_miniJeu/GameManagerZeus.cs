@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum WeatherMode
 {
@@ -47,6 +48,13 @@ public class GameManagerZeus : MonoBehaviour
     private int enemiesPassed = 0;
     private int score = 0;          // score selon ta règle
     private bool isRunning = false;
+    private float _baseSpawnRateCached;
+
+    // dérivé de la carte
+    private float _chaosLevel = 0f;
+    private float _rewardMult = 1f;
+    private float _rewardFlat = 0f;
+    private bool _oneMistakeFail = false;  
 
     void Awake()
     {
@@ -56,11 +64,43 @@ public class GameManagerZeus : MonoBehaviour
 
     void Start()
     {
+        _baseSpawnRateCached = baseSpawnRate;
+        ApplyMiniGameCardIfAny();
+
         // Lance automatiquement le mini-jeu si demandé (utile lorsqu'on charge la scène via SceneManager.LoadScene)
         if (autoStartOnLoad && Application.isPlaying)
         {
             StartGame();
         }
+    }
+
+    private void ApplyMiniGameCardIfAny()
+    {
+        var runtime = MiniGameCardRuntime.Instance;
+        if (runtime == null || runtime.SelectedCard == null)
+            return;
+
+        var card = runtime.SelectedCard;
+        if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Zeus)
+            return;
+
+        float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
+        float spawnMult = Mathf.Max(0.1f, card.spawnRateMultiplier);
+
+        baseSpawnRate = _baseSpawnRateCached / speedMult;
+        baseSpawnRate /= spawnMult;
+
+        if (card.moreEnemies) currentWeather = WeatherMode.Orage;
+        if (card.lessEnemies) currentWeather = WeatherMode.Pluie;
+
+        _chaosLevel = Mathf.Clamp01(card.chaosLevel);
+        _rewardMult = Mathf.Max(0.1f, card.rewardMultiplier);
+        _rewardFlat = card.rewardFlatBonus;
+        _oneMistakeFail = card.oneMistakeFail;   // <--- AJOUT
+
+        Debug.Log($"[Zeus] Carte appliquée : {card.cardName}, baseSpawnRate={baseSpawnRate}, chaos={_chaosLevel}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}, météo={currentWeather}");
+
+        runtime.Clear();
     }
 
     public void StartGame()
@@ -71,8 +111,11 @@ public class GameManagerZeus : MonoBehaviour
             return;
         }
 
-        // Choix aléatoire d’un mode météo
-        currentWeather = (WeatherMode)Random.Range(0, 4);
+        // météo aléatoire seulement si la carte ne l’a pas forcée
+        if (currentWeather == WeatherMode.Normal)
+        {
+            currentWeather = (WeatherMode)Random.Range(0, 4);
+        }
 
         ResetGame();
         ApplyWeatherModifiers();
@@ -131,7 +174,11 @@ public class GameManagerZeus : MonoBehaviour
     {
         while (isRunning)
         {
-            yield return new WaitForSeconds(spawnRate);
+            // temps d’attente chaotique autour de spawnRate
+            float chaosFactor = 1f + Random.Range(-_chaosLevel, _chaosLevel);
+            float wait = Mathf.Max(0.1f, spawnRate * chaosFactor);
+
+            yield return new WaitForSeconds(wait);
             SpawnEnemy();
         }
     }
@@ -187,20 +234,30 @@ public class GameManagerZeus : MonoBehaviour
     // Appelé par Enemy.ReachCity()
     public void EnemyReachedCity(EnemyType type)
     {
+        if (!isRunning) return;
+
         enemiesPassed++;
 
-        // Score négatif selon le type
+        // --- ONE MISTAKE FAIL ---
+        if (_oneMistakeFail)
+        {
+            Debug.Log("[Zeus] Mode oneMistakeFail : un ennemi a atteint la ville -> fin immédiate.");
+            EndGame();
+            return;
+        }
+
+        // Score négatif selon le type (logique existante)
         switch (type)
         {
             case EnemyType.Normal:
             case EnemyType.Blue:
-                score -= 1;  // passé -1
+                score -= 1;
                 break;
             case EnemyType.Gold:
                 score -= 1;
                 break;
             case EnemyType.Red:
-                score -= 5;  // rouge -5
+                score -= 5;
                 break;
         }
 
@@ -239,5 +296,24 @@ public class GameManagerZeus : MonoBehaviour
                 $"Passés : {enemiesPassed}\n" +
                 $"Score : {finalScore}";
         }
+
+        // Conversion score -> Population (Human)
+        if (GameManager.Instance != null)
+        {
+            float baseHumanGain = finalScore / 2f;
+            float humanGain = baseHumanGain * _rewardMult + _rewardFlat;
+
+            if (humanGain != 0)
+                GameManager.Instance.changeStat(StatType.Human, humanGain);
+
+            Debug.Log($"[Zeus] Score={finalScore} -> Human +{humanGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
+        }
+        SceneManager.LoadScene("SampleScene");
+
+    }
+
+    public void OnQuitMiniGame()
+    {
+        SceneManager.LoadScene("SampleScene");
     }
 }

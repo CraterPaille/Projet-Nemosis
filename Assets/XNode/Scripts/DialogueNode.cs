@@ -15,8 +15,8 @@ public class DialogueNode : Node
     public class PlayerResponse
     {
         public string responseText;
-        public ConditionSO condition;
-        public EffectSO effect;
+        public ConditionSO[] conditions = new ConditionSO[0];  // Multiple conditions (ALL must be true to make response available)
+        public EffectSO[] effects = new EffectSO[0];           // Multiple effects to apply when response is chosen
         // NOTE: le lien suivant n'est pas sérialisé comme champ, les ports sont gérés dynamiquement
         // NOTE: on stocke désormais la référence sérialisée vers le node suivant
         // pour faciliter le runtime (synchronisée avec les ports dynamiques dans l'éditeur).

@@ -10,10 +10,16 @@ public class PauseManager : MonoBehaviour
     [Header("UI")]
     public GameObject pauseMenuRoot;      // Panel racine du menu pause
     public GameObject firstSelected;      // Bouton sélectionné par défaut (Continue)
+    [Tooltip("Bouton ou icône qui ouvre le menu pause")]
+    public GameObject pauseToggleButton;  // <-- ton bouton TogglePause
+
+    [Header("Autres Canvas à masquer")]
+    [SerializeField] private GameObject pillarsCanvas; // <-- assigne le canvas des piliers ici
 
     [Header("Scenes")]
     public string mainMenuSceneName = "Menu_principal";
     public string optionsSceneName = "Menu_option";
+    public string gameplaySceneName = "SampleScene"; // scène où le bouton doit être visible
 
     private bool _isPaused;
 
@@ -26,25 +32,46 @@ public class PauseManager : MonoBehaviour
         }
 
         Instance = this;
-        // Optionnel : si tu veux un PauseManager différent par mini-jeu, enlève cette ligne
         DontDestroyOnLoad(gameObject);
 
         if (pauseMenuRoot != null)
             pauseMenuRoot.SetActive(false);
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (pauseToggleButton != null)
+            pauseToggleButton.SetActive(scene.name == gameplaySceneName);
+
+        if (scene.name == gameplaySceneName)
+        {
+            // 1) Réactiver tout l’UI principal géré par UIManager
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.SetUIActive(true);
+                UIManager.Instance.ShowMainUI();   // <-- au lieu de GameModeChoice direct
+            }
+
+            // 2) Réactiver (ou non) le canvas des piliers
+            if (pillarsCanvas != null)
+                pillarsCanvas.SetActive(true);
+        }
     }
 
     private void Update()
     {
-        // Touche d'exemple : Escape ou Start manette via InputSystem
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
             TogglePause();
-        }
 
         if (Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame)
-        {
             TogglePause();
-        }
     }
 
     public void TogglePause()
@@ -61,6 +88,10 @@ public class PauseManager : MonoBehaviour
 
         _isPaused = true;
         Time.timeScale = 0f;
+
+        // Masquer le canvas des piliers quand on ouvre le menu pause
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(false);
 
         if (pauseMenuRoot != null)
         {
@@ -83,29 +114,39 @@ public class PauseManager : MonoBehaviour
 
         if (pauseMenuRoot != null)
             pauseMenuRoot.SetActive(false);
+
+        // Si tu veux que le canvas des piliers revienne quand on reprend :
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(true);
     }
 
     // Bouton "Continuer"
     public void OnContinueButton()
     {
+        UIManager.Instance?.SetUIActive(true);
         ResumeGame();
     }
 
     // Bouton "Options"
     public void OnOptionsButton()
     {
-        // On remet le temps à 1 avant de changer de scène
+        
         Time.timeScale = 1f;
         _isPaused = false;
 
+        if (pauseMenuRoot != null)
+            pauseMenuRoot.SetActive(false);
+
+        // On garde aussi les piliers cachés en quittant vers Options
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(false);
+
+        UIManager.Instance?.HideAllUI();
+
         if (!string.IsNullOrEmpty(optionsSceneName))
-        {
             SceneManager.LoadScene(optionsSceneName);
-        }
         else
-        {
             Debug.LogWarning("PauseManager : optionsSceneName non défini.");
-        }
     }
 
     // Bouton "Quitter"
@@ -114,13 +155,32 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
         _isPaused = false;
 
+        if (pauseMenuRoot != null)
+            pauseMenuRoot.SetActive(false);
+
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(false);
+
+        UIManager.Instance?.HideAllUI();
+
         if (!string.IsNullOrEmpty(mainMenuSceneName))
-        {
             SceneManager.LoadScene(mainMenuSceneName);
-        }
         else
-        {
             Debug.LogWarning("PauseManager : mainMenuSceneName non défini.");
-        }
+    }
+
+    public void OnScheduleButton()
+    {
+        Time.timeScale = 1f;
+        _isPaused = false;
+
+        if (pauseMenuRoot != null)
+            pauseMenuRoot.SetActive(false);
+
+        if (pillarsCanvas != null)
+            pillarsCanvas.SetActive(false);
+
+        UIManager.Instance?.HideAllUI();
+        SceneManager.LoadScene("EmploiDuTemps");
     }
 }
