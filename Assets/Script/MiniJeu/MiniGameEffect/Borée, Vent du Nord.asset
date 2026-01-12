@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
+  m_Name: "Bor\xE9e, Vent du Nord"
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
+  cardName: " Bor\xE9e, Vent du Nord "
+  description: " Le dieu du vent du nord se d\xE9cha\xEEne. Les maisons s\u2019\xE9teignent
+    souvent, mais survivre impressionnera tout l\u2019Olympe. "
+  icon: {fileID: 0}
+  targetMiniGame: 4
+  speedMultiplier: 1
+  difficultyMultiplier: 1.6
+  invertControls: 0
+  spawnRateMultiplier: 1.5
+  chaosLevel: 0.8
+  rewardFlatBonus: 2
+  rewardMultiplier: 1.8
+  moreEnemies: 1
+  lessEnemies: 0
+  visualChaos: 1
+  oneMistakeFail: 0

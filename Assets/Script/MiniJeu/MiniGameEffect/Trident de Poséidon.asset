@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
+  m_Name: "Trident de Pos\xE9idon"
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
+  cardName: " Trident de Pos\xE9idon"
+  description: "Les notes d\xE9ferlent comme des vagues. Le rythme tangue, mais les
+    dieux des mers t\u2019observent avec int\xE9r\xEAt."
+  icon: {fileID: 0}
+  targetMiniGame: 1
+  speedMultiplier: 1.2
+  difficultyMultiplier: 1.3
+  invertControls: 0
+  spawnRateMultiplier: 1.3
+  chaosLevel: 0.7
+  rewardFlatBonus: 0
+  rewardMultiplier: 1.5
+  moreEnemies: 0
+  lessEnemies: 0
+  visualChaos: 1
+  oneMistakeFail: 0

@@ -169,7 +169,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>Force la sélection d’un élément pour la navigation manette.</summary>
-    private void SetDefaultSelected(GameObject toSelect)
+    public void SetDefaultSelected(GameObject toSelect)
     {
         if (EventSystem.current == null || toSelect == null)
             return;
@@ -406,12 +406,21 @@ public class UIManager : MonoBehaviour
             currentChoices.Add(card);
         }
 
+        GameObject firstButton = null;
+
         foreach (var card in currentChoices)
         {
             var ui = Instantiate(cardUIPrefab, interactionContent);
             var entry = ui.GetComponent<CardUI>();
             entry.Setup(card);
+
+            if (firstButton == null)
+                firstButton = ui;
         }
+
+        // Focus manette sur la première carte
+        if (firstButton != null)
+            SetDefaultSelected(firstButton);
     }
 
     // --- PANEL D'ÉVÉNEMENT ---
@@ -461,7 +470,7 @@ public class UIManager : MonoBehaviour
     {
         if (PanelStats != null) PanelStats.SetActive(true);
         if (Date != null) Date.gameObject.SetActive(true);
-        GameModeChoice();
+        GameModeChoice();  // -> SetDefaultSelected(dayModeFirstSelected)
     }
 
     // --- BOUTONS DE SAUVEGARDE / CHARGEMENT ---

@@ -40,7 +40,7 @@ public class GameManagerRhytme : MonoBehaviour
     private Coroutine vibrationCoroutine;
 
     [Header("Feedback lanes")]
-    [SerializeField] private LaneHighlight[] laneHighlights; // taille 4 dans l’Inspector
+    [SerializeField] private LaneHighlight[] laneHighlights;
 
     [Header("Feedback global")]
     [SerializeField] private CameraShakeRhytm missShake;
@@ -50,10 +50,16 @@ public class GameManagerRhytme : MonoBehaviour
     [SerializeField] private TMP_Text invertInfoText;
 
     private float _speedMultiplier = 1f;
-    public float SpeedMultiplier => _speedMultiplier; // pour que NoteObject puisse le lire
+    public float SpeedMultiplier => _speedMultiplier;
     private float _difficultyMultiplier = 1f;
 
     private bool _invertControlsRhythm = false;
+
+    // dérivé de la carte
+    private float _chaosLevel = 0f;
+    private float _rewardMult = 1f;
+    private float _rewardFlat = 0f;
+    private bool _oneMistakeFail = false;
 
     private void Awake()
     {
@@ -163,17 +169,22 @@ public class GameManagerRhytme : MonoBehaviour
         _speedMultiplier = Mathf.Max(0.1f, card.speedMultiplier);
         _difficultyMultiplier = Mathf.Max(0.5f, card.difficultyMultiplier);
 
-        // Exemple : augmenter le score par note avec la difficulté
-        ScorePerNote = Mathf.RoundToInt(ScorePerNote * _difficultyMultiplier);
-        ScorePerGoodNote = Mathf.RoundToInt(ScorePerGoodNote * _difficultyMultiplier);
-        ScorePerPerfectNote = Mathf.RoundToInt(ScorePerPerfectNote * _difficultyMultiplier);
+        float spawnMult = Mathf.Max(0.1f, card.spawnRateMultiplier);
+        float scoreMult = _difficultyMultiplier * spawnMult;
 
-        // --- nouveau : inversion des contrôles ---
+        ScorePerNote = Mathf.RoundToInt(ScorePerNote * scoreMult);
+        ScorePerGoodNote = Mathf.RoundToInt(ScorePerGoodNote * scoreMult);
+        ScorePerPerfectNote = Mathf.RoundToInt(ScorePerPerfectNote * scoreMult);
+
         _invertControlsRhythm = card.invertControls;
 
-        Debug.Log($"[Rhytme] Carte appliquée : {card.cardName}, speed x{_speedMultiplier}, diff x{_difficultyMultiplier}, invert={_invertControlsRhythm}");
+        _chaosLevel = Mathf.Clamp01(card.chaosLevel);
+        _rewardMult = Mathf.Max(0.1f, card.rewardMultiplier);
+        _rewardFlat = card.rewardFlatBonus;
+        _oneMistakeFail = card.oneMistakeFail;
 
-        // On consomme la carte pour ce mini-jeu
+        Debug.Log($"[Rhytme] Carte appliquée : {card.cardName}, speed x{_speedMultiplier}, diff x{_difficultyMultiplier}, spawnRateMult x{spawnMult}, chaos={_chaosLevel}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, invert={_invertControlsRhythm}, oneMistakeFail={_oneMistakeFail}");
+
         runtime.Clear();
     }
 
@@ -282,7 +293,11 @@ public class GameManagerRhytme : MonoBehaviour
 
     void AddScore(int baseScore)
     {
-        currentScore += baseScore * currentMultiplier;
+        // jitter chaos sur le score (léger)
+        float chaosFactor = 1f + Random.Range(-_chaosLevel, _chaosLevel);
+        int finalBase = Mathf.Max(0, Mathf.RoundToInt(baseScore * chaosFactor));
+
+        currentScore += finalBase * currentMultiplier;
         ScoreText.text = "Score : " + currentScore;
 
         _scorePunch?.Play();
@@ -320,6 +335,17 @@ public class GameManagerRhytme : MonoBehaviour
 
         Vibrate(0.6f, 0.6f, 0.12f);
         missShake?.Play();
+
+        // --- ONE MISTAKE FAIL ---
+        if (_oneMistakeFail)
+        {
+            Debug.Log("[Rhytme] Mode oneMistakeFail : note ratée -> fin immédiate de la chanson.");
+            // on arrête la musique et on termine
+            if (theMusic != null && theMusic.isPlaying)
+                theMusic.Stop();
+
+            EndSong();
+        }
     }
 
     // --- Fin du mini-jeu ---
@@ -337,13 +363,13 @@ public class GameManagerRhytme : MonoBehaviour
         // Conversion score -> stats globales (Rythme -> Foi)
         if (GameManager.Instance != null)
         {
-            // Exemple : 500 points de score -> +1 Foi
-            float foiGain = currentScore / 500;
+            float baseFoi = currentScore / 500f;
+            float foiGain = baseFoi * _rewardMult + _rewardFlat;
 
             if (foiGain != 0f)
             {
                 GameManager.Instance.changeStat(StatType.Foi, foiGain);
-                Debug.Log($"[Rhytme] Score={currentScore} -> Foi +{foiGain}");
+                Debug.Log($"[Rhytme] Score={currentScore} -> Foi +{foiGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
             }
         }
         else

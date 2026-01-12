@@ -34,14 +34,27 @@ public class House : MonoBehaviour
 
     public void SetState(bool on)
     {
+        if (isOn == on)
+            return;
+
+        // si on passe de ON à OFF, prévenir le GameManager
+        if (isOn && !on && NuitGlacialeGameManager.Instance != null)
+        {
+            NuitGlacialeGameManager.Instance.OnHouseTurnedOff(this);
+        }
+
         isOn = on;
         UpdateVisual();
     }
 
     void UpdateVisual()
     {
-        if (sr != null)
-            sr.sprite = isOn ? onSprite : offSprite;
+        if (sr == null)
+            sr = GetComponent<SpriteRenderer>();
+
+        if (sr == null) return;
+
+        sr.sprite = isOn ? onSprite : offSprite;
     }
 
     private void OnClick()

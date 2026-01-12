@@ -657,7 +657,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0.99215686, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -2234,10 +2234,10 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 2948470997744460220, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
-    m_PressedSprite: {fileID: -8442576878153800462, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
-    m_SelectedSprite: {fileID: 8438620984579705260, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
-    m_DisabledSprite: {fileID: 5178875942204218570, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
+    m_HighlightedSprite: {fileID: 8507161641047369203, guid: 1f2f080b4e516404ca080c3dc4a79d46, type: 3}
+    m_PressedSprite: {fileID: 2045365434991909456, guid: 1f2f080b4e516404ca080c3dc4a79d46, type: 3}
+    m_SelectedSprite: {fileID: 3253885915668827933, guid: 1f2f080b4e516404ca080c3dc4a79d46, type: 3}
+    m_DisabledSprite: {fileID: -3845506447980062195, guid: 1f2f080b4e516404ca080c3dc4a79d46, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -2281,7 +2281,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 2948470997744460220, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
+  m_Sprite: {fileID: 8507161641047369203, guid: 1f2f080b4e516404ca080c3dc4a79d46, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3143,9 +3143,9 @@ MonoBehaviour:
   StatsFood: {fileID: 805446559}
   Date: {fileID: 771949603}
   dayModeChoicePanel: {fileID: 1193778001}
-  dayModeFirstSelected: {fileID: 596278544}
+  dayModeFirstSelected: {fileID: 788080852}
   miniJeuCardPanel: {fileID: 1307071971}
-  miniJeuCardFirstSelected: {fileID: 788080852}
+  miniJeuCardFirstSelected: {fileID: 541833949}
   cardUIPrefab: {fileID: 8489466369155986184, guid: a1bab47e6f4922b41a1b99d669d532e0, type: 3}
   eventPanel: {fileID: 137100358}
   eventImage: {fileID: 1689517082}
@@ -4242,7 +4242,7 @@ RectTransform:
   m_GameObject: {fileID: 600138930}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.24630542, y: 0.1697793, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 606105975}
@@ -5015,7 +5015,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0.9899831, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -5393,7 +5393,7 @@ MonoBehaviour:
   currentGameMode: 0
   eventScheduler: {fileID: 636295297}
   villageCardCollection: {fileID: 11400000, guid: 93468e6a6c3fc784294dc63c43c75e58, type: 2}
-  miniGameLauncher: {fileID: 0}
+  miniGameLauncher: {fileID: 1004515014}
   totalDays: 28
   endSceneName: Menu_principal
   effet: {fileID: 11400000, guid: 74dbf43db9a468f4d80425442eb2579d, type: 2}
@@ -5751,7 +5751,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0.99215686, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -6703,7 +6703,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -88.78733, y: -147.94933, z: -110.53166, w: 74.291115}
+  m_margin: {x: -88.78733, y: -147.94933, z: -110.53166, w: 99.29543}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7494,10 +7494,10 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: -5803563973505444206, guid: fb39e6549db76804da194ae83aaf8e34, type: 3}
+    m_PressedSprite: {fileID: -1665890155239074793, guid: fb39e6549db76804da194ae83aaf8e34, type: 3}
+    m_SelectedSprite: {fileID: -8652784106676834925, guid: fb39e6549db76804da194ae83aaf8e34, type: 3}
+    m_DisabledSprite: {fileID: 749861615649342857, guid: fb39e6549db76804da194ae83aaf8e34, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -7541,7 +7541,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 2948470997744460220, guid: c0864a2c2ef20db469e94fa8dc822cb4, type: 3}
+  m_Sprite: {fileID: -5803563973505444206, guid: fb39e6549db76804da194ae83aaf8e34, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -9306,7 +9306,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -88.78733, y: -161.26607, z: -110.53166, w: 69.44862}
+  m_margin: {x: -88.78733, y: -161.26607, z: -110.53166, w: 106.88696}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -62267,7 +62267,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -88.78733, y: -161.26607, z: -110.53166, w: 74.291115}
+  m_margin: {x: -88.78733, y: -161.26607, z: -110.53166, w: 95.129814}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -63591,8 +63591,8 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.7327361, b: 0, a: 1}
+    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -63612,7 +63612,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1774317190}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1774317188}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1774317190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64241,7 +64253,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0.99215686, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1

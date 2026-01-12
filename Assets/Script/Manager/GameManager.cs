@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
     public EffectSO effet;
     public readonly string[] weekDays = { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
 
-    void Awake()
+    private void Awake()
     {
         if (Instance != null && Instance != this)
         {
@@ -58,31 +58,69 @@ public class GameManager : MonoBehaviour
         Debug.Log("[GameManager] Instance initialisée et marquée DontDestroyOnLoad.");
     }
 
-    void Start()
+    // Assets\Script\Manager\GameManager.cs
+    private const string SAVE_KEY = "GAME_SAVE_v1";
+    private const string NEW_GAME_FLAG_KEY = "NEW_GAME_REQUESTED";
+
+    private void Start()
     {
-        foreach (var kvp in Valeurs)
+        // Si une nouvelle partie a été demandée depuis le menu, on force la réinit
+        int newGameRequested = PlayerPrefs.GetInt(NEW_GAME_FLAG_KEY, 0);
+        if (newGameRequested == 1)
         {
-            Debug.Log($"[DEBUG] Dictionnaire contient {kvp.Key} = {kvp.Value}");
+            Debug.Log("[GameManager] Nouvelle partie demandée depuis le menu, réinitialisation complète.");
+            PlayerPrefs.SetInt(NEW_GAME_FLAG_KEY, 0); // consommer le flag
+            PlayerPrefs.Save();
+
+            InitDefaultState();
+        }
+        else
+        {
+            // Cas normal : si aucune sauvegarde, on initialise par défaut
+            if (!PlayerPrefs.HasKey(SAVE_KEY))
+            {
+                Debug.Log("[GameManager] Aucune sauvegarde détectée, initialisation par défaut.");
+                InitDefaultState();
+            }
+            else
+            {
+                Debug.Log("[GameManager] Sauvegarde présente. L'état sera chargé uniquement via LoadGame().");
+                // Ne pas appeler LoadGame() ici : il n'est appelé que depuis "Continuer" ou un bouton.
+            }
         }
 
-        Debug.Log($"StatType values: {string.Join(", ", System.Enum.GetNames(typeof(StatType)))}");
+        if (SceneManager.GetActiveScene().name == "SampleScene" && UIManager.Instance != null)
+        {
+            ChooseGameMode();
+        }
+    }
+
+    /// <summary>
+    /// Initialise totalement la partie à l'état "nouvelle partie".
+    /// Appelé quand il n'y a PAS de sauvegarde (ou après avoir tout reset).
+    /// </summary>
+    public void InitDefaultState()
+    {
+        Multiplicateur.Clear();
+        Valeurs.Clear();
+
+        Debug.Log("[GameManager] Initialisation de la nouvelle partie (état par défaut).");
 
         foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
             Multiplicateur[stat] = 1f;
-            Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
             Valeurs[stat] = 50f;
             changeStat(stat, 0f);
         }
 
         changeStat(StatType.Nemosis, -50f);
 
-        if (SceneManager.GetActiveScene().name == "SampleScene" && UIManager.Instance != null)
-        {
-            ChooseGameMode();
-        }
+        currentDay = 1;
+        currentTime = DayTime.Matin;
+        currentWeekDay = "Lundi";
+        campaignFinished = false;
 
-
+        UIManager.Instance?.changeDateUI();
     }
 
     public void addHumain()  { changeStat(StatType.Human, 10); }
@@ -92,6 +130,15 @@ public class GameManager : MonoBehaviour
 
     public void changeStat(StatType type, float amount)
     {
+        if (!Multiplicateur.ContainsKey(type))
+        {
+            Multiplicateur[type] = 1f;
+        }
+        if (!Valeurs.ContainsKey(type))
+        {
+            Valeurs[type] = 0f;
+        }
+
         Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
         float delta = (amount > 0) ? amount * Multiplicateur[type] : amount;
         Valeurs[type] += delta;
@@ -108,18 +155,16 @@ public class GameManager : MonoBehaviour
     {
         if (campaignFinished) return;
 
-        // Dimanche matin -> mini-jeu auto
         if (currentWeekDay == "Dimanche" && currentTime == DayTime.Matin)
         {
             LaunchSundayMiniGame();
             return;
         }
 
-        // Cas standard : afficher le panel de choix de mode de jeu
         if (UIManager.Instance != null)
         {
             UIManager.Instance.SetUIActive(true);
-            UIManager.Instance.GameModeChoice();
+            UIManager.Instance.GameModeChoice();   // c’est UIManager qui gère le focus
         }
     }
 
@@ -296,7 +341,6 @@ public class GameManager : MonoBehaviour
         public Dictionary<StatType, float> stats;
     }
 
-    private const string SAVE_KEY = "GAME_SAVE_v1";
 
     public void SaveGame()
     {
@@ -308,15 +352,14 @@ public class GameManager : MonoBehaviour
             stats = new Dictionary<StatType, float>(Valeurs)
         };
 
-        // PlayerPrefs ne sait pas stocker un Dictionary directement, on passe par du JSON simple.
-        // Comme Unity ne sérialise pas les Dictionary dans JsonUtility, on fait une petite structure intermédiaire.
-        var wrapper = new SaveWrapper();
-        wrapper.currentDay = data.currentDay;
-        wrapper.currentTime = data.currentTime;
-        wrapper.currentWeekDay = data.currentWeekDay;
-
-        wrapper.statKeys = new List<string>();
-        wrapper.statValues = new List<float>();
+        var wrapper = new SaveWrapper
+        {
+            currentDay = data.currentDay,
+            currentTime = data.currentTime,
+            currentWeekDay = data.currentWeekDay,
+            statKeys = new List<string>(),
+            statValues = new List<float>()
+        };
 
         foreach (var kvp in data.stats)
         {
@@ -351,7 +394,6 @@ public class GameManager : MonoBehaviour
         currentTime = (DayTime)wrapper.currentTime;
         currentWeekDay = wrapper.currentWeekDay;
 
-        // Reconstruire le dictionnaire de stats
         Valeurs.Clear();
         Multiplicateur.Clear();
 
@@ -361,7 +403,6 @@ public class GameManager : MonoBehaviour
             {
                 float value = wrapper.statValues[i];
                 Valeurs[stat] = value;
-                // On remet un multiplicateur par défaut si besoin
                 if (!Multiplicateur.ContainsKey(stat))
                     Multiplicateur[stat] = 1f;
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -13,6 +14,18 @@ public class MainMenu : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Button continueButton;
 
+    [SerializeField] private GameObject firstSelected;
+
+
+
+    private void OnEnable()
+    {
+        if (EventSystem.current == null || firstSelected == null)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(firstSelected);
+    }
     private void Start()
     {
         // Désactiver le bouton "Continuer" s'il n'y a pas de sauvegarde
@@ -27,8 +40,19 @@ public class MainMenu : MonoBehaviour
     //Lance une nouvelle partie
     public void Play()
     {
-        // supprimer l'ancienne sauvegarde
-        PlayerPrefs.DeleteKey(SAVE_KEY);
+        // supprimer l'ancienne sauvegarde de partie
+        PlayerPrefs.DeleteKey("GAME_SAVE_v1");
+
+        // flag pour dire "nouvelle partie"
+        PlayerPrefs.SetInt("NEW_GAME_REQUESTED", 1);
+        PlayerPrefs.Save();
+
+        // Détruire explicitement l'ancien GameManager s'il existe,
+        // pour forcer une réinitialisation propre.
+        if (GameManager.Instance != null)
+        {
+            Object.Destroy(GameManager.Instance.gameObject);
+        }
 
         SceneManager.LoadScene(gameplaySceneName);
     }

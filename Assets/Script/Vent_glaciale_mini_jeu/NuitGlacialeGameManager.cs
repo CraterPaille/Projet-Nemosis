@@ -15,7 +15,7 @@ public class NuitGlacialeGameManager : MonoBehaviour
     [Header("Paramètres de jeu")]
     public float duration = 60f;         
     public float interval = 3f;          
-    public float intervalDecrease = 0.9f;// Accélération progressive
+    public float intervalDecrease = 0.9f; // Accélération progressive
 
     [Header("Génération de maisons")]
     public GameObject housePrefab;
@@ -31,6 +31,9 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     private float _baseDuration;
     private float _baseIntervalDecrease;
+
+    // --- paramètres carte ---
+    private bool _oneMistakeFail = false;
 
     void Awake()
     {
@@ -64,7 +67,10 @@ public class NuitGlacialeGameManager : MonoBehaviour
         duration = _baseDuration / diffMult;         // plus dur => moins de temps
         intervalDecrease = Mathf.Lerp(1f, _baseIntervalDecrease, diffMult); // accélération plus forte
 
-        Debug.Log($"[NuitGlaciale] Carte appliquée : {card.cardName}, duration={duration}, intervalDecrease={intervalDecrease}");
+        // --- nouveau : une erreur = défaite ---
+        _oneMistakeFail = card.oneMistakeFail;
+
+        Debug.Log($"[NuitGlaciale] Carte appliquée : {card.cardName}, duration={duration}, intervalDecrease={intervalDecrease}, oneMistakeFail={_oneMistakeFail}");
 
         runtime.Clear();
     }
@@ -102,7 +108,6 @@ public class NuitGlacialeGameManager : MonoBehaviour
         int maxAllowedOff = Mathf.CeilToInt(houses.Length / 2f);
         if (offCount >= maxAllowedOff)
             Lose();
-
     }
 
     IEnumerator HouseFailures()
@@ -138,6 +143,18 @@ public class NuitGlacialeGameManager : MonoBehaviour
             // accélération progressive
             currentInterval *= intervalDecrease;
             currentInterval = Mathf.Max(0.5f, currentInterval); // ne pas descendre trop bas
+        }
+    }
+
+    // --- appelé par House quand elle passe de ON à OFF ---
+    public void OnHouseTurnedOff(House house)
+    {
+        if (!isRunning) return;
+
+        if (_oneMistakeFail)
+        {
+            Debug.Log("[NuitGlaciale] Mode oneMistakeFail : une maison s’est éteinte -> défaite immédiate.");
+            Lose();
         }
     }
 
@@ -231,8 +248,6 @@ public class NuitGlacialeGameManager : MonoBehaviour
         }
     }
 
-
-
     void GetCameraBounds(out float minX, out float maxX, out float minY, out float maxY)
     {
         Camera cam = Camera.main;
@@ -246,7 +261,6 @@ public class NuitGlacialeGameManager : MonoBehaviour
         minY = cam.transform.position.y - height / 2f;
         maxY = cam.transform.position.y + height / 2f;
     }
-
 
     void Win()
     {
@@ -271,7 +285,6 @@ public class NuitGlacialeGameManager : MonoBehaviour
             Debug.Log($"[NuitGlaciale] Score={finalScore} -> Food +{foodGain}, Human +{humanGain}");
         }
         SceneManager.LoadScene("SampleScene");
-
     }
 
     void Lose()
@@ -281,8 +294,8 @@ public class NuitGlacialeGameManager : MonoBehaviour
         StopAllCoroutines();
         UIManagerNuit.Instance.ShowLose();
         SceneManager.LoadScene("SampleScene");
-
     }
+
     public void OnQuitMiniGame()
     {
         SceneManager.LoadScene("SampleScene");
