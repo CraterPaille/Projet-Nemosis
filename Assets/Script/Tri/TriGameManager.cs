@@ -27,10 +27,12 @@ public class TriGameManager : MonoBehaviour
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
     }
 
     private void Start()
