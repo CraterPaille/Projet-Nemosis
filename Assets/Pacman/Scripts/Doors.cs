@@ -1,0 +1,31 @@
+using UnityEngine;
+using System.Collections;
+public class Doors : MonoBehaviour
+{
+    public float openHeight = 0f;
+    public float openWidth = 0f;
+    public GameObject Score;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(Score.GetComponent<Score>().Cire + Score.GetComponent<Score>().Plume >= 1)
+        {
+            transform.position += new Vector3(openWidth * Time.deltaTime, openHeight * Time.deltaTime, 0);
+            StartCoroutine(SpawnDelay());
+
+        }
+    }
+
+
+
+    IEnumerator SpawnDelay() {
+        yield return new WaitForSeconds(2f);
+        Destroy(this.gameObject);
+    }
+}

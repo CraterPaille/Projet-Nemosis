@@ -3,15 +3,19 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Wall
+  - Enemy
+  - Wax
+  - Feather
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Wall
   - Water
   - UI
-  - 
+  - Player
   - 
   - 
   - 

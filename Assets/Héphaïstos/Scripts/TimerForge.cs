@@ -8,7 +8,7 @@ using System.Collections;
 public class TimerForge : MonoBehaviour
 {
     public GameObject Anvil;
-    public Lame[] Lames = new Lame[3];
+    public Lame[] Lames = new Lame[2];
     public bool[] TabCheck = new bool[3];
 
     public float forgeDuration = 5f;
