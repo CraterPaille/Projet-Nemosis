@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public enum WeatherMode
 {
@@ -54,7 +55,12 @@ public class GameManagerZeus : MonoBehaviour
     private float _chaosLevel = 0f;
     private float _rewardMult = 1f;
     private float _rewardFlat = 0f;
-    private bool _oneMistakeFail = false;  
+    private bool _oneMistakeFail = false;
+
+    public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
+    public VideoClip tutorialClip; // à assigner dans l'inspector
+    private bool tutorialValidated = false;
+
 
     void Awake()
     {
@@ -64,14 +70,23 @@ public class GameManagerZeus : MonoBehaviour
 
     void Start()
     {
+        ShowTutorialAndStart();
         _baseSpawnRateCached = baseSpawnRate;
         ApplyMiniGameCardIfAny();
 
-        // Lance automatiquement le mini-jeu si demandé (utile lorsqu'on charge la scène via SceneManager.LoadScene)
-        if (autoStartOnLoad && Application.isPlaying)
-        {
-            StartGame();
-        }
+    }
+
+    private void ShowTutorialAndStart()
+    {
+        tutorialPanel.ShowClick(
+            "Zeus",
+            tutorialClip
+        );
+        tutorialPanel.continueButton.onClick.RemoveAllListeners();
+        tutorialPanel.continueButton.onClick.AddListener(() => {
+            tutorialPanel.Hide();
+            tutorialValidated = true;
+        });
     }
 
     private void ApplyMiniGameCardIfAny()
@@ -266,6 +281,9 @@ public class GameManagerZeus : MonoBehaviour
 
     void Update()
     {
+        // Ne démarre le jeu que si le tutoriel a été validé
+        if (!tutorialValidated)
+            return;
         if (!isRunning) return;
 
         currentTime -= Time.deltaTime;

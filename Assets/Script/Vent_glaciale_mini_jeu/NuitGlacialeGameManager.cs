@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class NuitGlacialeGameManager : MonoBehaviour
 {
@@ -35,6 +37,14 @@ public class NuitGlacialeGameManager : MonoBehaviour
     // --- paramètres carte ---
     private bool _oneMistakeFail = false;
 
+    [Header("Tutoriel")]
+    public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
+    public VideoClip tutorialClip; // à assigner dans l'inspector
+    private bool tutorialValidated = false; // Ajouté
+    public bool StartPlaying;
+
+
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -43,13 +53,11 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     void Start()
     {
+        ShowTutorialAndStart();
+
         _baseDuration = duration;
         _baseIntervalDecrease = intervalDecrease;
         ApplyMiniGameCardIfAny();
-
-        GenerateRandomHouses();
-        houses = housesParent.GetComponentsInChildren<House>();
-        StartMiniGame();
     }
 
     private void ApplyMiniGameCardIfAny()
@@ -86,8 +94,29 @@ public class NuitGlacialeGameManager : MonoBehaviour
         StartCoroutine(HouseFailures());
     }
 
+    public void ShowTutorialAndStart()
+    {
+        tutorialPanel.ShowClick(
+            "NuitGlaciale",
+            tutorialClip
+        );
+        tutorialPanel.continueButton.onClick.RemoveAllListeners();
+        tutorialPanel.continueButton.onClick.AddListener(() => {
+            tutorialPanel.Hide();
+            tutorialValidated = true;
+
+            // AJOUTER ici le spawn des maisons et le démarrage du jeu :
+            GenerateRandomHouses();
+            houses = housesParent.GetComponentsInChildren<House>();
+            StartMiniGame();
+        });
+    }
+
     void Update()
     {
+        if (!tutorialValidated)
+            return;
+
         if (!isRunning) return;
 
         timeLeft -= Time.deltaTime;
@@ -104,8 +133,13 @@ public class NuitGlacialeGameManager : MonoBehaviour
         foreach (var h in houses)
             if (!h.isOn) offCount++;
 
-        // Vérification de la défaite arrondi à l'entier supérieur (ceil)
-        int maxAllowedOff = Mathf.CeilToInt(houses.Length / 2f);
+        // Nouvelle logique pour le max de maisons éteintes
+        int maxAllowedOff;
+        if (houses.Length % 2 == 0)
+            maxAllowedOff = (houses.Length / 2) - 1;
+        else
+            maxAllowedOff = Mathf.CeilToInt(houses.Length / 2f);
+
         if (offCount >= maxAllowedOff)
             Lose();
     }
@@ -113,26 +147,30 @@ public class NuitGlacialeGameManager : MonoBehaviour
     IEnumerator HouseFailures()
     {
         float currentInterval = interval;
+        float lastExtinguishTime = -999f; // temps de la dernière extinction
 
         while (isRunning)
         {
             float wait = Random.Range(currentInterval * 0.5f, currentInterval * 1.5f);
-            yield return new WaitForSeconds(wait);
+
+            // On attend le plus long entre le wait normal et le temps restant pour atteindre 2s mini
+            float timeSinceLast = Time.time - lastExtinguishTime;
+            float minWait = Mathf.Max(0f, 2f - timeSinceLast);
+            float finalWait = Mathf.Max(wait, minWait);
+
+            yield return new WaitForSeconds(finalWait);
 
             // combien de maisons sont allumées
             int onCount = 0;
             foreach (var h in houses)
                 if (h.isOn) onCount++;
 
-            //le max de maisons éteignable est la moitié inférieur(floorToInt) des maisons allumées
             int maxExtinguishable = Mathf.FloorToInt(onCount / 2f);
             if (maxExtinguishable < 1)
-                maxExtinguishable = 1; // au moins 1 sinon ça ne sert à rien
+                maxExtinguishable = 1;
 
-            // Nombre aléatoire à éteindre inférieur ou égal au max
             int housesToExtinguish = Random.Range(1, maxExtinguishable + 1);
 
-            // Éteindre les maisons une par une
             for (int i = 0; i < housesToExtinguish; i++)
             {
                 var house = GetRandomOnHouse();
@@ -140,9 +178,10 @@ public class NuitGlacialeGameManager : MonoBehaviour
                     house.SetState(false);
             }
 
-            // accélération progressive
+            lastExtinguishTime = Time.time; // on note le moment de l’extinction
+
             currentInterval *= intervalDecrease;
-            currentInterval = Mathf.Max(0.5f, currentInterval); // ne pas descendre trop bas
+            currentInterval = Mathf.Max(0.5f, currentInterval);
         }
     }
 

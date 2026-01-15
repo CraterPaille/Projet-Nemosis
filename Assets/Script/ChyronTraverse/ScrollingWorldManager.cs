@@ -79,7 +79,8 @@ public class VerticalRepeatingWorld : MonoBehaviour
 
     void Update()
     {
-        if (gameManager.isGameOver) return;
+        if (gameManager == null || !gameManager.IsPlaying ||gameManager.isGameOver)
+            return;
 
         float dt = Time.deltaTime;
 

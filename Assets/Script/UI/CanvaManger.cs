@@ -31,6 +31,11 @@ public class CanvasCameraAssigner : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    void OnEnable()
+    {
+        if (canvas.enabled && canvas.gameObject.activeInHierarchy)
+            StartCoroutine(AssignCameraCoroutine());
+    }
     void Start()
     {
         // Ne lance la coroutine que si le Canvas est actif dans la scène

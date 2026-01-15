@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class GameManagerRhytme : MonoBehaviour
 {
@@ -61,6 +62,12 @@ public class GameManagerRhytme : MonoBehaviour
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
+    [Header("Tutoriel")]
+    public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
+    public VideoClip tutorialClip; // à assigner dans l'inspector
+    private bool tutorialValidated = false; // Ajouté
+
+
     private void Awake()
     {
         instance = this;
@@ -116,6 +123,8 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
+        ShowTutorialAndStart();
+
         // Effet carte mini-jeu, si présent
         ApplyMiniGameCardIfAny();
 
@@ -187,9 +196,32 @@ public class GameManagerRhytme : MonoBehaviour
 
         runtime.Clear();
     }
-
+    public void ShowTutorialAndStart()
+    {
+        InputAction[] actions = {
+            InputManager.Instance.keyboardControls.Rhytm.Lane0,
+            InputManager.Instance.keyboardControls.Rhytm.Lane1,
+            InputManager.Instance.keyboardControls.Rhytm.Lane2,
+            InputManager.Instance.keyboardControls.Rhytm.Lane3
+        };
+        tutorialPanel.Show(
+      "Rhythm",
+      new[] { keyboardControls.Rhytm.Lane0, keyboardControls.Rhytm.Lane1, keyboardControls.Rhytm.Lane2, keyboardControls.Rhytm.Lane3 },
+      new[] { gamepadControls.Rhytm.Lane0, gamepadControls.Rhytm.Lane1, gamepadControls.Rhytm.Lane2, gamepadControls.Rhytm.Lane3 },
+      tutorialClip
+        );
+        tutorialPanel.continueButton.onClick.RemoveAllListeners();
+        tutorialPanel.continueButton.onClick.AddListener(() => {
+            tutorialPanel.Hide();
+            tutorialValidated = true;
+        });
+    }
     private void Update()
     {
+        // Ne démarre le jeu que si le tutoriel a été validé
+        if (!tutorialValidated)
+            return;
+
         if (!StartPlaying)
         {
             StartPlaying = true;
@@ -432,4 +464,6 @@ public class GameManagerRhytme : MonoBehaviour
 
         SceneManager.LoadScene("SampleScene");
     }
+
+   
 }

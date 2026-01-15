@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class chyronGameManager : MonoBehaviour
 {
@@ -41,7 +42,33 @@ public class chyronGameManager : MonoBehaviour
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
+    [Header("Tutorial")]
+    public MiniGameTutorialPanel tutorialPanel;
+    public VideoClip tutorialClip;
+    private bool tutorialValidated = false;
+
+    public bool IsPlaying => tutorialValidated && !isGameOver;
+
     void Start()
+    {
+        ShowTutorialAndStart();
+    }
+
+    public void ShowTutorialAndStart()
+    {
+        tutorialPanel.ShowClick(
+            "Chyron",
+            tutorialClip
+        );
+        tutorialPanel.continueButton.onClick.RemoveAllListeners();
+        tutorialPanel.continueButton.onClick.AddListener(() => {
+            tutorialPanel.Hide();
+            tutorialValidated = true;
+            StartGameAfterTutorial();
+        });
+    }
+
+    private void StartGameAfterTutorial()
     {
         _baseScrollSpeed = scrollSpeed;
         ApplyMiniGameCardIfAny();
@@ -63,6 +90,7 @@ public class chyronGameManager : MonoBehaviour
 
     void Update()
     {
+        if (!tutorialValidated) return;
         if (isGameOver) return;
 
         score += scrollSpeed * Time.deltaTime;

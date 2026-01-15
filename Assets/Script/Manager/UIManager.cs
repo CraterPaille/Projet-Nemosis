@@ -129,6 +129,9 @@ public class UIManager : MonoBehaviour
     public void SetUIActive(bool active)
     {
         gameObject.SetActive(active);
+        // Ne désactive pas le GameObject principal (le Canvas), mais seulement les panels
+        if (dayModeChoicePanel != null) dayModeChoicePanel.SetActive(active);
+
     }
 
     private bool AreReferencesValid()

@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class TriGameManager : MonoBehaviour
 {
@@ -27,6 +29,11 @@ public class TriGameManager : MonoBehaviour
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
+    [Header("Tutorial")]
+    public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
+    public VideoClip tutorialClip; // à assigner dans l'inspector
+    private bool tutorialValidated = false;
+
 
     private void Awake()
     {
@@ -47,11 +54,14 @@ public class TriGameManager : MonoBehaviour
         }
 
         ApplyMiniGameCardIfAny();
-        StartGame();
+
+        ShowTutorialAndStart();
     }
 
     private void Update()
     {
+        if (!tutorialValidated) { return; }
+
         if (!IsPlaying) return;
 
         remainingTime -= Time.deltaTime;
@@ -175,5 +185,20 @@ public class TriGameManager : MonoBehaviour
             Debug.Log("[Tri] Mode oneMistakeFail : erreur de tri -> fin immédiate de la partie.");
             EndGame();
         }
+    }
+
+    public void ShowTutorialAndStart()
+    {
+        tutorialPanel.ShowClick(
+            "Tri",
+            tutorialClip
+        );
+        tutorialPanel.continueButton.onClick.RemoveAllListeners();
+        tutorialPanel.continueButton.onClick.AddListener(() => {
+            tutorialPanel.Hide();
+            tutorialValidated = true;
+            StartGame();
+
+        });
     }
 }

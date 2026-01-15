@@ -7,6 +7,8 @@ TagManager:
   - Soul
   - Activator
   - Enemy
+  - EnemyProjectile
+  - CombatBox
   layers:
   - Default
   - TransparentFX
