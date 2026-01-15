@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: d648ee7a8b9b45644a3b03b13198905d
+guid: 6a444ecc06e2e1a4982aa72149e33247
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1521608107859327237
-    second: minotaure_dos-sheet_0
-  - first:
-      213: -7829360318104831936
-    second: minotaure_dos-sheet_1
-  - first:
-      213: -7745879044887063180
-    second: minotaure_dos-sheet_2
-  - first:
-      213: 8717130233051418619
-    second: minotaure_dos-sheet_3
+      213: -452899327208941405
+    second: faceHole_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -55,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -81,9 +72,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 64
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -109,12 +100,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: minotaure_dos-sheet_0
+      name: faceHole_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 33
+        width: 32
         height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -124,74 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5093f442386dd1510800000000000000
-      internalID: 1521608107859327237
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: minotaure_dos-sheet_1
-      rect:
-        serializedVersion: 2
-        x: 34
-        y: 0
-        width: 28
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 04872dcb546885390800000000000000
-      internalID: -7829360318104831936
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: minotaure_dos-sheet_2
-      rect:
-        serializedVersion: 2
-        x: 63
-        y: 0
-        width: 34
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4755d505c0c118490800000000000000
-      internalID: -7745879044887063180
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: minotaure_dos-sheet_3
-      rect:
-        serializedVersion: 2
-        x: 98
-        y: 0
-        width: 28
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bff09d9f2c779f870800000000000000
-      internalID: 8717130233051418619
+      spriteID: 3a892b2267af6b9f0800000000000000
+      internalID: -452899327208941405
       vertices: []
       indices: 
       edges: []
@@ -200,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -210,10 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      minotaure_dos-sheet_0: 1521608107859327237
-      minotaure_dos-sheet_1: -7829360318104831936
-      minotaure_dos-sheet_2: -7745879044887063180
-      minotaure_dos-sheet_3: 8717130233051418619
+      faceHole_0: -452899327208941405
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

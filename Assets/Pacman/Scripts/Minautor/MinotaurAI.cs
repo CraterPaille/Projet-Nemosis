@@ -11,11 +11,8 @@ public class MinotaurAI : MonoBehaviour
     [Header("Comportement")]
     public GhostBehavior currentBehavior = GhostBehavior.Chase;
     public Transform pacmanTransform;       // Référence à Pacman
-    public Vector2 scatterTarget = new Vector2(0, 0); // Position cible en mode Scatter
     
     [Header("Timers")]
-    public float chaseDuration = 20f;       // Durée du mode Chase
-    public float scatterDuration = 7f;      // Durée du mode Scatter
     public float frightenedDuration = 10f;  // Durée du mode Frightened
     
     [Header("Debug")]
@@ -28,7 +25,6 @@ public class MinotaurAI : MonoBehaviour
     private Vector2 nextDirection = Vector2.zero;  // Direction après le prochain virage
     private Vector2 targetPosition;
     private float behaviorTimer = 0f;
-    private bool isScatterPhase = false;
     private bool isChangingDirection = false;  // Indique si on est en train de virer
     
     // Pour détecter le collider size
@@ -86,8 +82,7 @@ public class MinotaurAI : MonoBehaviour
     
     void Start()
     {
-
-        behaviorTimer = chaseDuration;
+        // Le Minotaure reste toujours en mode Chase
     }
  
 
@@ -123,20 +118,9 @@ public class MinotaurAI : MonoBehaviour
             behaviorTimer -= Time.fixedDeltaTime;
             if (behaviorTimer <= 0f)
             {
-                // Retour au mode précédent
-                currentBehavior = isScatterPhase ? GhostBehavior.Scatter : GhostBehavior.Chase;
-                behaviorTimer = isScatterPhase ? scatterDuration : chaseDuration;
+                // Retour au mode Chase
+                currentBehavior = GhostBehavior.Chase;
             }
-            return;
-        }
-        
-        behaviorTimer -= Time.fixedDeltaTime;
-        if (behaviorTimer <= 0f)
-        {
-            // Alterne entre Chase et Scatter
-            isScatterPhase = !isScatterPhase;
-            currentBehavior = isScatterPhase ? GhostBehavior.Scatter : GhostBehavior.Chase;
-            behaviorTimer = isScatterPhase ? scatterDuration : chaseDuration;
         }
     }
     
@@ -150,9 +134,6 @@ public class MinotaurAI : MonoBehaviour
         {
             case GhostBehavior.Chase:
                 targetPosition = pacmanTransform != null ? (Vector2)pacmanTransform.position : rb.position;
-                break;
-            case GhostBehavior.Scatter:
-                targetPosition = scatterTarget;
                 break;
             case GhostBehavior.Frightened:
                 // Mode aléatoire
@@ -424,11 +405,10 @@ public class MinotaurAI : MonoBehaviour
         {
             if (currentBehavior == GhostBehavior.Frightened)
             {
-                // Pacman mange le fantôme : le fantôme retourne en mode Scatter
+                // Pacman mange le fantôme : le fantôme retourne en mode Chase
                 SnapNow();
-                currentBehavior = GhostBehavior.Scatter;
-                behaviorTimer = scatterDuration;
-                Debug.Log("Minotaure mangé! Retour en mode Scatter");
+                currentBehavior = GhostBehavior.Chase;
+                Debug.Log("Minotaure mangé! Retour en mode Chase");
             }
             else
             {
@@ -458,11 +438,6 @@ public class MinotaurAI : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawLine(drawRb.position, pacmanTransform.position);
         }
-        else if (currentBehavior == GhostBehavior.Scatter)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(drawRb.position, scatterTarget);
-        }
     
         // Affiche les zones de détection
         BoxCollider2D drawCollider = GetComponent<BoxCollider2D>();
@@ -475,5 +450,11 @@ public class MinotaurAI : MonoBehaviour
                 Gizmos.DrawWireCube(checkPos, colliderSize * 0.9f);
             }
         }
+    }
+    
+    // Méthode publique pour obtenir la direction actuelle
+    public Vector2 GetCurrentDirection()
+    {
+        return currentDirection;
     }
 }

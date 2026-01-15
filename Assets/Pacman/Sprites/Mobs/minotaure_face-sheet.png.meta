@@ -112,17 +112,21 @@ TextureImporter:
       name: minotaure_face-sheet_0
       rect:
         serializedVersion: 2
-        x: 1
+        x: 0
         y: 0
-        width: 30
+        width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 16, y: 16}
+        - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+      tessellationDetail: 0
       bones: []
       spriteID: 40c3d02dfa8777b90800000000000000
       internalID: -7244188779063460860
@@ -134,17 +138,21 @@ TextureImporter:
       name: minotaure_face-sheet_1
       rect:
         serializedVersion: 2
-        x: 35
+        x: 32
         y: 0
-        width: 26
+        width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 16, y: -16}
+        - {x: 16, y: 16}
+        - {x: -16, y: 16}
+        - {x: -16, y: -16}
+      tessellationDetail: 0
       bones: []
       spriteID: 53ec10e8de32bc980800000000000000
       internalID: -8517674767044456907
@@ -156,17 +164,21 @@ TextureImporter:
       name: minotaure_face-sheet_2
       rect:
         serializedVersion: 2
-        x: 65
+        x: 64
         y: 0
-        width: 30
+        width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 16, y: -16}
+        - {x: 16, y: 16}
+        - {x: -16, y: 16}
+        - {x: -16, y: -16}
+      tessellationDetail: 0
       bones: []
       spriteID: 6d39a9fb06515dc70800000000000000
       internalID: 8995119336018056150
@@ -178,17 +190,21 @@ TextureImporter:
       name: minotaure_face-sheet_3
       rect:
         serializedVersion: 2
-        x: 99
+        x: 96
         y: 0
-        width: 26
+        width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 16, y: -16}
+        - {x: 16, y: 16}
+        - {x: -16, y: 16}
+        - {x: -16, y: -16}
+      tessellationDetail: 0
       bones: []
       spriteID: 81ccc7b9cbd5ad710800000000000000
       internalID: 1718789272439147544
@@ -200,7 +216,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 427832abd15cad1499767d8d2d41142c
     internalID: 0
     vertices: []
     indices: 

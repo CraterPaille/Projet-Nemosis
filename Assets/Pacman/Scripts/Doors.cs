@@ -25,7 +25,7 @@ public class Doors : MonoBehaviour
 
 
     IEnumerator SpawnDelay() {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(2.6f);
         Destroy(this.gameObject);
     }
 }
