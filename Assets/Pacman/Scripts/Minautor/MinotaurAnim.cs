@@ -25,12 +25,14 @@ public class MinotaurAnim : MonoBehaviour
             // Récupère la direction actuelle du MinotaurAI
             Vector2 direction = minotaurAI.GetCurrentDirection();
             
-            // Met à jour immédiatement la direction si elle est non-nulle
+            // Met à jour la direction complète (X et Y ensemble)
             if (direction != Vector2.zero)
             {
-                lastMoveX = direction.x;
-                lastMoveY = direction.y;
+                // Normalise pour avoir des valeurs propres (-1, 0, ou 1)
+                lastMoveX = Mathf.Round(direction.x);
+                lastMoveY = Mathf.Round(direction.y);
             }
+            
         }
 
         // Envoi des paramètres à l'Animator avec la dernière direction

@@ -21,7 +21,9 @@ public class Portal : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-
-        collision.transform.position = linkedPortal.transform.position + new Vector3(0, teleportDecalage, 0); // Impossible si c'est si simple lol 
+        if(collision.gameObject.CompareTag("Player"))
+        {
+            collision.transform.position = linkedPortal.transform.position + new Vector3(0, teleportDecalage, 0); // Impossible si c'est si simple lol 
+        }
     }
 }
