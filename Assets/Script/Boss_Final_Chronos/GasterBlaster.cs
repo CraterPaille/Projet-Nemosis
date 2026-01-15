@@ -15,12 +15,21 @@ public class GasterBlaster : MonoBehaviour
     private Transform player;
     private Vector3 targetDirection;
 
-    void Start()
+    // Compteur d'instances actives (utilisé pour limiter le spawn)
+    public static int ActiveCount { get; private set; } = 0;
+
+    private void OnEnable()
     {
+        ActiveCount++;
+
+        // S'assurer qu'aucune coroutine précédente ne tourne
+        StopAllCoroutines();
+
+        // Initialisation et démarrage du tir : utilisable à chaque activation (pool)
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player != null)
         {
-            targetDirection = (player.transform.position - transform.position).normalized;
+            targetDirection = (player.position - transform.position).normalized;
             float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, 0, angle);
             StartCoroutine(ChargeAndFire());
@@ -30,6 +39,11 @@ public class GasterBlaster : MonoBehaviour
             targetDirection = transform.right; // fallback
             Debug.LogError("GasterBlaster: Player not found!");
         }
+    }
+
+    private void OnDisable()
+    {
+        ActiveCount = Mathf.Max(0, ActiveCount - 1);
     }
 
     private IEnumerator ChargeAndFire()
@@ -53,10 +67,25 @@ public class GasterBlaster : MonoBehaviour
             GameObject laser = Instantiate(laserPrefab, firePoint.position, Quaternion.identity);
             // Oriente le laser
             laser.transform.right = targetDirection;
-            laser.GetComponent<Laser>().SetDamage(damage);
+            var laserComp = laser.GetComponent<Laser>();
+            if (laserComp != null)
+                laserComp.SetDamage(damage);
             Destroy(laser, laserDuration);
         }
 
-        Destroy(gameObject, aimTime + 0.1f); // Détruit le GasterBlaster après avoir tiré
+        // Ne pas détruire un objet géré par le pool : désactiver après délai
+        StartCoroutine(DisableAfter(aimTime + 0.1f));
+    }
+
+    private IEnumerator DisableAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Plutôt que Destroy(gameObject), on désactive l'objet pour qu'il retourne au pool
+        gameObject.SetActive(false);
+
+        // Reparent optionnel pour garder la hiérarchie propre
+        if (ObjectPooler.Instance != null)
+            transform.SetParent(ObjectPooler.Instance.transform);
     }
 }

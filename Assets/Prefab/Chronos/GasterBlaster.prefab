@@ -81,6 +81,6 @@ MonoBehaviour:
   chargeEffectPrefab: {fileID: 9104950582744654031, guid: 77dda667a385d2742ab77bf5adcd2c9d, type: 3}
   aimTime: 0.6
   laserDuration: 0.4
-  damage: 15
+  damage: 5
   laserSpeed: 5
-  chargeDuration: 1
+  chargeDuration: 2

@@ -1,25 +1,41 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ChronosAttackController : MonoBehaviour
 {
-    public GameObject gasterBlasterPrefab; // Assigne ce prefab dans l'inspecteur
-    public Transform arena; // Assigne la transform de l'arène
-    public float spawnRadius = 6f; // Rayon autour de l'arène pour spawner les GasterBlasters
+    public GameObject gasterBlasterPrefab;
+    public Transform arena;
+    public float spawnRadius = 6f;
     public GameObject jewelPrefab;
-    public Canvas choiceCanvas; // Canvas avec les boutons
-    public GameObject bonePrefab; // à assigner dans l'inspector
+    public Canvas choiceCanvas;
+    public GameObject bonePrefab;
     public UnityEngine.UI.Button attackButton;
     public UnityEngine.UI.Button healButton;
+
+    public float minWallGap = 2f;
+    public float boneRainMinSpacing = 0.3f;
+    public float boneRainSlowMultiplier = 1.6f;
+
+    private Coroutine timeFluxCoroutine;
 
     void OnEnable()
     {
         StartCoroutine(AttackLoop());
     }
 
+    void OnDisable()
+    {
+        // Arrêter TimeFlux si actif
+        if (timeFluxCoroutine != null)
+        {
+            StopCoroutine(timeFluxCoroutine);
+            Time.timeScale = 1f;
+        }
+    }
+
     IEnumerator AttackLoop()
     {
-        // Attendre que le singleton soit prêt
         while (ChronosGameManager.Instance == null)
             yield return null;
 
@@ -32,21 +48,24 @@ public class ChronosAttackController : MonoBehaviour
             int phase = ChronosGameManager.Instance.BossPhase;
             int pattern = 0;
 
-            // Sélectionne les patterns selon la phase
             if (phase == 1)
             {
-                // Phase 1 : attaques simples
-                pattern = Random.Range(0, 2); // 0 ou 1
+                pattern = Random.Range(0, 2);
             }
             else if (phase == 2)
             {
-                // Phase 2 : attaques plus dures
-                pattern = Random.Range(0, 3); // 0, 1, 2
+                pattern = Random.Range(0, 3);
             }
-            else if (phase >= 3 && phase <= 6)
+            else
             {
-                // Phases 3 à 6 : tout débloqué, patterns spéciaux, vitesse accrue
-                pattern = Random.Range(0, 5); // 0 à 4
+                pattern = Random.Range(0, 6);
+            }
+
+            // Phase 3+ : 50% de chance de lancer TimeFlux en parallèle
+            bool useTimeFlux = phase >= 3 && Random.value < 0.5f;
+            if (useTimeFlux && timeFluxCoroutine == null)
+            {
+                timeFluxCoroutine = StartCoroutine(PatternTimeFlux(8f));
             }
 
             switch (pattern)
@@ -54,15 +73,17 @@ public class ChronosAttackController : MonoBehaviour
                 case 0: yield return StartCoroutine(PatternFourCorners()); break;
                 case 1: yield return StartCoroutine(PatternCircleAroundPlayer()); break;
                 case 2: yield return StartCoroutine(PatternRandomSingleBlaster()); break;
-                case 3: yield return StartCoroutine(PatternBoneRain(phase >= 5 ? 35 : 20, phase >= 5 ? 2f : 3f)); break; // plus d'os, plus rapide
-                case 4: yield return StartCoroutine(PatternBoneWallWithGap(
-                    arena.position.y + arena.GetComponent<BoxCollider2D>().size.y / 2f, 
-                    phase >= 4 ? 18 : 12, 
-                    phase >= 4 ? 1.2f : 2f)); break; // mur plus dense, sortie plus petite
+                case 3: yield return StartCoroutine(PatternBoneRain(phase >= 5 ? 35 : 20, (phase >= 5 ? 2f : 3f) * boneRainSlowMultiplier)); break;
+                case 4:
+                    yield return StartCoroutine(PatternBoneWallWithGap(
+                            arena.position.y + arena.GetComponent<BoxCollider2D>().size.y / 2f,
+                            phase >= 4 ? 18 : 12,
+                            Mathf.Max(minWallGap, (phase >= 4 ? 1.2f : 2f)))); break;
+                case 5: yield return StartCoroutine(PatternSideBlastersWithFallingBones()); break;
             }
 
             patternCount++;
-            yield return new WaitForSeconds(phase >= 4 ? 1.2f : 2f); // moins de temps de pause aux phases avancées
+            yield return new WaitForSeconds(phase >= 4 ? 1.2f : 2f);
         }
     }
 
@@ -121,7 +142,7 @@ public class ChronosAttackController : MonoBehaviour
             while ((!IsInsideCamera(spawnPosition) || !IsOutsideBox(spawnPosition, box)) && attempts < maxAttempts);
 
             if (IsInsideCamera(spawnPosition) && IsOutsideBox(spawnPosition, box))
-                Instantiate(gasterBlasterPrefab, spawnPosition, GetRotationTowardsPlayer(spawnPosition));
+                ObjectPooler.Instance.SpawnFromPool("GasterBlaster", spawnPosition, GetRotationTowardsPlayer(spawnPosition));
             yield return new WaitForSeconds(0.3f);
         }
     }
@@ -153,7 +174,7 @@ public class ChronosAttackController : MonoBehaviour
             while ((!IsInsideCamera(spawnPosition) || !IsOutsideBox(spawnPosition, box)) && attempts < maxAttempts);
 
             if (IsInsideCamera(spawnPosition) && IsOutsideBox(spawnPosition, box))
-                Instantiate(gasterBlasterPrefab, spawnPosition, GetRotationTowardsPlayer(spawnPosition));
+                ObjectPooler.Instance.SpawnFromPool("GasterBlaster", spawnPosition, GetRotationTowardsPlayer(spawnPosition));
             yield return new WaitForSeconds(0.2f);
         }
     }
@@ -176,31 +197,50 @@ public class ChronosAttackController : MonoBehaviour
         while ((!IsInsideCamera(spawnPosition) || !IsOutsideBox(spawnPosition, box)) && attempts < maxAttempts);
 
         if (IsInsideCamera(spawnPosition) && IsOutsideBox(spawnPosition, box))
-            Instantiate(gasterBlasterPrefab, spawnPosition, GetRotationTowardsPlayer(spawnPosition));
+            ObjectPooler.Instance.SpawnFromPool("GasterBlaster", spawnPosition, GetRotationTowardsPlayer(spawnPosition));
         yield return new WaitForSeconds(1f);
     }
 
     IEnumerator PatternBoneRain(int boneCount = 20, float duration = 3f)
     {
+        if (arena == null || bonePrefab == null) yield break;
+
         BoxCollider2D box = arena.GetComponent<BoxCollider2D>();
         Vector2 boxCenter = box.transform.position;
         Vector2 boxSize = box.size * box.transform.lossyScale;
 
-        float startY = boxCenter.y + boxSize.y / 2f; // Bord supérieur de la box
+        float startY = boxCenter.y + boxSize.y / 2f;
         float minX = boxCenter.x - boxSize.x / 2f + 0.5f;
         float maxX = boxCenter.x + boxSize.x / 2f - 0.5f;
 
+        float totalTime = Mathf.Max(0.1f, duration);
+        float baseDelay = totalTime / Mathf.Max(1, boneCount);
+        float delay = baseDelay * 1.2f;
+
+        float lastX = float.NegativeInfinity;
+
         for (int i = 0; i < boneCount; i++)
         {
-            float x = Random.Range(minX, maxX);
+            float x;
+            int tries = 0;
+            do
+            {
+                x = Random.Range(minX, maxX);
+                tries++;
+                if (tries > 10) break;
+            } while (Mathf.Abs(x - lastX) < boneRainMinSpacing);
+
+            lastX = x;
             Vector3 spawnPos = new Vector3(x, startY, 0);
-            Instantiate(bonePrefab, spawnPos, Quaternion.identity);
-            yield return new WaitForSeconds(duration / boneCount);
+            ObjectPooler.Instance.SpawnFromPool("Bone", spawnPos, Quaternion.identity);
+            yield return new WaitForSeconds(delay);
         }
     }
 
     IEnumerator PatternBoneWallWithGap(float y, int boneCount = 12, float gapWidth = 2f)
     {
+        if (arena == null || bonePrefab == null) yield break;
+
         BoxCollider2D box = arena.GetComponent<BoxCollider2D>();
         Vector2 boxCenter = box.transform.position;
         Vector2 boxSize = box.size * box.transform.lossyScale;
@@ -208,20 +248,194 @@ public class ChronosAttackController : MonoBehaviour
         float minX = boxCenter.x - boxSize.x / 2f + 0.5f;
         float maxX = boxCenter.x + boxSize.x / 2f - 0.5f;
 
-        float gapCenter = Random.Range(minX + gapWidth, maxX - gapWidth);
+        float actualGap = Mathf.Max(minWallGap, gapWidth);
+        float gapCenter = Random.Range(minX + actualGap, maxX - actualGap);
 
         for (int i = 0; i < boneCount; i++)
         {
-            float t = (float)i / (boneCount - 1);
+            float t = (float)i / Mathf.Max(1, boneCount - 1);
             float x = Mathf.Lerp(minX, maxX, t);
 
-            if (Mathf.Abs(x - gapCenter) < gapWidth / 2f)
+            if (Mathf.Abs(x - gapCenter) < actualGap / 2f)
                 continue;
 
             Vector3 spawnPos = new Vector3(x, y, 0);
-            Instantiate(bonePrefab, spawnPos, Quaternion.identity);
+            ObjectPooler.Instance.SpawnFromPool("Bone", spawnPos, Quaternion.identity);
+            yield return new WaitForSeconds(0.02f);
         }
         yield return new WaitForSeconds(1.5f);
+    }
+
+    // NOUVEAU PATTERN : Blasters sur les côtés GAUCHE/DROITE + os qui tombent
+    IEnumerator PatternSideBlastersWithFallingBones(float duration = 7f)
+    {
+        if (arena == null) yield break;
+
+        BoxCollider2D box = arena.GetComponent<BoxCollider2D>();
+        Vector2 boxCenter = box.transform.position;
+        Vector2 boxSize = box.size * box.transform.lossyScale;
+
+        // Positions à gauche et à droite de la box
+        float leftX = boxCenter.x - boxSize.x / 2f - 1f;
+        float rightX = boxCenter.x + boxSize.x / 2f + 1f;
+        float minY = boxCenter.y - boxSize.y / 2f + 0.5f;
+        float maxY = boxCenter.y + boxSize.y / 2f - 0.5f;
+
+        int blastersPerSide = 4;
+
+        // Prépare positions des blasters sur les côtés
+        List<Vector3> leftPositions = new List<Vector3>();
+        List<Vector3> rightPositions = new List<Vector3>();
+
+        for (int i = 0; i < blastersPerSide; i++)
+        {
+            float y = Mathf.Lerp(minY, maxY, blastersPerSide == 1 ? 0.5f : (float)i / (blastersPerSide - 1));
+            leftPositions.Add(new Vector3(leftX, y, 0));
+            rightPositions.Add(new Vector3(rightX, y, 0));
+        }
+
+        // Démarre la boucle de blasters en parallèle
+        float blasterInterval = 1.2f;
+        Coroutine blastersCoroutine = StartCoroutine(SpawnSideBlastersLoop(leftPositions, rightPositions, duration, blasterInterval));
+
+        // Fait tomber des os pendant que les lasers tirent
+        float boneStartY = boxCenter.y + boxSize.y / 2f;
+        float boneMinX = boxCenter.x - boxSize.x / 2f + 0.5f;
+        float boneMaxX = boxCenter.x + boxSize.x / 2f - 0.5f;
+
+        float elapsed = 0f;
+        float boneSpawnInterval = 0.35f;
+        float gapSize = 1.5f; // Taille du gap pour laisser passer le joueur
+        float lastGapX = float.NegativeInfinity;
+
+        while (elapsed < duration)
+        {
+            // Spawn 3-5 os avec UN gap aléatoire
+            int boneCount = Random.Range(3, 6);
+            float gapX = Random.Range(boneMinX + gapSize, boneMaxX - gapSize);
+
+            // Évite que le gap soit au même endroit qu'avant
+            if (Mathf.Abs(gapX - lastGapX) < gapSize * 1.5f)
+            {
+                gapX = boneMinX + (boneMaxX - boneMinX) * Random.Range(0.3f, 0.7f);
+            }
+            lastGapX = gapX;
+
+            for (int i = 0; i < boneCount; i++)
+            {
+                float t = (float)i / Mathf.Max(1, boneCount - 1);
+                float x = Mathf.Lerp(boneMinX, boneMaxX, t);
+
+                // Laisse le gap
+                if (Mathf.Abs(x - gapX) < gapSize / 2f)
+                    continue;
+
+                Vector3 bonePos = new Vector3(x, boneStartY, 0);
+                ObjectPooler.Instance.SpawnFromPool("Bone", bonePos, Quaternion.identity);
+            }
+
+            yield return new WaitForSeconds(boneSpawnInterval);
+            elapsed += boneSpawnInterval;
+        }
+
+        // Arrête les blasters
+        if (blastersCoroutine != null)
+            StopCoroutine(blastersCoroutine);
+
+        yield return new WaitForSeconds(0.3f);
+    }
+
+    // Spawn les blasters sur les côtés (gauche et droite) qui tirent horizontalement
+    IEnumerator SpawnSideBlastersLoop(List<Vector3> leftPositions, List<Vector3> rightPositions, float duration, float interval)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            // Alterne entre gauche et droite ou spawn les deux
+            bool spawnLeft = Random.value > 0.3f;
+            bool spawnRight = Random.value > 0.3f;
+
+            if (spawnLeft)
+            {
+                // Choisit une position aléatoire à gauche
+                int index = Random.Range(0, leftPositions.Count);
+                Vector3 pos = leftPositions[index];
+                // Rotation pour tirer vers la droite (0°)
+                ObjectPooler.Instance.SpawnFromPool("GasterBlaster", pos, Quaternion.Euler(0, 0, 0));
+            }
+
+            if (spawnRight)
+            {
+                // Choisit une position aléatoire à droite
+                int index = Random.Range(0, rightPositions.Count);
+                Vector3 pos = rightPositions[index];
+                // Rotation pour tirer vers la gauche (180°)
+                ObjectPooler.Instance.SpawnFromPool("GasterBlaster", pos, Quaternion.Euler(0, 0, 180));
+            }
+
+            float waited = 0f;
+            while (waited < interval && elapsed < duration)
+            {
+                waited += Time.deltaTime;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+    }
+
+    // CORRIGÉ : TimeFlux en parallèle avec affichage du statut
+    IEnumerator PatternTimeFlux(float totalDuration = 8f)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < totalDuration)
+        {
+            float targetScale = Random.Range(0.45f, 1.6f);
+            float transTime = Random.Range(0.12f, 0.35f);
+            float holdTime = Random.Range(0.6f, 1.2f);
+
+            // Afficher le statut dans le dialogue
+            string status = targetScale < 0.8f ? "* Le temps ralentit..." :
+                           targetScale > 1.2f ? "* Le temps accélère !" :
+                           "* Le temps se stabilise.";
+            ChronosGameManager.Instance.dialogueText.text = status;
+
+            // Lerp vers target
+            float t = 0f;
+            float startScale = Time.timeScale;
+            while (t < transTime)
+            {
+                t += Time.unscaledDeltaTime;
+                Time.timeScale = Mathf.Lerp(startScale, targetScale, t / transTime);
+                yield return null;
+            }
+            Time.timeScale = targetScale;
+
+            // Hold stable
+            float rt = 0f;
+            while (rt < holdTime)
+            {
+                rt += Time.unscaledDeltaTime;
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        // Restaurer timescale
+        ChronosGameManager.Instance.dialogueText.text = "* Le temps revient à la normale.";
+        float restoreTime = 0.3f;
+        float tr = 0f;
+        float from = Time.timeScale;
+        while (tr < restoreTime)
+        {
+            tr += Time.unscaledDeltaTime;
+            Time.timeScale = Mathf.Lerp(from, 1f, tr / restoreTime);
+            yield return null;
+        }
+        Time.timeScale = 1f;
+
+        timeFluxCoroutine = null;
     }
 
     private Quaternion GetRotationTowardsPlayer(Vector3 spawnPosition)
@@ -235,20 +449,16 @@ public class ChronosAttackController : MonoBehaviour
 
     private IEnumerator SpawnJewelAndWaitChoice()
     {
-        // Récupère la box de combat
         BoxCollider2D box = arena.GetComponent<BoxCollider2D>();
         Vector2 boxCenter = box.transform.position;
         Vector2 boxSize = box.size * box.transform.lossyScale;
 
-        // Position aléatoire dans la box
         float x = Random.Range(boxCenter.x - boxSize.x / 2f, boxCenter.x + boxSize.x / 2f);
         float y = Random.Range(boxCenter.y - boxSize.y / 2f, boxCenter.y + boxSize.y / 2f);
         Vector3 spawnPos = new Vector3(x, y, 0);
 
-        // Instancie le joyau
-        GameObject jewel = Instantiate(jewelPrefab, spawnPos, Quaternion.identity);
+        GameObject jewel = ObjectPooler.Instance.SpawnFromPool("Jewel", spawnPos, Quaternion.identity);
 
-        // Affiche le canvas de choix
         choiceCanvas.gameObject.SetActive(true);
 
         bool choiceMade = false;
@@ -257,19 +467,15 @@ public class ChronosAttackController : MonoBehaviour
 
         attackButton.onClick.AddListener(() => {
             choiceMade = true;
-            // Appelle ici ta logique d'attaque spéciale
             ChronosGameManager.Instance.Attack();
         });
         healButton.onClick.AddListener(() => {
             choiceMade = true;
-            // Appelle ici ta logique de soin
             ChronosGameManager.Instance.Heal();
         });
 
-        // Attend le choix du joueur
         yield return new WaitUntil(() => choiceMade);
 
-        // Nettoyage
-        Destroy(jewel);
+        jewel.SetActive(false);
     }
 }

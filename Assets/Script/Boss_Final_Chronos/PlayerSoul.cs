@@ -31,4 +31,15 @@ public class PlayerSoul : MonoBehaviour
         }
         rb.MovePosition(targetPos);
     }
+
+    public static PlayerSoul Spawn(Vector3 position, Quaternion rotation)
+    {
+        var soulObj = ObjectPooler.Instance.SpawnFromPool("PlayerSoul", position, rotation);
+        return soulObj.GetComponent<PlayerSoul>();
+    }
+
+    public void Despawn()
+    {
+        gameObject.SetActive(false);
+    }
 }
