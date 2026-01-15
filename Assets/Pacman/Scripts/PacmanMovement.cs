@@ -247,4 +247,9 @@ public class PacmanMovement : MonoBehaviour
             transform.position = pos;
         }
     }
+
+    public Vector2 GetCurrentDirection()
+    {
+        return currentDirection;
+    }
 }
