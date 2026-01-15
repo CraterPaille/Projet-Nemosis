@@ -754,7 +754,7 @@ MonoBehaviour:
   resolutionDropdown: {fileID: 1093736020}
   fullscreenToggle: {fileID: 1648454322}
   colorblindDropdown: {fileID: 565261509}
-  firstSelected: {fileID: 185847972}
+  firstSelected: {fileID: 0}
 --- !u!1 &77614269
 GameObject:
   m_ObjectHideFlags: 0
@@ -17090,6 +17090,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961929603}
   m_CullTransparentMesh: 1
+--- !u!1 &1966186299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1966186301}
+  - component: {fileID: 1966186300}
+  m_Layer: 0
+  m_Name: GamepadCursor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1966186300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1966186299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c031d42633dcbf4ba42e10551c73ae9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamepadCursor
+  moveCursor: {fileID: -8784545083839296357, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  click: {fileID: 3001919216989983466, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  cursorSpeed: 1000
+  stickDeadzone: 0.15
+  cursorTexture: {fileID: 2800000, guid: 18201740013b56c40a8831f36396a43c, type: 3}
+  cursorClickTexture: {fileID: 2800000, guid: df933cc3eb8653f45b1f56329407019e, type: 3}
+  cursorMode: 0
+  hotSpot: {x: 0, y: 0}
+--- !u!4 &1966186301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1966186299}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -4.7799387, y: -2.6875577, z: 90}
+  m_LocalScale: {x: 0.00926, y: 0.00926, z: 0.00926}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1967572741
 GameObject:
   m_ObjectHideFlags: 0
@@ -18748,6 +18800,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 606108618}
   - {fileID: 280681859}
+  - {fileID: 1966186301}
   - {fileID: 386320118}
   - {fileID: 1520467868}
   - {fileID: 921762392}

@@ -43,7 +43,8 @@ public class ScheduleShow : MonoBehaviour
             return;
         }
 
-        var scheduled = eventScheduler.GetScheduledEvents(); // IReadOnlyList<EventDay>
+        // Utilise la liste publique scheduledEvents au lieu d'une méthode inexistante
+        var scheduled = eventScheduler.scheduledEvents; // IReadOnlyList<EventDay> possible
 
         StringBuilder sb = new StringBuilder();
 

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VillageCard
   cardName: Priere intense
   icon: {fileID: -2695734776074045611, guid: 4c1fd7160c6f6df4d9f5a2fd369abd1d, type: 3}
-  description: Nuit entiere de priere
+  description: IL ya bcp de texte chien hcien ces batard on tu cours niska qsjshdkjqshkd
+    kqshdjkqshkjdjhq h dqs dqsdqsdqsdqsdqsdqs dqsd qs dqsdqsdqs dqs
   cardSet: 1
-  effectSO: {fileID: 11400000, guid: f5edac698a0fe6849ad1f6e3e86b9bb0, type: 2}
+  effectSO: {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}

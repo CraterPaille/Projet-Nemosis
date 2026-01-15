@@ -42,7 +42,7 @@ public class ExampleClickerEventManager : BaseEventManager
     void Update()
     {
         timeRemaining -= Time.deltaTime;
-
+        
         if (timeRemaining <= 0)
         {
             timeRemaining = 0;

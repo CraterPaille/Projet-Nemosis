@@ -125,8 +125,7 @@ public class DialogueRunner : MonoBehaviour
                     var eff = effectSO.CreateInstance();
                     if (eff != null)
                     {
-                        PassiveManager.Instance.AddEffect(eff);
-                        eff.CheckConditions();
+                        eff.Activate();
                         Debug.Log($"[Effect] Applied {effectSO.effectName} via DialogueRunner.");
                     }
                 }

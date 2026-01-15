@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
   m_Name: BuidingData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: 5
+  buildingName: taille 5
   icon: {fileID: 21300000, guid: 6e6cb779fd0aed2438fc22c679491eb7, type: 3}
   description: 5
   gridSize: 5

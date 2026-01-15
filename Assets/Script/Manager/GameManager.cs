@@ -15,6 +15,9 @@ public class GameManager : MonoBehaviour
     public Dictionary<StatType, float> Multiplicateur = new Dictionary<StatType, float>();
     public Dictionary<StatType, float> Valeurs = new Dictionary<StatType, float>();
 
+    // Valeur maximale des stats (ajoutée pour conserver la fonctionnalité changeStatMax)
+    public Dictionary<StatType, float> MaxValeurs = new Dictionary<StatType, float>();
+
     [Tooltip("Nombre de cartes à piocher par set")]
     public int cardsToDraw = 3; // separer en set apres les tests ?
 
@@ -103,6 +106,7 @@ public class GameManager : MonoBehaviour
     {
         Multiplicateur.Clear();
         Valeurs.Clear();
+        MaxValeurs.Clear();
 
         Debug.Log("[GameManager] Initialisation de la nouvelle partie (état par défaut).");
 
@@ -110,6 +114,7 @@ public class GameManager : MonoBehaviour
         {
             Multiplicateur[stat] = 1f;
             Valeurs[stat] = 50f;
+            MaxValeurs[stat] = 100f; // valeur par défaut max
             changeStat(stat, 0f);
         }
 
@@ -123,10 +128,10 @@ public class GameManager : MonoBehaviour
         UIManager.Instance?.changeDateUI();
     }
 
-    public void addHumain()  { changeStat(StatType.Human, 10); }
+    public void addHumain() { changeStat(StatType.Human, 10); }
     public void lessHumain() { changeStat(StatType.Human, -10); }
-    public void addOr()      { changeStat(StatType.Or, 100); }
-    public void addFood()    { changeStat(StatType.Food, 100); }
+    public void addOr() { changeStat(StatType.Or, 100); }
+    public void addFood() { changeStat(StatType.Food, 100); }
 
     public void changeStat(StatType type, float amount)
     {
@@ -138,12 +143,38 @@ public class GameManager : MonoBehaviour
         {
             Valeurs[type] = 0f;
         }
+        if (!MaxValeurs.ContainsKey(type))
+        {
+            MaxValeurs[type] = 100f;
+        }
 
         Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
-        float delta = (amount > 0) ? amount * Multiplicateur[type] : amount;
-        Valeurs[type] += delta;
+        // Si amount positif, applique le multiplicateur ; si négatif, pas de multiplier selon ancienne logique
+        float proposedDelta = (amount > 0) ? amount * Multiplicateur[type] : amount;
+        // Clamp pour garder la valeur entre 0 et MaxValeurs[type]
+        float clampedDelta = Mathf.Clamp(Valeurs[type] + proposedDelta, 0f, MaxValeurs[type]) - Valeurs[type];
+        Valeurs[type] += clampedDelta;
         GameEvents.TriggerStatChanged(type, Valeurs[type]);
-        Debug.Log($"Stat {type} changed by {delta}, new value: {Valeurs[type]}");
+        Debug.Log($"Stat {type} changed by {clampedDelta}, new value: {Valeurs[type]}");
+    }
+
+    /// <summary>
+    /// Modifie la valeur maximale d'une stat (utilisé par certains effets).
+    /// Retourne la nouvelle valeur maximale.
+    /// </summary>
+    public float changeStatMax(StatType type, float amount)
+    {
+        if (!MaxValeurs.ContainsKey(type))
+            MaxValeurs[type] = 100f;
+        MaxValeurs[type] += amount;
+        // si on réduit max en dessous de la valeur courante, on clamp la valeur courante
+        if (Valeurs.ContainsKey(type) && Valeurs[type] > MaxValeurs[type])
+        {
+            Valeurs[type] = MaxValeurs[type];
+            GameEvents.TriggerStatChanged(type, Valeurs[type]);
+        }
+        Debug.Log($"Max value for {type} changed by {amount}, new max: {MaxValeurs[type]}");
+        return MaxValeurs[type];
     }
 
     /// <summary>
@@ -396,6 +427,7 @@ public class GameManager : MonoBehaviour
 
         Valeurs.Clear();
         Multiplicateur.Clear();
+        MaxValeurs.Clear();
 
         for (int i = 0; i < wrapper.statKeys.Count; i++)
         {
@@ -405,6 +437,8 @@ public class GameManager : MonoBehaviour
                 Valeurs[stat] = value;
                 if (!Multiplicateur.ContainsKey(stat))
                     Multiplicateur[stat] = 1f;
+                if (!MaxValeurs.ContainsKey(stat))
+                    MaxValeurs[stat] = 100f;
 
                 GameEvents.TriggerStatChanged(stat, value);
             }

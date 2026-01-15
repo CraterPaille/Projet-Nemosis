@@ -21,7 +21,7 @@ public abstract class BaseEventManager : MonoBehaviour
                 Debug.LogError("BaseEventManager: Aucun événement actif trouvé!");
             }
         }
-
+        
         OnEventStart();
     }
 
@@ -50,9 +50,9 @@ public abstract class BaseEventManager : MonoBehaviour
             Debug.Log($"Mini-jeu terminé avec score : {finalScore}");
             finalScore = CalculateScore();
             if (EventScheduler.Instance != null)
-            {
-                EventScheduler.Instance.SetEventScore(finalScore);
-            }
+        {
+            EventScheduler.Instance.SetEventScore(finalScore);
+        }
 
         }
         ReturnToBaseGame();
@@ -66,9 +66,9 @@ public abstract class BaseEventManager : MonoBehaviour
         // Charger la scène principale (à adapter selon votre projet)
         // Option 1: Si vous connaissez le nom de votre scène principale
         SceneManager.LoadScene("SampleScene"); // À remplacer par le nom de votre scène
-
+        
         UIManager.Instance.ShowMainUI();
-
+        
         Debug.Log("Retour à la scène principale");
     }
 

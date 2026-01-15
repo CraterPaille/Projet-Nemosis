@@ -31,7 +31,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   previousNode: {fileID: 0}
-  godText: leave me alnpne
+  godText: dommage
   responses: []
   endOfPhase: 0
 --- !u!114 &-4250886267445819724
@@ -53,7 +53,6 @@ MonoBehaviour:
     - previousNode
     - response_0
     - response_1
-    - response_2
     values:
     - _fieldName: previousNode
       _node: {fileID: -4250886267445819724}
@@ -91,30 +90,17 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 1
       _dynamic: 1
-    - _fieldName: response_2
-      _node: {fileID: -4250886267445819724}
-      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
-      connections: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 1
-      _dynamic: 1
   previousNode: {fileID: 0}
-  godText: fr
+  godText: tu t'appelle comment
   responses:
-  - responseText: a
+  - responseText: chef
     conditions: []
     effects: []
     nextNode: {fileID: 635196661814950160}
-  - responseText: b
+  - responseText: pas
     conditions: []
     effects: []
     nextNode: {fileID: 1824652131103855692}
-  - responseText: c
-    conditions: []
-    effects: []
-    nextNode: {fileID: 0}
   endOfPhase: 0
 --- !u!114 &-4237713353249914693
 MonoBehaviour:
@@ -129,7 +115,7 @@ MonoBehaviour:
   m_Name: Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
   graph: {fileID: 11400000}
-  position: {x: 200, y: 776}
+  position: {x: 120, y: 696}
   ports:
     keys:
     - previousNode
@@ -173,15 +159,17 @@ MonoBehaviour:
       _typeConstraint: 1
       _dynamic: 1
   previousNode: {fileID: 0}
-  godText: 'bien ou bien '
+  godText: oui et toi
   responses:
-  - responseText: je te suce
+  - responseText: non
     conditions: []
-    effects: []
+    effects:
+    - {fileID: 0}
     nextNode: {fileID: -5478368137052909631}
-  - responseText: teranquille
+  - responseText: oui
     conditions: []
-    effects: []
+    effects:
+    - {fileID: 11400000, guid: f7420eb78a11382428105bb56cd4b244, type: 2}
     nextNode: {fileID: 2910855492402868291}
   endOfPhase: 0
 --- !u!114 &11400000
@@ -250,9 +238,9 @@ MonoBehaviour:
       _typeConstraint: 1
       _dynamic: 1
   previousNode: {fileID: 0}
-  godText: aled
+  godText: bonjours chef
   responses:
-  - responseText: "Nouvelle r\xE9ponse"
+  - responseText: aurevoir
     conditions: []
     effects: []
     nextNode: {fileID: 3411246846331967137}
@@ -270,7 +258,7 @@ MonoBehaviour:
   m_Name: Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
   graph: {fileID: 11400000}
-  position: {x: 1000, y: 248}
+  position: {x: 1000, y: 408}
   ports:
     keys:
     - previousNode
@@ -288,7 +276,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   previousNode: {fileID: 0}
-  godText: 'Le dieux a parler '
+  godText: et bien soit
   responses: []
   endOfPhase: 0
 --- !u!114 &2910855492402868291
@@ -322,7 +310,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   previousNode: {fileID: 0}
-  godText: francais (degage
+  godText: parfait aurevoir
   responses: []
   endOfPhase: 0
 --- !u!114 &3411246846331967137
@@ -356,7 +344,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   previousNode: {fileID: 0}
-  godText: 
+  godText: 'Oui '
   responses: []
   endOfPhase: 0
 --- !u!114 &4516143893140607964
@@ -372,12 +360,13 @@ MonoBehaviour:
   m_Name: Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
   graph: {fileID: 11400000}
-  position: {x: -104, y: -8}
+  position: {x: -488, y: 248}
   ports:
     keys:
     - previousNode
     - response_0
     - response_1
+    - response_2
     values:
     - _fieldName: previousNode
       _node: {fileID: 4516143893140607964}
@@ -412,18 +401,30 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 1
       _dynamic: 1
+    - _fieldName: response_2
+      _node: {fileID: 4516143893140607964}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
   previousNode: {fileID: 0}
-  godText: a or b
+  godText: Bonjours
   responses:
-  - responseText: a
+  - responseText: Salut
     conditions:
     - {fileID: 11400000, guid: 1d21011add08bda47a55b38c9a31b3ec, type: 2}
-    effects:
-    - {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}
-    - {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}
+    effects: []
     nextNode: {fileID: -4250886267445819724}
-  - responseText: b
+  - responseText: tu va bien ?
     conditions: []
     effects: []
     nextNode: {fileID: -4237713353249914693}
+  - responseText: Aurevoir
+    conditions: []
+    effects:
+    - {fileID: 11400000, guid: eeea178a76bb1514a98d985ad9e8cabc, type: 2}
+    nextNode: {fileID: 0}
   endOfPhase: 0

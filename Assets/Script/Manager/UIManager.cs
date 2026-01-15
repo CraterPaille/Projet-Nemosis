@@ -11,7 +11,8 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
 
     [Header("Tooltip")]
-    [SerializeField] private GameObject tooltipPanel;
+    // Rendu public pour maintenir la compatibilité avec le code existant (VillageManager/Building2D)
+    public GameObject tooltipPanel;
     [SerializeField] private TextMeshProUGUI tooltipTitle;
     [SerializeField] private TextMeshProUGUI tooltipDescription;
 
@@ -169,6 +170,14 @@ public class UIManager : MonoBehaviour
                 tooltipRect.anchoredPosition = localPoint + offset;
             }
         }
+    }
+
+    /// <summary>
+    /// Retourne les données actuellement affichées par le tooltip (compatibilité)
+    /// </summary>
+    public BuildingData GetCurrentTooltipData()
+    {
+        return currentTooltipData;
     }
 
     /// <summary>Force la sélection d’un élément pour la navigation manette.</summary>

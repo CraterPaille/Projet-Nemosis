@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11dd4889239fdd3478083862a08848b8, type: 3}
   m_Name: Card pioche
   m_EditorClassIdentifier: Assembly-CSharp::VillageCard
-  cardName: 'Main divine '
+  cardName: Mini jeu test
   icon: {fileID: -6913285531725947405, guid: b79d3b263c8b47a459aa63100047ada2, type: 3}
-  description: TU va bone piocher le prochain tours
+  description: Tu va jouer a un jeu
   cardSet: 1
-  effectSO: {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}
+  effectSO: {fileID: 11400000, guid: aa1bd9662915b9f46b616ff56f8529c9, type: 2}

@@ -45,7 +45,7 @@ public class EventScheduler : MonoBehaviour
         }
 
         // Chercher un événement pour ce jour
-        Debug.Log("Recherche d'un événement pour le jour " + currentDay);
+        Debug.Log("Recherche d'un événement pour le jour " + currentDay);   
         BaseGameEvent eventToTrigger = GetEventForDay(currentDay);
         if (eventToTrigger != null)
         {
@@ -131,7 +131,7 @@ public class EventScheduler : MonoBehaviour
         if (currentEvent != null)
         {
             Debug.Log($"Événement '{currentEvent.eventInfo.eventName}' terminé avec score : {eventScore}");
-
+            
             // Appliquer les récompenses selon le score
             currentEvent.ApplyRewards(eventScore);
 
@@ -159,11 +159,18 @@ public class EventScheduler : MonoBehaviour
     }
 
     /// <summary>
-    /// Retourne la liste des jours avec événements, pour affichage dans un calendrier.
+    /// Ajoute un événement programmé pour un jour et un moment spécifiques.
     /// </summary>
-    public IReadOnlyList<EventDay> GetScheduledEvents()
+    public void AddEvent(BaseGameEvent gameEvent, int day, DayTime triggerTime)
     {
-        return scheduledEvents;
+        EventDay newEventDay = new EventDay
+        {
+            day = day,
+            triggerTime = triggerTime,
+            gameEvent = gameEvent
+        };
+        scheduledEvents.Add(newEventDay);
+        Debug.Log($"Événement '{gameEvent.eventInfo.eventName}' ajouté pour le jour {day} ({triggerTime})");
     }
 }
 
