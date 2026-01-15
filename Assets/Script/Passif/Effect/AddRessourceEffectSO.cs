@@ -35,13 +35,11 @@ public class Effect_AddRessource : Effect
         IsActive = true;
 
         // Parcourt la liste d'entrées sérialisées
-        Debug.Log("[Effect_AddRessource] Activation de l'effet : ajout de ressources.");
         foreach (var entry in soData.RessourceToAdd)
         {
             StatType stat = entry.statType;
             float amount = entry.amount;
             GameManager.Instance.changeStat(stat, amount);
-            Debug.Log($"Add resource {stat}: {amount}");
         }
         // Toujours instantané : se détruit après application
         DestroySelf();

@@ -8,6 +8,7 @@ public class DialogueUI : MonoBehaviour
     [Header("UI References")]
     public GameObject panel; // root panel to show/hide
     public TMP_Text godText;
+
     public Transform responsesContainer; // parent for response prefabs
     public GameObject responseItemPrefab; // prefab that contains ResponseItemController
     public Button closeButton;

@@ -16,6 +16,7 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     private bool isHighlighted = false;
 
     private VillageManager manager;
+    private BoxCollider2D boxCollider2D;
 
     private void Awake()
     {
@@ -25,11 +26,27 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
         
-        // Récupère le Collider2D
-        if (buildingCollider == null)
+        // IMPORTANT: Nettoie les anciens colliders qui pourraient traîner
+        Collider2D[] oldColliders = GetComponents<Collider2D>();
+        foreach (var col in oldColliders)
         {
-            buildingCollider = GetComponent<Collider2D>();
+            // Garde seulement le BoxCollider2D, supprime les autres
+            if (!(col is BoxCollider2D))
+            {
+                Destroy(col);
+            }
         }
+        
+        // Crée ou récupère le BoxCollider2D (si n'existe pas, on le crée)
+        boxCollider2D = GetComponent<BoxCollider2D>();
+        if (boxCollider2D == null)
+        {
+            boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
+        }
+        buildingCollider = boxCollider2D;
+        
+        // Configure le collider pour la détection sans gravité
+        boxCollider2D.isTrigger = true;
         
         if (spriteRenderer != null)
         {
@@ -39,8 +56,15 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     private void Update()
     {
-        // Détection du hover manuel (fallback si Physics2D Raycaster ne marche pas)
-        if (buildingCollider == null) return;
+        // Détection du hover basée sur le sprite plutôt que sur le collider
+        if (spriteRenderer == null || manager == null) 
+        {
+            if (manager == null && spriteRenderer != null && buildingData != null)
+            {
+                Debug.LogWarning($"[Building2D] Manager is null for {buildingData.buildingName}");
+            }
+            return;
+        }
 
         // Désactive si le menu d'interaction est ouvert
         if (UIManager.Instance != null && UIManager.Instance.IsInteractionMenuOpen())
@@ -53,11 +77,8 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             return;
         }
 
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = 10f;
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-
-        bool isHoveringNow = buildingCollider.bounds.Contains(worldPos);
+        // Détecte si la souris est sur le sprite
+        bool isHoveringNow = IsMouseOnSprite();
 
         if (isHoveringNow && !isHighlighted)
         {
@@ -66,6 +87,12 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         else if (!isHoveringNow && isHighlighted)
         {
             OnPointerExit(null);
+        }
+
+        // Détecte le clic basé sur le sprite
+        if (isHoveringNow && Input.GetMouseButtonDown(0))
+        {
+            OnPointerClick(null);
         }
     }
 
@@ -85,8 +112,6 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             // Auto-scale le sprite selon la taille du footprint
             ScaleSpriteToFootprint(data.gridSize, villageManager);
         }
-        
-        Debug.Log($"[Building2D] Initialized {data.buildingName} at position {transform.position}");
     }
 
     /// <summary>
@@ -97,10 +122,12 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (spriteRenderer == null || spriteRenderer.sprite == null)
             return;
 
+        // gridSize = nombre de tuiles (1 = 1 tuile, 2 = 2 tuiles, etc.)
+        float tilesSize = Mathf.Max(1, gridSize);
+
         // Calcule la taille visuelle en monde isométrique
-        // Footprint carré (gridSize x gridSize) correspond à :
-        float worldWidth = gridSize * villageManager.isoTileWidth;   // Largeur iso
-        float worldHeight = gridSize * villageManager.isoTileHeight;  // Hauteur iso
+        float worldWidth = tilesSize * villageManager.isoTileWidth;   // Largeur iso
+        float worldHeight = tilesSize * villageManager.isoTileHeight;  // Hauteur iso
 
         // Récupère la taille du sprite en unités monde
         Sprite sprite = spriteRenderer.sprite;
@@ -113,24 +140,41 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             float scaleX = worldWidth / spriteWidth;
             float scaleY = worldHeight / spriteHeight;
             
-            // Utilise l'échelle moyenne ou le minimum selon votre préférence
-            // Ici on utilise le minimum pour bien rentrer dans le carré
+            // Utilise le minimum pour rester dans le footprint puis multiplie par 10
             float scale = Mathf.Min(scaleX, scaleY);
             
             transform.localScale = new Vector3(scale, scale, 1f);
             
-            Debug.Log($"[Building2D] Scaled {buildingData.buildingName} to {scale:F2}x (footprint {gridSize}x{gridSize})");
+            // Mets à jour le collider pour qu'il corresponde au sprite scalé
+            UpdateColliderSize();
         }
     }
 
     /// <summary>
-    /// Appelé quand la souris entre dans le collider
+    /// Met à jour la taille du BoxCollider2D pour correspondre au sprite
+    /// </summary>
+    private void UpdateColliderSize()
+    {
+        if (boxCollider2D == null || spriteRenderer == null || spriteRenderer.sprite == null)
+            return;
+
+        // Récupère les bounds du sprite en prenant en compte le scale
+        Bounds spriteBounds = spriteRenderer.bounds;
+        
+        // Convertit à l'espace local du collider
+        Vector3 spriteSize = spriteRenderer.sprite.bounds.size;
+        boxCollider2D.size = new Vector2(spriteSize.x, spriteSize.y);
+        
+        // Centre le collider sur le sprite
+        boxCollider2D.offset = spriteRenderer.sprite.bounds.center;
+    }
+
+    /// <summary>
+    /// Appelé quand la souris entre dans le bâtiment
     /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (buildingData == null) return;
-        
-        Debug.Log($"Building {buildingData.buildingName} hovered.");
         
         // Highlight visuel
         if (spriteRenderer != null && !isHighlighted)
@@ -147,7 +191,7 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     }
 
     /// <summary>
-    /// Appelé quand la souris sort du collider
+    /// Appelé quand la souris sort du bâtiment
     /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
@@ -158,8 +202,12 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             isHighlighted = false;
         }
         
-        // Cache le tooltip
-        UIManager.Instance.HideTooltip();
+        // Cache le tooltip SEULEMENT si c'est celui de ce bâtiment
+        // (pour éviter que d'autres bâtiments cachent le tooltip du bâtiment actuel)
+        if (UIManager.Instance != null && UIManager.Instance.GetCurrentTooltipData() == buildingData)
+        {
+            UIManager.Instance.HideTooltip();
+        }
     }
 
     /// <summary>
@@ -168,8 +216,6 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void OnPointerClick(PointerEventData eventData)
     {
         if (buildingData == null) return;
-        
-        Debug.Log($"Building {buildingData.buildingName} clicked.");
         
         if (manager != null)
         {
@@ -199,13 +245,39 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         return buildingData;
     }
 
-    // Optionnel : visualisation en mode Scene
-    private void OnDrawGizmosSelected()
+    /// <summary>
+    /// Détecte si la souris est sur le sprite en tenant compte du scale et du pivot
+    /// </summary>
+    private bool IsMouseOnSprite()
     {
-        if (buildingData != null)
+        if (spriteRenderer == null || spriteRenderer.sprite == null || Camera.main == null)
+            return false;
+
+        Vector3 mousePos = Input.mousePosition;
+        
+        // Convertit la position écran en position monde
+        // Important: utiliser la profondeur Z du bâtiment, pas la caméra
+        Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(
+            new Vector3(mousePos.x, mousePos.y, Mathf.Abs(Camera.main.transform.position.z - transform.position.z))
+        );
+        
+        // Première vérification: les bounds du sprite (plus fiable)
+        if (spriteRenderer.bounds.Contains(worldMousePos))
         {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(transform.position, Vector3.one * 0.5f);
+            // Double vérification avec OverlapPoint pour être certain
+            Collider2D overlap = Physics2D.OverlapPoint(worldMousePos);
+            if (overlap != null && overlap.gameObject == gameObject)
+            {
+                return true;
+            }
+            // Si le collider n'existe pas ou problème, on retourne quand même true pour fallback
+            return true;
         }
+        
+        return false;
     }
+
+        
 }
+    
+

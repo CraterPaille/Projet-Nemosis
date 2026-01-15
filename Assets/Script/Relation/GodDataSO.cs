@@ -9,6 +9,14 @@ public class GodDataSO : ScriptableObject
     public string displayName;
     public Sprite icon;
     public bool unlocked = false;
+    public bool Is_Unlockable = true;
+    [Header("Description")]
+    [TextArea(3,10)]
+    public string description;
+    [Header("How to debloquer")]
+    [TextArea(3,10)]
+    public string unlockDescription;
+
     public int relation = 0;
     // Interaction tracking
     public float lastInteractionDay = 0;

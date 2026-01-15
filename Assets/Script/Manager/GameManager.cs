@@ -15,9 +15,12 @@ public class GameManager : MonoBehaviour
     public Dictionary<StatType, float> Multiplicateur = new Dictionary<StatType, float>();
     public Dictionary<StatType, float> Valeurs = new Dictionary<StatType, float>();
 
-    [Tooltip("Nombre de cartes à piocher par set")]
-    public int cardsToDraw = 3; // separer en set apres les tests ?
+    [Tooltip("Valeur maximale des stats")]
+    public Dictionary<StatType, float> MaxValeurs = new Dictionary<StatType, float>();
 
+    [Tooltip("Nombre de cartes à piocher par set / reroll")]
+    public int cardsToDraw = 3; // separer en set apres les tests ?
+    public int NbrReroll = 2;
     // Effet pour le jeu global
     [Header("Jour actuel")]
     public float currentDay = 1;
@@ -51,13 +54,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        foreach (var kvp in Valeurs)
-        {
-            Debug.Log($"[DEBUG] Dictionnaire contient {kvp.Key} = {kvp.Value}");
-        }
-
-        Debug.Log($"StatType values: {string.Join(", ", System.Enum.GetNames(typeof(StatType)))}");
-        // initialise le dictionnaire : chaque clé est un élément de StatType, valeur initiale 
         foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
             
@@ -65,6 +61,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"[GameManager] Initializing stat {stat} with multiplier {Multiplicateur[stat]}");
             // initial value
             Valeurs[stat] = 50f;
+            MaxValeurs[stat] = 100f;
             changeStat(stat, 0f);
         }
         changeStat(StatType.Nemosis, -50f);
@@ -72,35 +69,19 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public void addHumain()
-    {
-        changeStat(StatType.Human, 10);
-    }
-
-    public void lessHumain()
-    {
-        changeStat(StatType.Human, -10);
-    }
-
-    public void addOr()
-    {
-        changeStat(StatType.Or, 100);
-    }
-
-    public void addFood()
-    {
-        changeStat(StatType.Food, 100);
-    }
-
     public void changeStat(StatType type, float amount)
     {
-        Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
         float delta = (amount > 0) ? amount * Multiplicateur[type] : amount;
+        delta = Mathf.Clamp(Valeurs[type] + delta, 0, MaxValeurs[type]) - Valeurs[type];
         Valeurs[type] += delta;
         GameEvents.TriggerStatChanged(type, Valeurs[type]);
-        Debug.Log($"Stat {type} changed by {delta}, new value: {Valeurs[type]}");
     }
 
+    public float changeStatMax(StatType type, float amount)
+    {
+        MaxValeurs[type] += amount;
+        return MaxValeurs[type];
+    }
 
     // Gere le choix du mode de jeu 
     public void ChooseGameMode()

@@ -26,8 +26,8 @@ public class VillageManager : MonoBehaviour
 
     [Header("Paramètres de placement automatique")]
     public bool autoSizeGrid = true; // Calcule une grille carrée selon le nombre et la taille des bâtiments
-    public float isoTileWidth = 1f;  // Largeur visuelle d'une tuile iso (monde)
-    public float isoTileHeight = 0.5f; // Hauteur visuelle d'une tuile iso (monde)
+    public float isoTileWidth = 100f;  // Largeur visuelle d'une tuile iso (monde)
+    public float isoTileHeight = 50f; // Hauteur visuelle d'une tuile iso (monde)
     public float isoYOffset = 0f; // Décalage vertical pour aligner visuellement avec la grille Unity
     public int gridWidth = 16;  // Largeur de la grille en cellules (utilisé si autoSizeGrid = false)
     public int gridHeight = 12; // Hauteur de la grille en cellules (utilisé si autoSizeGrid = false)
@@ -36,10 +36,9 @@ public class VillageManager : MonoBehaviour
     [Header("Fallback (si buildingPlacements vide)")]
     public List<BuildingData> currentBuildings;
 
-    private List<BuildingUI> instantiatedBuildingsUI = new List<BuildingUI>();
     private List<Building2D> instantiatedBuildings2D = new List<Building2D>();
     private bool[,] gridOccupancy; // Grille de suivi des cellules occupées
-
+    [HideInInspector] public BuildingData buildingClicked;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -51,6 +50,33 @@ public class VillageManager : MonoBehaviour
         CloseButton.SetActive(false);
         villageGrid.SetActive(false);
     }
+
+    public void RemoveBuilding(BuildingData buildingData)
+    {
+        if (currentBuildings == null)
+        {
+            Debug.LogWarning("[VillageManager] currentBuildings is null!");
+            return;
+        }
+        if (currentBuildings.Remove(buildingData))
+        {
+            Debug.Log($"[VillageManager] Removed building: {buildingData.buildingName}");
+        }
+        else
+        {
+            Debug.LogWarning($"[VillageManager] Building not found to remove: {buildingData.buildingName}");
+        }
+        AfficheBuildings();
+    }
+    public void AddBuilding(BuildingData buildingData)
+    {
+        if (currentBuildings == null)
+        {
+            currentBuildings = new List<BuildingData>();
+        }
+        currentBuildings.Add(buildingData);
+        Debug.Log($"[VillageManager] Added building: {buildingData.buildingName}");
+    }
     public void AfficheBuildings()
     {
         // Toujours utiliser le placement auto en 2D isométrique
@@ -59,43 +85,12 @@ public class VillageManager : MonoBehaviour
             AfficheBuildings2D();
             return;
         }
-
-        // Fallback éventuel sur l'ancien système UI si aucun prefab 2D
-        if (buildingUIPrefab != null && currentBuildings != null && currentBuildings.Count > 0)
-        {
-            AfficheBuildingsUI();
-            return;
-        }
-
         Debug.LogWarning("[VillageManager] Aucun bâtiment configuré !");
     }
 
-    private void AfficheBuildingsUI()
-    {
-        // Nettoie l'ancien UI
-        for (int i = instantiatedBuildingsUI.Count - 1; i >= 0; i--)
-        {
-            var ui = instantiatedBuildingsUI[i];
-            if (ui != null && ui.gameObject != null)
-                Destroy(ui.gameObject);
-        }
-        instantiatedBuildingsUI.Clear();
-        // Désactive la grille et le contrôle caméra
-        if (villageGrid != null)
-            villageGrid.SetActive(false);
 
-        // Crée les nouveaux UI
-        UIManager.Instance.SHowVillageUI();
-        foreach (var building in currentBuildings)
-        {
-            var go = Instantiate(buildingUIPrefab, buildingContainer);
-            var ui = go.GetComponent<BuildingUI>();
-            ui.Init(building, this);
-            instantiatedBuildingsUI.Add(ui);
-        }
-    }
 
-    private void AfficheBuildings2D()
+    public void AfficheBuildings2D()
     {
         // Nettoie les anciens bâtiments 2D
         CloseButton.SetActive(true);
@@ -142,9 +137,27 @@ public class VillageManager : MonoBehaviour
                 continue;
             }
 
-            // Instancie le prefab
-            GameObject go = Instantiate(building2DPrefab, placement.worldPosition, Quaternion.identity, buildingsParent);
+            // Instancie le prefab SANS parent d'abord (pour éviter problème de Z local)
+            Vector3 positionWithZero = new Vector3(placement.worldPosition.x, placement.worldPosition.y, 0f);
+            GameObject go = Instantiate(building2DPrefab, positionWithZero, Quaternion.identity, null);
             go.name = $"Building_{placement.buildingData.buildingName}";
+            
+            // Force le Z à 0 en position mondiale
+            Vector3 finalPos = go.transform.position;
+            finalPos.z = 0f;
+            go.transform.position = finalPos;
+            
+            // Maintenant assigne le parent
+            if (buildingsParent != null)
+            {
+                go.transform.SetParent(buildingsParent, true); // true = garde position mondiale
+                
+                // IMPORTANT: Force la position locale Z à 0 après parenting
+                // Car le parent peut avoir un Z différent qui affecte la conversion
+                Vector3 localPos = go.transform.localPosition;
+                localPos.z = 0f;
+                go.transform.localPosition = localPos;
+            }
 
             // Init le script
             var building2D = go.GetComponent<Building2D>();
@@ -168,6 +181,7 @@ public class VillageManager : MonoBehaviour
     private void CalculateAutomaticPlacement()
     {
         // Détermine la taille de grille (option carrée automatique)
+        // gridSize = nombre de tuiles (1 = 1 tuile, 2 = 2 tuiles, etc.)
         int totalArea = 0;
         int maxSize = 1;
         foreach (var b in currentBuildings)
@@ -188,8 +202,13 @@ public class VillageManager : MonoBehaviour
         gridOccupancy = new bool[gridWidth, gridHeight];
         
         // Trie les bâtiments par taille décroissante (les plus grands en premier)
+        // gridSize = nombre de tuiles
         List<BuildingData> sortedBuildings = new List<BuildingData>(currentBuildings);
-        sortedBuildings.Sort((a, b) => (b.gridSize * b.gridSize).CompareTo(a.gridSize * a.gridSize));
+        sortedBuildings.Sort((a, b) => {
+            int sizeA = a.gridSize;
+            int sizeB = b.gridSize;
+            return (sizeB * sizeB).CompareTo(sizeA * sizeA);
+        });
         
         buildingPlacements.Clear();
         
@@ -213,6 +232,7 @@ public class VillageManager : MonoBehaviour
     /// </summary>
     private Vector3 FindBestPlacement(BuildingData building)
     {
+        // gridSize = nombre de tuiles (1 = 1 tuile, 2 = 2 tuiles, etc.)
         int size = Mathf.Max(1, building.gridSize);
         
         // Cherche une position libre en commençant par le haut-gauche
@@ -315,30 +335,20 @@ public class VillageManager : MonoBehaviour
         GameManager.Instance.EndHalfDay();
     }
 
-    
-
-    public void OnBuildingHovered(BuildingUI building)
-    {
-        // Affiche info tooltip
-        UIManager.Instance.ShowBuildingTooltip(building.Data);
-    }
-
-    public void OnBuildingClicked(BuildingUI building)
-    {
-        // Si interactions : ouvre un panneau d’interaction
-        UIManager.Instance.ShowInteractionMenu(building.Data);
-        Debug.Log($"Building {building.Data.buildingName} clicked.");
-    }
+ 
     // Overload pour Building2D
     public void OnBuildingHovered(Building2D building)
     {
+        Debug.Log($"[VillageManager] OnBuildingHovered called for {building.GetData().buildingName}");
+        UIManager.Instance.tooltipPanel.SetActive(true);
         UIManager.Instance.ShowBuildingTooltip(building.GetData());
     }
 
     public void OnBuildingClicked(Building2D building)
     {
+        Debug.Log($"[VillageManager] OnBuildingClicked called for {building.GetData().buildingName}");
+        buildingClicked = building.GetData();
         UIManager.Instance.ShowInteractionMenu(building.GetData());
-        Debug.Log($"Building {building.GetData().buildingName} clicked.");
     }
 }
 

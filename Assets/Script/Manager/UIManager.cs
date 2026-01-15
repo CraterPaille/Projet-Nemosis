@@ -9,7 +9,8 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
 
     [Header("Tooltip")]
-    [SerializeField] private GameObject tooltipPanel;
+    [SerializeField] public GameObject tooltipPanel;
+    [SerializeField] private Canvas tooltipCanvas; // Canvas contenant le tooltip
     [SerializeField] private TextMeshProUGUI tooltipTitle;
     [SerializeField] private TextMeshProUGUI tooltipDescription;
 
@@ -20,6 +21,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject interactionHeader;
     [SerializeField] private Transform interactionContent;
     [SerializeField] private GameObject interactionButtonPrefab;
+
+    [SerializeField] private TextMeshProUGUI RerollText;
 
     [Header("Village UI")]
     [SerializeField] private GameObject villagePanel;
@@ -63,6 +66,11 @@ public class UIManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        // Résout automatiquement le Canvas du tooltip si non assigné
+        if (tooltipCanvas == null && tooltipPanel != null)
+        {
+            tooltipCanvas = tooltipPanel.GetComponentInParent<Canvas>(true); // true = inclut les parents inactifs
+        }
         tooltipPanel.SetActive(false);
         interactionPanel.SetActive(false);
         villagePanel.SetActive(false);
@@ -87,24 +95,43 @@ public class UIManager : MonoBehaviour
     private void Update()
     {
         // Positionne le tooltip à côté de la souris
-        if (tooltipPanel.activeSelf)
+        if (tooltipPanel.activeSelf && tooltipPanel.activeInHierarchy)
         {
-            RectTransform canvasRect = tooltipPanel.transform.parent.GetComponent<RectTransform>();
+            // Assure que le tooltip est sous un Canvas
+            if (tooltipCanvas == null && tooltipPanel != null)
+            {
+                tooltipCanvas = tooltipPanel.GetComponentInParent<Canvas>(true); // true = inclut les parents inactifs
+            }
+
+            // Détermine la caméra à utiliser selon le mode du Canvas
+            Camera cam = null;
+            if (tooltipCanvas != null && tooltipCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                cam = tooltipCanvas.worldCamera;
+            }
+
             RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
-            
+            RectTransform canvasRect = tooltipCanvas != null ? tooltipCanvas.GetComponent<RectTransform>() : tooltipPanel.transform.parent.GetComponent<RectTransform>();
+
             if (canvasRect != null && tooltipRect != null)
             {
-                Vector2 localPoint;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect, 
-                    Input.mousePosition, 
-                    Camera.main, 
-                    out localPoint
-                );
-                
-                // Offset fixe en pixels : décale à droite et légèrement en bas
                 Vector2 offset = offsetTooltip;
-                tooltipRect.anchoredPosition = localPoint + offset;
+
+                if (tooltipCanvas != null && tooltipCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                {
+                    // Position écran directe pour Screen Space Overlay
+                    tooltipPanel.transform.position = Input.mousePosition + new Vector3(offset.x, offset.y, 0f);
+                }
+                else
+                {
+                    // Pour Screen Space Camera : convertit la position écran en position locale dans le Canvas
+                    Vector2 localPoint;
+                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, Input.mousePosition, cam, out localPoint))
+                    {
+                        // Applique l'offset et positionne via anchoredPosition
+                        tooltipRect.anchoredPosition = localPoint + offset;
+                    }
+                }
             }
         }
     }
@@ -125,20 +152,99 @@ public class UIManager : MonoBehaviour
     // --- TOOLTIP ---
     public void ShowBuildingTooltip(BuildingData data)
     {
+        tooltipPanel.SetActive(true);
+        Debug.Log($"[UIManager] ShowBuildingTooltip called for {data.buildingName}");
+        
         // Évite de rafraîchir si c'est le même bâtiment
-        if (currentTooltipData == data && tooltipPanel.activeSelf)
+        if (currentTooltipData == data && tooltipPanel != null && tooltipPanel.activeSelf)
             return;
 
         currentTooltipData = data;
-        tooltipPanel.SetActive(true);
-        tooltipTitle.text = data.buildingName;
-        tooltipDescription.text = data.description;
+        if (tooltipPanel != null)
+        {
+            // Récupère le Canvas parent si nécessaire
+            if (tooltipCanvas == null)
+            {
+                tooltipCanvas = tooltipPanel.GetComponentInParent<Canvas>(true); // true = inclut les inactifs
+            }
+            
+            // Active TOUS les parents jusqu'au Canvas (inclus)
+            Transform current = tooltipPanel.transform;
+            while (current != null)
+            {
+                if (!current.gameObject.activeSelf)
+                {
+                    Debug.Log($"[UIManager] Activating parent: {current.name}");
+                    current.gameObject.SetActive(true);
+                }
+                // S'arrête au Canvas
+                if (tooltipCanvas != null && current == tooltipCanvas.transform)
+                    break;
+                current = current.parent;
+            }
+            
+            // S'assure que le Canvas lui-même est actif
+            if (tooltipCanvas != null)
+            {
+                if (!tooltipCanvas.gameObject.activeSelf)
+                {
+                    Debug.Log($"[UIManager] Activating Canvas: {tooltipCanvas.name}");
+                    tooltipCanvas.gameObject.SetActive(true);
+                }
+                // S'assure que le Canvas component est enabled
+                if (!tooltipCanvas.enabled)
+                {
+                    Debug.Log($"[UIManager] Enabling Canvas component: {tooltipCanvas.name}");
+                    tooltipCanvas.enabled = true;
+                }
+            }
+            
+            // S'assure que le tooltip est sous le Canvas et au-dessus des autres éléments
+            if (tooltipCanvas != null && tooltipPanel.transform.parent != tooltipCanvas.transform)
+            {
+                tooltipPanel.transform.SetParent(tooltipCanvas.transform, true);
+            }
+            tooltipPanel.transform.SetAsLastSibling();
+            
+            // Force les anchors au centre pour que anchoredPosition fonctionne correctement avec ScreenPointToLocalPointInRectangle
+            RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
+            if (tooltipRect != null)
+            {
+                tooltipRect.anchorMin = new Vector2(0.5f, 0.5f);
+                tooltipRect.anchorMax = new Vector2(0.5f, 0.5f);
+                tooltipRect.pivot = new Vector2(0f, 1f); // Pivot en haut à gauche pour que le tooltip s'affiche en bas à droite de la souris
+            }
+            
+            tooltipPanel.SetActive(true);
+            
+            Debug.Log($"[UIManager] Tooltip panel activeSelf: {tooltipPanel.activeSelf}, activeInHierarchy: {tooltipPanel.activeInHierarchy}");
+        }
+        else
+        {
+            Debug.LogError("[UIManager] tooltipPanel is NULL! Cannot show tooltip!");
+            return;
+        }
+        
+        if (tooltipTitle != null)
+            tooltipTitle.text = data.buildingName ?? string.Empty;
+        else
+            Debug.LogError("[UIManager] tooltipTitle is NULL!");
+            
+        if (tooltipDescription != null)
+            tooltipDescription.text = data.description ?? string.Empty;
+        else
+            Debug.LogError("[UIManager] tooltipDescription is NULL!");
     }
 
     public void HideTooltip()
     {
         currentTooltipData = null;
         tooltipPanel.SetActive(false);
+    }
+
+    public BuildingData GetCurrentTooltipData()
+    {
+        return currentTooltipData;
     }
 
     // --- INTERACTIONS ---

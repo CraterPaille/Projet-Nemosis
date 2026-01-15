@@ -12,11 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06324efcc7d956c46a9b26bfb8d54320, type: 3}
   m_Name: New Add Ressource Effect SO
   m_EditorClassIdentifier: Assembly-CSharp::AddRessourceEffectSO
-  effectName: 
+  effectName: Ajotue BCp de foi
   description: 
   isInstant: 0
-  conditions:
-  - {fileID: 11400000, guid: 1d21011add08bda47a55b38c9a31b3ec, type: 2}
+  conditions: []
   RessourceToAdd:
-  - statType: 3
-    amount: 20
+  - statType: 0
+    amount: 70
