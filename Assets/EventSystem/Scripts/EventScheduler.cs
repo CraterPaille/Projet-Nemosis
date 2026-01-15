@@ -157,6 +157,21 @@ public class EventScheduler : MonoBehaviour
     {
         return currentEvent;
     }
+
+    /// <summary>
+    /// Ajoute un événement programmé pour un jour et un moment spécifiques.
+    /// </summary>
+    public void AddEvent(BaseGameEvent gameEvent, int day, DayTime triggerTime)
+    {
+        EventDay newEventDay = new EventDay
+        {
+            day = day,
+            triggerTime = triggerTime,
+            gameEvent = gameEvent
+        };
+        scheduledEvents.Add(newEventDay);
+        Debug.Log($"Événement '{gameEvent.eventInfo.eventName}' ajouté pour le jour {day} ({triggerTime})");
+    }
 }
 
 /// <summary>
