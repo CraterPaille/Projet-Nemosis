@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections; // Ajoutez en haut
+using System.Collections;
+using DG.Tweening;
 
 public class ChronosGameManager : MonoBehaviour
 {
@@ -20,9 +21,16 @@ public class ChronosGameManager : MonoBehaviour
     public int bossCurrentHP; // PV du cœur actuel
 
     public int BossPhase => bossMaxHearts - bossCurrentHearts + 1;
+    [Header("HP Bar Sprites")]
+    public Sprite hpFull;
+    public Sprite hpHalf;
+    public Sprite hpLow;
+    public Sprite hpEmpty;
+
 
     [Header("Boss Hearts UI")]
     public Image[] bossHeartImages; // 6 images à assigner dans l’Inspector
+    private Tween[] heartRotateTweens;
     public Sprite heartEmpty;
     public Sprite heartQuarter;
     public Sprite heartHalf;
@@ -36,6 +44,12 @@ public class ChronosGameManager : MonoBehaviour
 
     private Coroutine hpAnimCoroutine;
 
+    [Header("SFX")]
+    public AudioSource sfxSource;
+    public AudioClip sfxDamage;
+    public AudioClip sfxHeal;
+
+
     void Awake()
     {
         Instance = this;
@@ -43,28 +57,30 @@ public class ChronosGameManager : MonoBehaviour
 
     void Start()
     {
-        // Les références sont assignées dans l’Inspector, pas via le pool
+        heartRotateTweens = new Tween[bossMaxHearts];
         playerHP = playerMaxHP;
         bossCurrentHearts = bossMaxHearts;
         bossCurrentHP = bossHeartHP;
         UpdateUI();
-        dialogueText.text = "* sans t'observe avec un sourire.";
+        dialogueText.text = "* Chronos t'observe avec un sourire.";
     }
+
+
 
     public void DamagePlayer(int dmg)
     {
         int oldHP = playerHP;
-        playerHP -= dmg;
-        if (playerHP < 0) playerHP = 0;
+        playerHP = Mathf.Max(playerHP - dmg, 0);
 
-        if (hpAnimCoroutine != null)
-            StopCoroutine(hpAnimCoroutine);
+        PlayHPBarEffect(true);
+        PlayPlayerDamageEffects();
 
-        hpAnimCoroutine = StartCoroutine(AnimateHPBarAndText(oldHP, playerHP));
+        UpdateHPBar();
+        UpdatePlayerHPText();
 
         if (playerHP <= 0)
         {
-            dialogueText.text = "* sans gagne. tu es mort.";
+            dialogueText.text = "* Chronos à gagné. tu es mort.";
             StopAllCoroutines();
         }
     }
@@ -85,17 +101,25 @@ public class ChronosGameManager : MonoBehaviour
             int currentHP = Mathf.RoundToInt(Mathf.Lerp(fromHP, toHP, t));
 
             playerHPBar.fillAmount = currentFill;
-            if (playerHPText != null)
-                playerHPText.text = $"{currentHP} / {playerMaxHP}";
+            UpdatePlayerHPText(currentHP);
 
             yield return null;
         }
         // Valeur finale
         playerHPBar.fillAmount = endFill;
-        if (playerHPText != null)
-            playerHPText.text = $"{toHP} / {playerMaxHP}";
+        UpdatePlayerHPText(toHP);
+        if (playerHP <= playerMaxHP * 0.2f)
+        {
+            playerHPBar.DOColor(Color.red, 0.2f).SetLoops(-1, LoopType.Yoyo);
+        }
+        else
+        {
+            playerHPBar.DOKill();
+            playerHPBar.color = Color.white;
+        }
 
         UpdateUIBossHearts(); // Pour garder la logique des cœurs du boss
+
     }
 
     // Séparez la mise à jour des cœurs du boss pour éviter de toucher à la barre/text pendant l'animation
@@ -129,18 +153,21 @@ public class ChronosGameManager : MonoBehaviour
             bossCurrentHP = bossHeartHP;
             // Changement de phase
             dialogueText.text = $"* Phase {BossPhase} !";
-            // Joue l’animation de cœur perdu ici
+            PlayDialogueEffect();
+
+            // Impact visuel fort
+            Camera.main.transform.DOShakePosition(0.3f, 0.3f);
         }
         else
         {
-            // Joue l’animation de quart de cœur perdu ici
             dialogueText.text = "* Tu enlèves 1/4 de cœur !";
+            PlayDialogueEffect();
+
         }
 
         if (bossCurrentHearts <= 0)
         {
-            dialogueText.text = "* Le boss est vaincu !";
-            // Animation de victoire
+            dialogueText.text = "*Chronos est vaincu !";
         }
 
         UpdateUI();
@@ -150,7 +177,48 @@ public class ChronosGameManager : MonoBehaviour
     {
         // Exemple : soigne le joueur d’une valeur fixe (ex : 20 HP)
         int healAmount = 20;
+        int oldHP = playerHP;
+
         playerHP = Mathf.Min(playerHP + healAmount, playerMaxHP);
+
+        // Effet visuel
+        playerHPBar.DOColor(Color.green, 0.15f)
+            .OnComplete(() =>
+            {
+                playerHPBar.DOColor(Color.white, 0.2f);
+            });
+
+        playerHPBar.rectTransform
+            .DOScale(1.15f, 0.2f)
+            .SetEase(Ease.OutBack)
+            .OnPlay(() =>
+            {
+                sfxSource.PlayOneShot(sfxHeal);
+            })
+            .OnComplete(() =>
+            {
+                playerHPBar.rectTransform.DOScale(1f, 0.1f);
+            });
+
+        if (hpAnimCoroutine != null)
+            StopCoroutine(hpAnimCoroutine);
+
+        hpAnimCoroutine = StartCoroutine(AnimateHPBarAndText(oldHP, playerHP));
+
+        if (playerHPText != null)
+        {
+            playerHPText.rectTransform
+                .DOScale(1.3f, 0.2f)
+                .SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                    playerHPText.rectTransform.DOScale(1f, 0.1f);
+                });
+        }
+
+        UpdateHPBar();
+        UpdatePlayerHPText();
+
         UpdateUI();
         dialogueText.text = $"* Tu te soignes de {healAmount} PV !";
         // Ajoute ici ta logique de soin spéciale
@@ -195,23 +263,22 @@ public class ChronosGameManager : MonoBehaviour
 
     private Sprite GetHeartSprite(int value)
     {
-        switch (value)
+        return value switch
         {
-            case 4: return heartFull;
-            case 3: return heartThreeQuarters;
-            case 2: return heartHalf;
-            case 1: return heartQuarter;
-            default: return heartEmpty;
-        }
+            4 => heartFull,
+            3 => heartThreeQuarters,
+            2 => heartHalf,
+            1 => heartQuarter,
+            _ => heartEmpty,
+        };
     }
 
-    void UpdateUI()
+    public void UpdateUI()
     {
         playerHPBar.fillAmount = (float)playerHP / playerMaxHP;
 
         // Affiche le texte HP en gros
-        if (playerHPText != null)
-            playerHPText.text = $"{playerHP} / {playerMaxHP}";
+        UpdatePlayerHPText();
 
 
         // Mise à jour des cœurs du boss
@@ -220,15 +287,143 @@ public class ChronosGameManager : MonoBehaviour
             if (i < bossCurrentHearts - 1)
             {
                 bossHeartImages[i].sprite = heartFull;
+                StartHeartRotation(i);// Cœur plein, démarre la rotation
             }
             else if (i == bossCurrentHearts - 1)
             {
+                // Animation DOTween
                 bossHeartImages[i].sprite = GetHeartSprite(bossCurrentHP);
+                bossHeartImages[i].rectTransform
+                .DOScale(1.3f, 0.1f)
+                .SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                bossHeartImages[i].rectTransform.DOScale(1f, 0.1f);
+                });
+                bossHeartImages[i].rectTransform.DOShakeRotation(0.2f, 15f);
+                StopHeartRotation(i);// Cœur actuel, arrête la rotation
             }
             else
             {
                 bossHeartImages[i].sprite = heartEmpty;
+                StopHeartRotation(i);// Cœur vide, arrête la rotation
             }
         }
+    }
+
+    void StartHeartRotation(int index)
+    {
+        // Sécurité : éviter doublons
+        if (heartRotateTweens[index] != null && heartRotateTweens[index].IsActive())
+            return;
+
+        RectTransform rt = bossHeartImages[index].rectTransform;
+
+        heartRotateTweens[index] = rt
+            .DORotate(new Vector3(0, 0, 180f), 5f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetDelay(2f);
+
+    }
+
+    void StopHeartRotation(int index)
+    {
+        if (heartRotateTweens[index] != null)
+        {
+            heartRotateTweens[index].Kill();
+            heartRotateTweens[index] = null;
+        }
+
+        // Reset rotation
+        bossHeartImages[index].rectTransform.rotation = Quaternion.identity;
+    }
+
+    void PlayPlayerDamageEffects()
+    {
+        // Shake léger
+        playerHPBar.rectTransform.DOShakePosition( 0.2f, strength: new Vector3(10f, 0, 0), vibrato: 15)
+    .OnPlay(() =>
+    {
+        sfxSource.PlayOneShot(sfxDamage);
+    });
+
+        // Flash rouge
+        playerHPBar.DOColor(Color.red, 0.1f)
+            .OnComplete(() =>
+            {
+                playerHPBar.DOColor(Color.white, 0.15f);
+            });
+
+        if (playerHPText != null)
+        {
+            playerHPText.rectTransform.DOShakePosition(
+                0.3f,
+                strength: 8f,
+                vibrato: 20
+            );
+        }
+    }
+
+    void PlayDialogueEffect()
+    {
+        dialogueText.rectTransform.DOKill();
+
+        dialogueText.rectTransform.localScale = Vector3.one * 0.95f;
+        dialogueText.rectTransform
+            .DOScale(1f, 0.15f)
+            .SetEase(Ease.OutBack)
+            .OnPlay(() => {sfxSource.PlayOneShot(sfxDamage, 0.3f);});
+    }
+
+
+    private Sprite GetHPBarSprite(int currentHP)
+    {
+        float ratio = (float)currentHP / playerMaxHP;
+
+        if (ratio >= 0.75f)
+            return hpFull;
+        else if (ratio >= 0.5f)
+            return hpHalf;
+        else if (ratio > 0f)
+            return hpLow;
+        else
+            return hpEmpty;
+    }
+
+    private void PlayHPBarEffect(bool isDamage)
+    {
+        playerHPBar.rectTransform.DOKill(); // Stop tweens en cours
+
+        if (isDamage)
+        {
+            // Shake + son
+            playerHPBar.rectTransform.DOShakePosition(0.2f, new Vector3(10f, 0, 0), 15);
+            sfxSource.PlayOneShot(sfxDamage);
+        }
+        else
+        {
+            // Heal avec un pop + son
+            playerHPBar.rectTransform
+                .DOScale(1.15f, 0.2f)
+                .SetEase(Ease.OutBack)
+                .OnPlay(() => sfxSource.PlayOneShot(sfxHeal))
+                .OnComplete(() => playerHPBar.rectTransform.DOScale(1f, 0.1f));
+        }
+    }
+
+    private void UpdateHPBar()
+    {
+        playerHPBar.sprite = GetHPBarSprite(playerHP);
+
+        // Optionnel : si tu veux un fillAmount animé en plus
+        float targetFill = (float)playerHP / playerMaxHP;
+        playerHPBar.DOFillAmount(targetFill, 0.4f); // animation douce
+    }
+
+    private void UpdatePlayerHPText(int hp = -1)
+    {
+        if (playerHPText != null)
+            playerHPText.text = $"{(hp < 0 ? playerHP : hp)} / {playerMaxHP}";
     }
 }

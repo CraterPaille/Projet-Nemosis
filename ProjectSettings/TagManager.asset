@@ -9,15 +9,22 @@ TagManager:
   - Enemy
   - EnemyProjectile
   - CombatBox
+  - Shield
+  - Laser
+  - needle
+  - GasterBlaster
+  - Jewel
+  - PlayerSoul
+  - Charge
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
-  - 
+  - Laser
+  - Shield
   - 
   - 
   - 

@@ -3,42 +3,34 @@ using System.Collections;
 
 public class GasterBlaster : MonoBehaviour
 {
-    public GameObject laserPrefab; // Assigne ce prefab dans l'inspecteur
-    public Transform firePoint; // Le point de départ du laser
-    public GameObject chargeEffectPrefab; // Un prefab de cube blanc ou effet de chargement
+    public GameObject laserPrefab;
+    public Transform firePoint;
+    public GameObject chargeEffectPrefab;
     public float aimTime = 0.5f;
     public float laserDuration = 1.5f;
     public int damage = 15;
     public float laserSpeed = 8f;
     public float chargeDuration = 1f;
 
+    [HideInInspector] public float initialDelay = 0f;
+    [HideInInspector] public bool forceCardinalDirection = false;
+    [HideInInspector] public Vector3 forcedDirection = Vector3.zero;
+
+    // Tags optionnels pour utiliser la pool
+    public string laserPoolTag = "";  // ex: "Laser"
+    public string chargePoolTag = ""; // ex: "Charge"
+
     private Transform player;
     private Vector3 targetDirection;
-
-    // Compteur d'instances actives (utilisé pour limiter le spawn)
     public static int ActiveCount { get; private set; } = 0;
 
     private void OnEnable()
     {
         ActiveCount++;
-
-        // S'assurer qu'aucune coroutine précédente ne tourne
         StopAllCoroutines();
 
-        // Initialisation et démarrage du tir : utilisable à chaque activation (pool)
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (player != null)
-        {
-            targetDirection = (player.position - transform.position).normalized;
-            float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, angle);
-            StartCoroutine(ChargeAndFire());
-        }
-        else
-        {
-            targetDirection = transform.right; // fallback
-            Debug.LogError("GasterBlaster: Player not found!");
-        }
+        Debug.Log($"GasterBlaster OnEnable: charge={chargeDuration}s speed={laserSpeed}");
+        StartCoroutine(SequenceRoutine());
     }
 
     private void OnDisable()
@@ -46,45 +38,97 @@ public class GasterBlaster : MonoBehaviour
         ActiveCount = Mathf.Max(0, ActiveCount - 1);
     }
 
+    private IEnumerator SequenceRoutine()
+    {
+        // Attendre initialDelay si nécessaire (temps normal)
+        if (initialDelay > 0f)
+        {
+            yield return new WaitForSeconds(initialDelay);
+        }
+
+        // Calculer la direction cible
+        player = GameObject.FindGameObjectWithTag("PlayerSoul")?.transform;
+
+        if (forceCardinalDirection && forcedDirection != Vector3.zero)
+        {
+            targetDirection = forcedDirection.normalized;
+            Debug.Log($"GasterBlaster: Using forced direction {targetDirection}");
+        }
+        else if (player != null)
+        {
+            targetDirection = (player.position - transform.position).normalized;
+            Debug.Log($"GasterBlaster: Targeting player at {player.position}");
+        }
+        else
+        {
+            targetDirection = transform.right;
+            Debug.LogWarning("GasterBlaster: No target, using default direction");
+        }
+
+        // Orienter le blaster
+        float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
+
+        // Lancer charge et tir
+        yield return StartCoroutine(ChargeAndFire());
+    }
+
     private IEnumerator ChargeAndFire()
     {
-        // Affiche l’effet de chargement
+        // Effet de chargement
         GameObject charge = null;
         if (chargeEffectPrefab != null && firePoint != null)
         {
             charge = Instantiate(chargeEffectPrefab, firePoint.position, firePoint.rotation, firePoint);
         }
 
+        // Temps de charge (temps normal)
         yield return new WaitForSeconds(chargeDuration);
 
-        // Retire l’effet de chargement
+        // Retire l'effet de charge
         if (charge != null)
             Destroy(charge);
 
-        // Tire le laser dans la direction mémorisée
-        if (laserPrefab != null && firePoint != null)
+        // Tire le laser
+        if (laserPrefab == null)
         {
-            GameObject laser = Instantiate(laserPrefab, firePoint.position, Quaternion.identity);
-            // Oriente le laser
-            laser.transform.right = targetDirection;
-            var laserComp = laser.GetComponent<Laser>();
-            if (laserComp != null)
-                laserComp.SetDamage(damage);
-            Destroy(laser, laserDuration);
+            Debug.LogError("GasterBlaster: laserPrefab is NULL!");
+            yield break;
+        }
+        if (firePoint == null)
+        {
+            Debug.LogError("GasterBlaster: firePoint is NULL!");
+            yield break;
         }
 
-        // Ne pas détruire un objet géré par le pool : désactiver après délai
-        StartCoroutine(DisableAfter(aimTime + 0.1f));
-    }
+        Debug.Log($"GasterBlaster FIRING: pos={firePoint.position} dir={targetDirection} speed={laserSpeed}");
 
-    private IEnumerator DisableAfter(float delay)
-    {
-        yield return new WaitForSeconds(delay);
+        GameObject laser = Instantiate(laserPrefab, firePoint.position, Quaternion.identity);
+        laser.transform.right = targetDirection;
 
-        // Plutôt que Destroy(gameObject), on désactive l'objet pour qu'il retourne au pool
+        // Configure le laser
+        var laserComp = laser.GetComponent<Laser>();
+        if (laserComp != null)
+            laserComp.SetDamage(damage);
+
+        var laserMove = laser.GetComponent<LaserMovement>();
+        if (laserMove != null)
+        {
+            laserMove.speed = laserSpeed;
+            laserMove.useRealtime = false; // Toujours temps normal maintenant
+            Debug.Log($"LaserMovement configured: speed={laserSpeed}");
+        }
+        else
+        {
+            Debug.LogError("GasterBlaster: LaserMovement component MISSING on laser prefab!");
+        }
+
+        Destroy(laser, laserDuration);
+
+        // Désactive le blaster après un délai
+        yield return new WaitForSeconds(aimTime + 0.1f);
         gameObject.SetActive(false);
 
-        // Reparent optionnel pour garder la hiérarchie propre
         if (ObjectPooler.Instance != null)
             transform.SetParent(ObjectPooler.Instance.transform);
     }

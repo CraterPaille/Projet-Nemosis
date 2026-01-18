@@ -61,6 +61,14 @@ public class GameManagerZeus : MonoBehaviour
     public VideoClip tutorialClip; // à assigner dans l'inspector
     private bool tutorialValidated = false;
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 10, 20, 30 };
+    private bool[] starGiven = new bool[3];
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages;
+    public Sprite starOnSprite;
+    public Sprite starOffSprite;
+
 
     void Awake()
     {
@@ -73,7 +81,8 @@ public class GameManagerZeus : MonoBehaviour
         ShowTutorialAndStart();
         _baseSpawnRateCached = baseSpawnRate;
         ApplyMiniGameCardIfAny();
-
+        starGiven = new bool[3];
+        UpdateStarsUI();
     }
 
     private void ShowTutorialAndStart()
@@ -242,8 +251,23 @@ public class GameManagerZeus : MonoBehaviour
             var shake = mainCamera.GetComponent<CameraShake>();
             if (shake != null) shake.Shake(0.05f, 0.05f);
         }
-
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (!starGiven[i] && score >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.changeStat(StatType.Foi, 5f);
+            }
+        }
+        UpdateStarsUI();
         UpdateUI();
+    }
+
+    public void UpdateStarsUI()
+    {
+        for (int i = 0; i < starImages.Length; i++)
+            starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
     }
 
     // Appelé par Enemy.ReachCity()
@@ -315,17 +339,6 @@ public class GameManagerZeus : MonoBehaviour
                 $"Score : {finalScore}";
         }
 
-        // Conversion score -> Population (Human)
-        if (GameManager.Instance != null)
-        {
-            float baseHumanGain = finalScore / 2f;
-            float humanGain = baseHumanGain * _rewardMult + _rewardFlat;
-
-            if (humanGain != 0)
-                GameManager.Instance.changeStat(StatType.Human, humanGain);
-
-            Debug.Log($"[Zeus] Score={finalScore} -> Human +{humanGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
-        }
         SceneManager.LoadScene("SampleScene");
 
     }

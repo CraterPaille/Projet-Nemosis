@@ -44,11 +44,21 @@ public class NuitGlacialeGameManager : MonoBehaviour
     public bool StartPlaying;
 
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 10, 20, 30 };
+    private bool[] starGiven = new bool[3];
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages;
+    public Sprite starOnSprite;
+    public Sprite starOffSprite;
+
 
     void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+        starGiven = new bool[3];
+        UpdateStarsUI();
     }
 
     void Start()
@@ -118,7 +128,15 @@ public class NuitGlacialeGameManager : MonoBehaviour
             return;
 
         if (!isRunning) return;
-
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (!starGiven[i] && timeLeft >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.changeStat(StatType.Foi, 5f);
+            }
+        }
         timeLeft -= Time.deltaTime;
         if (timeLeft <= 0)
         {
@@ -142,8 +160,14 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
         if (offCount >= maxAllowedOff)
             Lose();
-    }
+        UpdateStarsUI();
 
+    }
+    public void UpdateStarsUI()
+    {
+        for (int i = 0; i < starImages.Length; i++)
+            starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
+    }
     IEnumerator HouseFailures()
     {
         float currentInterval = interval;
@@ -307,22 +331,6 @@ public class NuitGlacialeGameManager : MonoBehaviour
         isRunning = false;
         StopAllCoroutines();
         UIManagerNuit.Instance.ShowWin();
-
-        if (GameManager.Instance != null)
-        {
-            // Exemple : temps restant comme "score" (plus il reste de temps, plus tu gagnes)
-            int finalScore = Mathf.CeilToInt(timeLeft);
-
-            float foodGain  = finalScore / 2f;  // à ajuster
-            float humanGain = finalScore / 5f;  // à ajuster
-
-            if (foodGain != 0f)
-                GameManager.Instance.changeStat(StatType.Food, foodGain);
-            if (humanGain != 0f)
-                GameManager.Instance.changeStat(StatType.Human, humanGain);
-
-            Debug.Log($"[NuitGlaciale] Score={finalScore} -> Food +{foodGain}, Human +{humanGain}");
-        }
         SceneManager.LoadScene("SampleScene");
     }
 

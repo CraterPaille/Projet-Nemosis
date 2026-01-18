@@ -84,3 +84,8 @@ MonoBehaviour:
   damage: 5
   laserSpeed: 5
   chargeDuration: 2
+  initialDelay: 0
+  forceCardinalDirection: 0
+  forcedDirection: {x: 0, y: 0, z: 0}
+  laserPoolTag: Laser
+  chargePoolTag: charge

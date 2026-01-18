@@ -34,6 +34,13 @@ public class TriGameManager : MonoBehaviour
     public VideoClip tutorialClip; // à assigner dans l'inspector
     private bool tutorialValidated = false;
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 30, 60, 100 };
+    private bool[] starGiven = new bool[3];
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages;
+    public Sprite starOnSprite;
+    public Sprite starOffSprite;
 
     private void Awake()
     {
@@ -56,6 +63,9 @@ public class TriGameManager : MonoBehaviour
         ApplyMiniGameCardIfAny();
 
         ShowTutorialAndStart();
+
+        starGiven = new bool[3];
+        UpdateStarsUI();
     }
 
     private void Update()
@@ -82,11 +92,29 @@ public class TriGameManager : MonoBehaviour
         spawner.StartSpawning();
     }
 
+    // Modifie AddScore :
     public void AddScore(int soulsCount)
     {
-        // on garde l’idée d’un score par âme, ici multiplié par la difficulté
         score += soulsCount * _baseScorePerSoul;
         uiManager.UpdateScore(score);
+
+        // Paliers étoiles
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (!starGiven[i] && score >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.changeStat(StatType.Foi, 5f); // ou autre stat
+            }
+        }
+        UpdateStarsUI();
+    }
+
+    public void UpdateStarsUI()
+    {
+        for (int i = 0; i < starImages.Length; i++)
+            starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
     }
 
     public void EndGame()
@@ -102,22 +130,6 @@ public class TriGameManager : MonoBehaviour
 
         uiManager.ShowEndScreen(score);
 
-        // Conversion score -> Or + Foi avec rewardMultiplier / rewardFlatBonus
-        if (GameManager.Instance != null)
-        {
-            float baseOr  = score / 2f;
-            float baseFoi = score / 10f;
-
-            float orGain  = baseOr  * _rewardMult + _rewardFlat;
-            float foiGain = baseFoi * _rewardMult + _rewardFlat;
-
-            if (orGain != 0)
-                GameManager.Instance.changeStat(StatType.Or, orGain);
-            if (foiGain != 0)
-                GameManager.Instance.changeStat(StatType.Foi, foiGain);
-
-            Debug.Log($"[Tri] Score={score} -> Or +{orGain}, Foi +{foiGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
-        }
 
         SceneManager.LoadScene("SampleScene");
     }

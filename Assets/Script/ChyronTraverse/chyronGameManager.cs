@@ -32,6 +32,7 @@ public class chyronGameManager : MonoBehaviour
 
     public bool isGameOver = false;
 
+    public SpriteRenderer spriteRenderer;
     PlayerLaneMovement player;
 
     private Coroutine vibrationCoroutine;
@@ -47,11 +48,21 @@ public class chyronGameManager : MonoBehaviour
     public VideoClip tutorialClip;
     private bool tutorialValidated = false;
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 100, 200, 300 };
+    private bool[] starGiven = new bool[3];
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages;
+    public Sprite starOnSprite;
+    public Sprite starOffSprite;
+
     public bool IsPlaying => tutorialValidated && !isGameOver;
 
     void Start()
     {
         ShowTutorialAndStart();
+        starGiven = new bool[3];
+        UpdateStarsUI();
     }
 
     public void ShowTutorialAndStart()
@@ -86,6 +97,9 @@ public class chyronGameManager : MonoBehaviour
             sfxSource.playOnAwake = false;
             sfxSource.loop = false;
         }
+        starGiven = new bool[3];
+        UpdateStarsUI();
+
     }
 
     void Update()
@@ -98,6 +112,17 @@ public class chyronGameManager : MonoBehaviour
         lifeText.text = "Vies : " + currentLives + "/" + maxLives;
         if (coinText != null)
             coinText.text = "Pièces : " + coinScore;
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (!starGiven[i] && score >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.changeStat(StatType.Foi, 5f);
+            }
+        }
+        UpdateStarsUI();
+
     }
 
     public void HitObstacle()
@@ -150,26 +175,15 @@ public class chyronGameManager : MonoBehaviour
         Debug.Log("GAME OVER!");
 
         int finalScore = Mathf.FloorToInt(score);
-
-
-        // Conversion score -> Or + Foi avec rewardMultiplier / rewardFlatBonus
-        if (GameManager.Instance != null)
-        {
-            float baseFoi = finalScore / 700f;
-            float foiGain = baseFoi * _rewardMult + _rewardFlat;
-
-            float orGain = coinScore * _rewardMult + _rewardFlat;
-
-            if (orGain != 0)
-                GameManager.Instance.changeStat(StatType.Or, orGain);
-            if (foiGain != 0)
-                GameManager.Instance.changeStat(StatType.Foi, foiGain);
-
-            Debug.Log($"[Chyron] Score={finalScore} -> Or +{orGain}, Foi +{foiGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
-        }
-
         SceneManager.LoadScene("SampleScene");
 
+    }
+
+
+    public void UpdateStarsUI()
+    {
+        for (int i = 0; i < starImages.Length; i++)
+            starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
     }
 
     // invincibilité et clignotement

@@ -67,6 +67,13 @@ public class GameManagerRhytme : MonoBehaviour
     public VideoClip tutorialClip; // à assigner dans l'inspector
     private bool tutorialValidated = false; // Ajouté
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 500, 1000, 1500 }; // à ajuster selon la difficulté
+    private bool[] starGiven = new bool[3];
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages; // Assigne les images des étoiles dans l’inspector
+    public Sprite starOnSprite;               // Sprite allumée
+    public Sprite starOffSprite;
 
     private void Awake()
     {
@@ -123,6 +130,7 @@ public class GameManagerRhytme : MonoBehaviour
 
     private void Start()
     {
+        starGiven = new bool[3];
         ShowTutorialAndStart();
 
         // Effet carte mini-jeu, si présent
@@ -333,6 +341,41 @@ public class GameManagerRhytme : MonoBehaviour
         ScoreText.text = "Score : " + currentScore;
 
         _scorePunch?.Play();
+
+        // Vérifie les paliers d'étoiles
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (!starGiven[i] && currentScore >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                // Donne la stat (exemple : +1 Foi par étoile)
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.changeStat(StatType.Foi, 5f);
+                    Debug.Log($"[Rhytme] Palier étoile {i + 1} atteint ! Foi +1");
+                }
+            }
+        }
+        UpdateStarsUI(); 
+
+    }
+
+    public int GetStarCount()
+    {
+        int count = 0;
+        for (int i = 0; i < starGiven.Length; i++)
+            if (starGiven[i]) count++;
+        return count;
+    }
+    public void UpdateStarsUI()
+    {
+        for (int i = 0; i < starImages.Length; i++)
+        {
+            if (starGiven[i])
+                starImages[i].sprite = starOnSprite;
+            else
+                starImages[i].sprite = starOffSprite;
+        }
     }
 
     void HandleMultiplier()
@@ -392,22 +435,6 @@ public class GameManagerRhytme : MonoBehaviour
 
         Debug.Log($"[Rhytme] Fin chanson - Score={currentScore}, Acc={accuracy:P1}");
 
-        // Conversion score -> stats globales (Rythme -> Foi)
-        if (GameManager.Instance != null)
-        {
-            float baseFoi = currentScore / 500f;
-            float foiGain = baseFoi * _rewardMult + _rewardFlat;
-
-            if (foiGain != 0f)
-            {
-                GameManager.Instance.changeStat(StatType.Foi, foiGain);
-                Debug.Log($"[Rhytme] Score={currentScore} -> Foi +{foiGain} (mult x{_rewardMult}, flat +{_rewardFlat})");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[Rhytme] GameManager.Instance est null, impossible d'appliquer les stats.");
-        }
     }
 
     public void Vibrate(float left, float right, float duration)

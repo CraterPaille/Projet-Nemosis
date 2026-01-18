@@ -33,7 +33,8 @@ public class ObjectPooler : MonoBehaviour
         }
     }
 
-    public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation, Transform parent = null)
+    // VERSION AVEC PARAMÈTRE activateImmediately
+    public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation, Transform parent = null, bool activateImmediately = true)
     {
         if (!poolDictionary.ContainsKey(tag))
         {
@@ -44,31 +45,19 @@ public class ObjectPooler : MonoBehaviour
         Queue<GameObject> queue = poolDictionary[tag];
         GameObject objectToSpawn = null;
 
-        // Parcours la queue en la faisant tourner : on ré-enqueue tous les éléments valides.
-        int initialCount = queue.Count;
-        for (int i = 0; i < initialCount; i++)
+        // Cherche un objet inactif dans la queue
+        if (queue.Count > 0)
         {
-            GameObject candidate = queue.Dequeue();
-            if (candidate == null)
+            objectToSpawn = queue.Dequeue();
+            if (objectToSpawn.activeInHierarchy)
             {
-                // candidate a été détruit : ne pas le ré-enqueue (on le supprime du pool)
-                continue;
+                // Si actif, remets en queue et cherche un autre
+                queue.Enqueue(objectToSpawn);
+                objectToSpawn = null;
             }
-
-            // Si l'objet est inactif, on peut le réutiliser.
-            if (!candidate.activeInHierarchy)
-            {
-                objectToSpawn = candidate;
-                // On remet le candidat à la fin pour garder la rotation du pool
-                queue.Enqueue(candidate);
-                break;
-            }
-
-            // L'objet est encore utilisé : on le remet en fin de queue et on continue la recherche.
-            queue.Enqueue(candidate);
         }
 
-        // Si aucun objet inactif trouvé, instancier un nouveau (si possible) et l'ajouter au pool.
+        // Si aucun inactif trouvé, instancie un nouveau (éviter si possible)
         if (objectToSpawn == null)
         {
             Pool poolDef = pools.Find(p => p.tag == tag);
@@ -76,7 +65,7 @@ public class ObjectPooler : MonoBehaviour
             {
                 objectToSpawn = Instantiate(poolDef.prefab);
                 objectToSpawn.SetActive(false);
-                queue.Enqueue(objectToSpawn);
+                // Ne pas enqueue ici, car il sera retourné via ReturnToPool
             }
             else
             {
@@ -85,12 +74,55 @@ public class ObjectPooler : MonoBehaviour
             }
         }
 
-        // Prépare et active
+        // Configure position/rotation/parent
         objectToSpawn.transform.SetParent(parent);
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
-        objectToSpawn.SetActive(true);
+
+        // Active seulement si demandé
+        if (activateImmediately)
+        {
+            objectToSpawn.SetActive(true);
+        }
 
         return objectToSpawn;
+    }
+
+    // Méthode pour retourner un objet à la pool
+    public void ReturnToPool(string tag, GameObject obj)
+    {
+      
+
+        obj.SetActive(false);
+        obj.transform.SetParent(transform);
+        poolDictionary[tag].Enqueue(obj);
+    }
+
+    public static class PoolReturnManager
+    {
+        private static List<(string tag, GameObject obj)> pending = new List<(string, GameObject)>();
+
+        public static void AddPendingReturn(string tag, GameObject obj)
+        {
+            pending.Add((tag, obj));
+        }
+
+        public static void ProcessPendingReturns()
+        {
+            for (int i = pending.Count - 1; i >= 0; i--)
+            {
+                var (tag, obj) = pending[i];
+                if (obj != null && !obj.activeInHierarchy)
+                {
+                    ObjectPooler.Instance.ReturnToPool(tag, obj);
+                    pending.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    void LateUpdate()
+    {
+        PoolReturnManager.ProcessPendingReturns();
     }
 }
