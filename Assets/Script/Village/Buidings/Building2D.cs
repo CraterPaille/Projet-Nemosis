@@ -97,6 +97,7 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (spriteRenderer == null || spriteRenderer.sprite == null)
             return;
 
+<<<<<<< Updated upstream
         // Calcule la taille visuelle en monde isométrique
         // Footprint carré (gridSize x gridSize) correspond à :
         float worldWidth = gridSize * villageManager.isoTileWidth;   // Largeur iso
@@ -121,6 +122,22 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             
             Debug.Log($"[Building2D] Scaled {buildingData.buildingName} to {scale:F2}x (footprint {gridSize}x{gridSize})");
         }
+=======
+        // gridSize = nombre de tuiles de côté (1 = 1x1 tuiles, 2 = 2x2 tuiles, etc.)
+        float tilesSize = Mathf.Max(1, gridSize);
+
+        // En isométrique, une zone de NxN tuiles a:
+        // - Largeur = N * isoTileWidth (ex: 2 * 100 = 200)
+        // - Hauteur = N * isoTileWidth (on utilise la même valeur car le sprite est carré)
+        // Le sprite fait 1x1 unité car PPU = dimensions du sprite
+        float targetSize = tilesSize * villageManager.isoTileWidth;
+
+        // Applique la même échelle sur les deux côtés pour garder le sprite carré
+        transform.localScale = new Vector3(targetSize, targetSize, 1f);
+        
+        // Mets à jour le collider pour qu'il corresponde au sprite scalé
+        UpdateColliderSize();
+>>>>>>> Stashed changes
     }
 
     /// <summary>

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using NUnit.Framework;
 
 public class ChooseRelationUI : MonoBehaviour
 {
@@ -21,6 +23,10 @@ public class ChooseRelationUI : MonoBehaviour
 
     public GodDataSO selectedGod;
     private int NombreDialogues = 0;
+
+    public TMP_Text GodNameText;
+
+    private bool firstOpen = true;
    
 
     void Awake()
@@ -51,7 +57,6 @@ public class ChooseRelationUI : MonoBehaviour
         ChooseGodPanel.SetActive(true);
         talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
 
-        //UIManager.Instance.DayModeChoice(true);
     }
 
     // Called by the UI Close button when the player wants to finish the half-day from the selection screen
@@ -65,10 +70,18 @@ public class ChooseRelationUI : MonoBehaviour
     }
 
     public void PopulateGods()
-    {
+    {   
+        if (firstOpen)
+        {
+            FirstOpen();
+        }
         if (GodManager.Instance == null) { Debug.LogWarning("No GodManager found"); return; }
         foreach (Transform t in godsContainer) Destroy(t.gameObject);
-        foreach (var god in GodManager.Instance.gods)
+        var orderedGods = GodManager.Instance.gods
+            .OrderByDescending(g => g.unlocked) // unlocked en premier cela les tire
+            .ToList();
+
+        foreach (var god in orderedGods)
         {
             var go = Instantiate(godCardPrefab, godsContainer);
             var ctrl = go.GetComponent<GodCardController>();
@@ -76,6 +89,23 @@ public class ChooseRelationUI : MonoBehaviour
         }
     }
 
+    public void FirstOpen()
+    {
+        firstOpen = false;
+        var unlockedGods = new List<GodDataSO>();
+        foreach (var god in GodManager.Instance.gods)
+        {
+            if (god.Is_Unlockable)
+                unlockedGods.Add(god);
+        }
+
+        for (int i = 0; i < 3 && unlockedGods.Count > 0; i++)
+        {
+            int randomIndex = Random.Range(0, unlockedGods.Count);
+            unlockedGods[randomIndex].unlocked = true;
+            unlockedGods.RemoveAt(randomIndex);
+        }
+    }
     public void OnGodSelected(GodDataSO god)
     {
         selectedGod = god;
@@ -86,14 +116,27 @@ public class ChooseRelationUI : MonoBehaviour
     {
         if (selectedGod == null) return;
         if (godImage != null) godImage.sprite = selectedGod.icon;
-        if (informationText != null) informationText.text = "Information et passif"; // TODO: show real passive/effect info
+        if (informationText != null)
+        {
+            if (selectedGod.unlocked)
+                informationText.text = selectedGod.description;
+            else
+                informationText.text = selectedGod.unlockDescription;
+        } 
         if (niveauRelationText != null) niveauRelationText.text = $"{selectedGod.relation}/100\nNiveau relation";
     }
 
     public void OnTalkButtonPressed()
     {
+        Debug.Log("Talk button pressed");
+        if (selectedGod == null) { Debug.LogWarning("No god selected"); return; }
+        if (!selectedGod.unlocked) { Debug.LogWarning("God is not unlocked"); return; };
+        GodNameText.text = selectedGod.displayName;
         NombreDialogues++;
+<<<<<<< Updated upstream
         if (selectedGod == null) return;
+=======
+>>>>>>> Stashed changes
         ChooseGodPanel.SetActive(false);
         // choose a dialogue graph from tier
         var tier = selectedGod.GetTier();
