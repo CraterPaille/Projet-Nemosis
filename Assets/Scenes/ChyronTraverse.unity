@@ -523,7 +523,7 @@ MonoBehaviour:
   - {fileID: 225862712}
   - {fileID: 1632788557}
   starOnSprite: {fileID: 3803893667329186482, guid: df6177c2451738b4daa6e6e8fe9d3d8c, type: 3}
-  starOffSprite: {fileID: -1068408235851087296, guid: 20c86aa1ee37d734fbc58cae5bcfdf86, type: 3}
+  starOffSprite: {fileID: -3906163105286256955, guid: bb9effb4bb1643742b84f2563f2dd357, type: 3}
 --- !u!4 &923370823
 Transform:
   m_ObjectHideFlags: 0

@@ -27,7 +27,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject interactionHeader;
     [SerializeField] private Transform interactionContent;
     [SerializeField] private GameObject interactionButtonPrefab;
-    [SerializeField] private TextMeshProUGUI RerollTxt;
+    [SerializeField] public TextMeshProUGUI RerollTxt;
     [SerializeField] private Button CloseInteractionButton;
 
     [Header("Village UI")]

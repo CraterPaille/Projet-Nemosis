@@ -77,4 +77,21 @@ public class MiniGameCardPanelManager : MonoBehaviour
         UIManager.Instance.GameModeChoice();
         GameManager.Instance.EndHalfDay();  
     }
+
+    public void RerollMiniGameCards()
+    {
+        // Optionnel : limite de rerolls par jour
+        if (GameManager.Instance.RerollsRemaining <= 0)
+        {
+            Debug.LogWarning("[MiniGameCardPanelManager] Pas de rerolls restants !");
+            return;
+        }
+        GameManager.Instance.RerollsRemaining--;
+        RandomizeCards();
+        // Mets à jour l'affichage du nombre de rerolls restants si tu as un texte dédié
+        if (UIManager.Instance != null && UIManager.Instance.RerollTxt != null)
+        {
+            UIManager.Instance.RerollTxt.SetText($"Rerolls : {GameManager.Instance.RerollsRemaining}");
+        }
+    }
 }
