@@ -122,32 +122,20 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (spriteRenderer == null || spriteRenderer.sprite == null)
             return;
 
-        // gridSize = nombre de tuiles (1 = 1 tuile, 2 = 2 tuiles, etc.)
+        // gridSize = nombre de tuiles de côté (1 = 1x1 tuiles, 2 = 2x2 tuiles, etc.)
         float tilesSize = Mathf.Max(1, gridSize);
 
-        // Calcule la taille visuelle en monde isométrique
-        float worldWidth = tilesSize * villageManager.isoTileWidth;   // Largeur iso
-        float worldHeight = tilesSize * villageManager.isoTileHeight;  // Hauteur iso
+        // En isométrique, une zone de NxN tuiles a:
+        // - Largeur = N * isoTileWidth (ex: 2 * 100 = 200)
+        // - Hauteur = N * isoTileWidth (on utilise la même valeur car le sprite est carré)
+        // Le sprite fait 1x1 unité car PPU = dimensions du sprite
+        float targetSize = tilesSize * villageManager.isoTileWidth;
 
-        // Récupère la taille du sprite en unités monde
-        Sprite sprite = spriteRenderer.sprite;
-        float spriteWidth = sprite.bounds.size.x;
-        float spriteHeight = sprite.bounds.size.y;
-
-        if (spriteWidth > 0 && spriteHeight > 0)
-        {
-            // Calcule l'échelle nécessaire
-            float scaleX = worldWidth / spriteWidth;
-            float scaleY = worldHeight / spriteHeight;
-            
-            // Utilise le minimum pour rester dans le footprint puis multiplie par 10
-            float scale = Mathf.Min(scaleX, scaleY);
-            
-            transform.localScale = new Vector3(scale, scale, 1f);
-            
-            // Mets à jour le collider pour qu'il corresponde au sprite scalé
-            UpdateColliderSize();
-        }
+        // Applique la même échelle sur les deux côtés pour garder le sprite carré
+        transform.localScale = new Vector3(targetSize, targetSize, 1f);
+        
+        // Mets à jour le collider pour qu'il corresponde au sprite scalé
+        UpdateColliderSize();
     }
 
     /// <summary>

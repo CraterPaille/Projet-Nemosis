@@ -46,7 +46,6 @@ public class OptionMenuManager : MonoBehaviour
     [Header("Référence Dropdown Daltonisme")]
     public TMP_Dropdown colorblindDropdown;
 
-
     [Header("UI")]
     public GameObject firstSelected;
 
@@ -87,8 +86,6 @@ public class OptionMenuManager : MonoBehaviour
         {
             ColorblindManager.Instance.SetMode((ColorblindMode)saved);
         }
-
-
     }
 
     private void OnEnable()
@@ -240,6 +237,4 @@ public class OptionMenuManager : MonoBehaviour
             Debug.LogWarning("OptionMenuManager : ColorblindManager.Instance est null, impossible d'appliquer le filtre.");
         }
     }
-
-
 }

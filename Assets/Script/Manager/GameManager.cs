@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("Nombre de cartes à piocher par set")]
     public int cardsToDraw = 3; // separer en set apres les tests ?
+    public int RerollMax = 1;
+    public int RerollsRemaining = 1;
 
     [Header("Jour actuel")]
     public int currentDay = 1;
@@ -43,6 +45,7 @@ public class GameManager : MonoBehaviour
     [Tooltip("Scène chargée quand la campagne est terminée")]
     public string endSceneName = "Menu_principal";
 
+   
     private bool campaignFinished = false;
 
     public EffectSO effet;
@@ -102,6 +105,8 @@ public class GameManager : MonoBehaviour
     /// Initialise totalement la partie à l'état "nouvelle partie".
     /// Appelé quand il n'y a PAS de sauvegarde (ou après avoir tout reset).
     /// </summary>
+    /// 
+    #region Initialisation
     public void InitDefaultState()
     {
         Multiplicateur.Clear();
@@ -113,12 +118,12 @@ public class GameManager : MonoBehaviour
         foreach (StatType stat in StatType.GetValues(typeof(StatType)))
         {
             Multiplicateur[stat] = 1f;
-            Valeurs[stat] = 50f;
+            Valeurs[stat] = stat == StatType.Nemosis ? 0f : 50f;
             MaxValeurs[stat] = 100f; // valeur par défaut max
             changeStat(stat, 0f);
         }
 
-        changeStat(StatType.Nemosis, -50f);
+        //changeStat(StatType.Nemosis, -50f);
 
         currentDay = 1;
         currentTime = DayTime.Matin;
@@ -128,11 +133,8 @@ public class GameManager : MonoBehaviour
         UIManager.Instance?.changeDateUI();
     }
 
-    public void addHumain() { changeStat(StatType.Human, 10); }
-    public void lessHumain() { changeStat(StatType.Human, -10); }
-    public void addOr() { changeStat(StatType.Or, 100); }
-    public void addFood() { changeStat(StatType.Food, 100); }
-
+    #endregion
+    #region Set stats/Max
     public void changeStat(StatType type, float amount)
     {
         if (!Multiplicateur.ContainsKey(type))
@@ -147,15 +149,16 @@ public class GameManager : MonoBehaviour
         {
             MaxValeurs[type] = 100f;
         }
-
-        Debug.Log($"Changing stat {type} by {amount} with multiplier {Multiplicateur[type]}");
-        // Si amount positif, applique le multiplicateur ; si négatif, pas de multiplier selon ancienne logique
+        float ancienvaleur = Valeurs[type];
+        // Si amount positif, applique le multiplicateur ; si négatif, pas de multiplier
         float proposedDelta = (amount > 0) ? amount * Multiplicateur[type] : amount;
-        // Clamp pour garder la valeur entre 0 et MaxValeurs[type]
-        float clampedDelta = Mathf.Clamp(Valeurs[type] + proposedDelta, 0f, MaxValeurs[type]) - Valeurs[type];
+        // Clamp pour garder la valeur entre -MaxValeurs[type] et MaxValeurs[type]
+        float clampedDelta = (ancienvaleur + proposedDelta) > MaxValeurs[type]
+            ? MaxValeurs[type] - ancienvaleur
+            : proposedDelta;
         Valeurs[type] += clampedDelta;
+        Debug.Log($"Stat {type} etais a {ancienvaleur}. + {clampedDelta} = {Valeurs[type]}");
         GameEvents.TriggerStatChanged(type, Valeurs[type]);
-        Debug.Log($"Stat {type} changed by {clampedDelta}, new value: {Valeurs[type]}");
     }
 
     /// <summary>
@@ -173,15 +176,16 @@ public class GameManager : MonoBehaviour
             Valeurs[type] = MaxValeurs[type];
             GameEvents.TriggerStatChanged(type, Valeurs[type]);
         }
-        Debug.Log($"Max value for {type} changed by {amount}, new max: {MaxValeurs[type]}");
+        // Debug.Log($"Max value for {type} changed by {amount}, new max: {MaxValeurs[type]}");
         return MaxValeurs[type];
     }
-
+    #endregion
     /// <summary>
     /// Choix du mode de jeu "normal".
     /// - Si dimanche matin -> mini-jeu aléatoire automatiquement
     /// - Sinon -> affiche le ModeChoiceUI (panel jour/mode)
     /// </summary>
+    #region Game Mode Choice
     public void ChooseGameMode()
     {
         if (campaignFinished) return;
@@ -203,13 +207,7 @@ public class GameManager : MonoBehaviour
     /// Appelé depuis un bouton du ModeChoiceUI pour ouvrir le panel des cartes mini-jeu.
     /// (Ne dépend plus de ChooseGameMode)
     /// </summary>
-    public void OpenMiniJeuCardPanel()
-    {
-        if (UIManager.Instance == null) return;
 
-        UIManager.Instance.SetUIActive(true);
-        UIManager.Instance.ShowMiniJeuCardPanel();
-    }
 
     private void LaunchSundayMiniGame()
     {
@@ -229,27 +227,56 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void MiniJeuCardPanelAnimation()
+    {
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(OpenMiniJeuCardPanel));
+    }
+    public void OpenMiniJeuCardPanel()
+    {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.SetUIActive(true);
+        UIManager.Instance.ShowMiniJeuCardPanel();
+    }
+
+    public void ChooseVillageAnimation()
+    {
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseVillage));
+    }
+
     public void ChooseVillage()
     {
         currentGameMode = GameMode.village;
         VillageManager.Instance.AfficheBuildings();
     }
 
-    public void ChooseVillageCards()
+    public void ChooseVillageCardsTransition()
+    {
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseVillageCards));
+    }
+
+     public void ChooseVillageCards()
     {
         currentGameMode = GameMode.VillageCard;
         UIManager.Instance.VillageCardChoice(villageCardCollection, cardsToDraw);
     }
 
-    public void ChooseRelation()
+    public void RelationTransitionAnimation()
+    {
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseRelationTransition));
+    }
+
+    public void ChooseRelationTransition()
     {
         currentGameMode = GameMode.Relation;
+        ChooseRelationUI.Instance.Open();
     }
+    #endregion
+    #region Time Management
 
     public void EndHalfDay()
     {
         if (campaignFinished) return;
-
+        RerollsRemaining = RerollMax;
         var schedule = FindFirstObjectByType<ScheduleShow>();
         if (schedule != null)
         {
@@ -323,6 +350,7 @@ public class GameManager : MonoBehaviour
             EndCampaign();
         }
     }
+    #endregion
 
     private void EndCampaign()
     {
@@ -360,7 +388,7 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
-
+    #region Sauvegarde / Chargement
     // --- SAUVEGARDE / CHARGEMENT ---
     [System.Serializable]
     private class SaveData
@@ -459,4 +487,5 @@ public class GameManager : MonoBehaviour
         public List<string> statKeys;
         public List<float> statValues;
     }
+    #endregion
 }

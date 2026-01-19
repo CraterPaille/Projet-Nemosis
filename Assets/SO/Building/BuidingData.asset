@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: BuidingData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingName: taille 5
-  icon: {fileID: 21300000, guid: 6e6cb779fd0aed2438fc22c679491eb7, type: 3}
+  icon: {fileID: 1208040086343421634, guid: f56045b40473c524ba0856db0de0d5bb, type: 3}
   description: 5
-  gridSize: 5
+  gridSize: 15
   passiveEffects: []
   interactionEffects:
   - {fileID: 11400000, guid: 3ac3e5ddc804868458901f5e971d1dbc, type: 2}

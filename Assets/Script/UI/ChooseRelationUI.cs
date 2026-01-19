@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using NUnit.Framework;
 
 public class ChooseRelationUI : MonoBehaviour
 {
@@ -21,6 +23,10 @@ public class ChooseRelationUI : MonoBehaviour
 
     public GodDataSO selectedGod;
     private int NombreDialogues = 0;
+
+    public TMP_Text GodNameText;
+
+    private bool firstOpen = true;
    
 
     void Awake()
@@ -29,7 +35,7 @@ public class ChooseRelationUI : MonoBehaviour
     }
     void Start()
     {
-        if (ChooseGodPanel != null) ChooseGodPanel.SetActive(false);
+        ChooseGodPanel.SetActive(false);
         if (godCardPrefab == null) Debug.LogWarning("ChooseRelationUI: godCardPrefab not assigned");
         PopulateGods();
         if (toTalkButton != null) toTalkButton.onClick.AddListener(OnTalkButtonPressed);
@@ -38,20 +44,19 @@ public class ChooseRelationUI : MonoBehaviour
     // Open the ChooseRelation panel (make sure the GameObject containing this script is active)
     public void Open()
     {
-        if (ChooseGodPanel != null) ChooseGodPanel.SetActive(true);
-        if (UIManager.Instance != null) UIManager.Instance.DayModeChoice(false);
+        ChooseGodPanel.SetActive(true);
+        UIManager.Instance.DayModeChoice(false);
         PopulateGods();
-        if (talkButtonText != null) talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
+        talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
     }
 
     // Close the ChooseRelation panel
     public void CloseConversation()
     {
         if(NombreDialogues>= 3){OnClosePressed_EndHalfDay(); return;}
-        if (ChooseGodPanel != null) ChooseGodPanel.SetActive(true);
-        if (talkButtonText != null) talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
+        ChooseGodPanel.SetActive(true);
+        talkButtonText.text = $"Lui parler ({NombreDialogues+1}/3)";
 
-        //UIManager.Instance.DayModeChoice(true);
     }
 
     // Called by the UI Close button when the player wants to finish the half-day from the selection screen
@@ -60,16 +65,23 @@ public class ChooseRelationUI : MonoBehaviour
         // Notify GameManager that the half-day is finished
         if (GameManager.Instance != null) GameManager.Instance.EndHalfDay();
         // Close the panel
-        if (ChooseGodPanel != null) ChooseGodPanel.SetActive(false);
+        ChooseGodPanel.SetActive(false);
         NombreDialogues = 0;
     }
 
     public void PopulateGods()
-    {
+    {   
+        if (firstOpen)
+        {
+            FirstOpen();
+        }
         if (GodManager.Instance == null) { Debug.LogWarning("No GodManager found"); return; }
-        if (godsContainer == null) return;
         foreach (Transform t in godsContainer) Destroy(t.gameObject);
-        foreach (var god in GodManager.Instance.gods)
+        var orderedGods = GodManager.Instance.gods
+            .OrderByDescending(g => g.unlocked) // unlocked en premier cela les tire
+            .ToList();
+
+        foreach (var god in orderedGods)
         {
             var go = Instantiate(godCardPrefab, godsContainer);
             var ctrl = go.GetComponent<GodCardController>();
@@ -77,6 +89,23 @@ public class ChooseRelationUI : MonoBehaviour
         }
     }
 
+    public void FirstOpen()
+    {
+        firstOpen = false;
+        var unlockedGods = new List<GodDataSO>();
+        foreach (var god in GodManager.Instance.gods)
+        {
+            if (god.Is_Unlockable)
+                unlockedGods.Add(god);
+        }
+
+        for (int i = 0; i < 3 && unlockedGods.Count > 0; i++)
+        {
+            int randomIndex = Random.Range(0, unlockedGods.Count);
+            unlockedGods[randomIndex].unlocked = true;
+            unlockedGods.RemoveAt(randomIndex);
+        }
+    }
     public void OnGodSelected(GodDataSO god)
     {
         selectedGod = god;
@@ -87,15 +116,24 @@ public class ChooseRelationUI : MonoBehaviour
     {
         if (selectedGod == null) return;
         if (godImage != null) godImage.sprite = selectedGod.icon;
-        if (informationText != null) informationText.text = "Information et passif"; // TODO: show real passive/effect info
+        if (informationText != null)
+        {
+            if (selectedGod.unlocked)
+                informationText.text = selectedGod.description;
+            else
+                informationText.text = selectedGod.unlockDescription;
+        } 
         if (niveauRelationText != null) niveauRelationText.text = $"{selectedGod.relation}/100\nNiveau relation";
     }
 
     public void OnTalkButtonPressed()
     {
+        Debug.Log("Talk button pressed");
+        if (selectedGod == null) { Debug.LogWarning("No god selected"); return; }
+        if (!selectedGod.unlocked) { Debug.LogWarning("God is not unlocked"); return; };
+        GodNameText.text = selectedGod.displayName;
         NombreDialogues++;
-        if (selectedGod == null) return;
-        if (ChooseGodPanel != null) ChooseGodPanel.SetActive(false);
+        ChooseGodPanel.SetActive(false);
         // choose a dialogue graph from tier
         var tier = selectedGod.GetTier();
         List<DialogueGraph> pool = (tier == GodDataSO.RelationTier.Bad) ? selectedGod.badConvos :
@@ -106,7 +144,6 @@ public class ChooseRelationUI : MonoBehaviour
             return;
         }
         var graph = pool[Random.Range(0, pool.Count)];
-        if (DialogueRunner.Instance != null)
-            DialogueRunner.Instance.StartConversation(selectedGod, graph);
+        DialogueRunner.Instance.StartConversation(selectedGod, graph);
     }
 }
