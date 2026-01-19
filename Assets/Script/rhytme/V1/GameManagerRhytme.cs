@@ -251,7 +251,8 @@ public class GameManagerRhytme : MonoBehaviour
             Invoke(nameof(StartMusic), 0.05f);
         }
 
-        if (StartPlaying && theMusic != null && !theMusic.isPlaying)
+        // Correction : ne pas appeler EndSong si la musique n'a pas encore démarré
+        if (StartPlaying && theMusic != null && !theMusic.isPlaying && theBS.HasStarted && theMusic.time > 0.1f)
         {
             StartPlaying = false;
             EndSong();
@@ -467,6 +468,8 @@ public class GameManagerRhytme : MonoBehaviour
 
         Debug.Log($"[Rhytme] Fin chanson - Score={currentScore}, Acc={accuracy:P1}");
 
+        // Retour à la SampleScene après la fin du mini-jeu
+        SceneManager.LoadScene("SampleScene");
     }
 
     public void Vibrate(float left, float right, float duration)
