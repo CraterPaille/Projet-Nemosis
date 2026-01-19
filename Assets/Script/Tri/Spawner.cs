@@ -8,17 +8,23 @@ public class Spawner : MonoBehaviour
     public Transform[] spawnPoints;
 
     private bool spawning = false;
+    private Coroutine spawnCoroutine;
 
     public void StartSpawning()
     {
+        if (spawning) return; // Empêche le double lancement
         spawning = true;
-        StartCoroutine(SpawnLoop());
+        spawnCoroutine = StartCoroutine(SpawnLoop());
     }
 
     public void StopSpawning()
     {
         spawning = false;
-        StopAllCoroutines();
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
     }
 
     IEnumerator SpawnLoop()

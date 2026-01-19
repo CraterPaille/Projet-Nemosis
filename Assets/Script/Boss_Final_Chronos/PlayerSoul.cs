@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerSoul : MonoBehaviour
 {
@@ -6,6 +7,17 @@ public class PlayerSoul : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 input;
     public BoxCollider2D combatBox;
+
+    [Header("Input System")]
+    [SerializeField] private InputActionAsset inputActions; // Assigne ton .inputactions ici
+
+    private InputAction moveAction;
+    private InputAction leftShieldAction;
+    private InputAction rightShieldAction;
+
+    // Layout clavier (modifiable dans l'inspecteur ou via un menu d'options)
+    [Header("Options clavier")]
+    public bool isAzerty = true; // true = ZQSD, false = WASD
 
     // Cache des bounds pour éviter les recalculs
     private Bounds cachedBounds;
@@ -22,6 +34,28 @@ public class PlayerSoul : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerBox = GetComponent<BoxCollider2D>();
+
+        // Récupère les actions par leur nom (doivent exister dans l'asset)
+        moveAction = inputActions.FindAction("Move");
+        leftShieldAction = inputActions.FindAction("LeftShield");
+        rightShieldAction = inputActions.FindAction("RightShield");
+    }
+
+    void OnEnable()
+    {
+        moveAction?.Enable();
+        leftShieldAction?.Enable();
+        rightShieldAction?.Enable();
+    }
+
+    void OnDisable()
+    {
+        moveAction?.Disable();
+        leftShieldAction?.Disable();
+        rightShieldAction?.Disable();
+
+        input = Vector2.zero;
+        boundsNeedUpdate = true;
     }
 
     void Update()
@@ -32,30 +66,25 @@ public class PlayerSoul : MonoBehaviour
             return;
         }
 
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
+        Vector2 moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
 
         if (justiceMode)
         {
-            if (h != 0 && v != 0)
+            if (moveInput.x != 0 && moveInput.y != 0)
             {
-                if (Mathf.Abs(h) > Mathf.Abs(v))
-                    v = 0;
+                if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+                    moveInput.y = 0;
                 else
-                    h = 0;
+                    moveInput.x = 0;
             }
         }
 
-        float magnitude = Mathf.Sqrt(h * h + v * v);
-        if (magnitude > 0f)
-        {
-            input.x = h / magnitude;
-            input.y = v / magnitude;
-        }
-        else
-        {
-            input = Vector2.zero;
-        }
+        input = moveInput.sqrMagnitude > 0f ? moveInput.normalized : Vector2.zero;
+
+        // Pour les boucliers
+        Vector2 leftShieldInput = leftShieldAction != null ? leftShieldAction.ReadValue<Vector2>() : Vector2.zero;
+        Vector2 rightShieldInput = rightShieldAction != null ? rightShieldAction.ReadValue<Vector2>() : Vector2.zero;
+        // Utilise ces valeurs pour tes boucliers
     }
 
     void FixedUpdate()
@@ -113,11 +142,5 @@ public class PlayerSoul : MonoBehaviour
     public void Despawn()
     {
         gameObject.SetActive(false);
-    }
-
-    void OnDisable()
-    {
-        input = Vector2.zero;
-        boundsNeedUpdate = true;
     }
 }

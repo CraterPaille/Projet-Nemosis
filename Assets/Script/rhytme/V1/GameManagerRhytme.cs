@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
@@ -12,6 +13,7 @@ public class GameManagerRhytme : MonoBehaviour
     public BeatScroller theBS;
 
     public bool StartPlaying;
+
 
     [Header("Score")]
     public int currentScore;
@@ -152,6 +154,13 @@ public class GameManagerRhytme : MonoBehaviour
         missedHits = 0;
 
         ScoreText.text = "Score : 0";
+        ScoreText.transform.DOKill();
+        ScoreText.transform
+            .DOPunchScale(Vector3.one * 0.25f, 0.2f, 8)
+            .SetEase(Ease.OutBack);
+
+        ScoreText.DOColor(Color.yellow, 0.1f)
+            .OnComplete(() => ScoreText.DOColor(Color.white, 0.2f));
 
         _scorePunch = ScoreText != null ? ScoreText.GetComponent<PunchScale>() : null;
         _multiPunch = MultiText != null ? MultiText.GetComponent<PunchScale>() : null;
@@ -206,6 +215,11 @@ public class GameManagerRhytme : MonoBehaviour
     }
     public void ShowTutorialAndStart()
     {
+        // Dans ShowTutorialAndStart
+        tutorialPanel.continueButton.transform
+            .DOScale(1.1f, 0.7f)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetEase(Ease.InOutSine);
         InputAction[] actions = {
             InputManager.Instance.keyboardControls.Rhytm.Lane0,
             InputManager.Instance.keyboardControls.Rhytm.Lane1,
@@ -329,6 +343,7 @@ public class GameManagerRhytme : MonoBehaviour
         HandleMultiplier();
         AddScore(ScorePerPerfectNote);
         Vibrate(0.1f, 0.1f, 0.04f);
+
     }
 
     void AddScore(int baseScore)
@@ -396,6 +411,19 @@ public class GameManagerRhytme : MonoBehaviour
                 currentMultiplier++;
             }
         }
+        // Animation du texte avec DOTween
+        MultiText.transform.DOKill();
+        MultiText.transform.DOShakePosition(0.2f, new Vector3(10f, 0, 0), 10)
+            .SetEase(Ease.OutQuad);
+
+        Color multiColor = currentMultiplier switch
+        {
+            1 => Color.white,
+            2 => new Color(0.5f, 1f, 0.5f), // vert clair
+            3 => new Color(0.5f, 0.7f, 1f), // bleu clair
+            _ => Color.yellow
+        };
+        MultiText.DOColor(multiColor, 0.2f);
 
         MultiText.text = "Multiplier X" + currentMultiplier;
         _multiPunch?.Play();
@@ -410,6 +438,10 @@ public class GameManagerRhytme : MonoBehaviour
 
         Vibrate(0.6f, 0.6f, 0.12f);
         missShake?.Play();
+
+        ScoreText.DOColor(new Color(1f, 0.5f, 0.5f), 0.1f)
+    .OnComplete(() => ScoreText.DOColor(Color.white, 0.2f));
+        ScoreText.transform.DOShakePosition(0.3f, 8f, 15);
 
         // --- ONE MISTAKE FAIL ---
         if (_oneMistakeFail)

@@ -48,6 +48,7 @@ public class ChronosGameManager : MonoBehaviour
     public AudioSource sfxSource;
     public AudioClip sfxDamage;
     public AudioClip sfxHeal;
+    public AudioClip sfxAttack;
 
 
     void Awake()
@@ -145,6 +146,13 @@ public class ChronosGameManager : MonoBehaviour
     public void Attack()
     {
         if (bossCurrentHearts <= 0) return;
+
+        if (sfxAttack != null && sfxSource != null)
+        {
+            sfxSource.pitch = Random.Range(0.85f, 1.25f); // plage de pitch à ajuster selon ton goût
+            sfxSource.PlayOneShot(sfxAttack);
+            sfxSource.pitch = 1f; // reset pour les autres sons
+        }
 
         bossCurrentHP--;
         if (bossCurrentHP <= 0)

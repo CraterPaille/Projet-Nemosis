@@ -158,6 +158,14 @@ public class NoteObject : MonoBehaviour
     {
         if (activator == null || noteBody == null) return;
 
+        // Si on est en train de hold, force la scale à 0.3
+        if (isHoldNote && isHolding)
+        {
+            noteBody.transform.localScale = new Vector3(0.4f, 0.4f, 1f);
+            noteBody.color = Color.white; // Optionnel : couleur neutre pendant le hold
+            return;
+        }
+
         // distance verticale jusqu'à la ligne d'activation
         float dy = Mathf.Abs(transform.position.y - activator.position.y);
 

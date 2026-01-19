@@ -44,6 +44,7 @@ public class TriGameManager : MonoBehaviour
 
     private void Awake()
     {
+        // on vérifie qu'il n'y a qu'une instance de ce GameManager si il y en a plusieurs on détruit le nouveau
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
@@ -53,6 +54,7 @@ public class TriGameManager : MonoBehaviour
     {
         _baseGameDuration = gameDuration;
 
+        // récup les valeurs de base du Spawner
         if (spawner != null)
         {
             _baseSpawnInterval = spawner.spawnInterval;
@@ -70,10 +72,11 @@ public class TriGameManager : MonoBehaviour
 
     private void Update()
     {
+        // si tuto pas validé, on ne lance pas le timer
         if (!tutorialValidated) { return; }
 
         if (!IsPlaying) return;
-
+        // Maj le timer
         remainingTime -= Time.deltaTime;
         uiManager.UpdateTimer(remainingTime);
 
@@ -83,6 +86,7 @@ public class TriGameManager : MonoBehaviour
 
     public void StartGame()
     {
+        // Réinitialisation des variables
         score = 0;
         remainingTime = gameDuration;
         IsPlaying = true;
@@ -92,9 +96,10 @@ public class TriGameManager : MonoBehaviour
         spawner.StartSpawning();
     }
 
-    // Modifie AddScore :
+
     public void AddScore(int soulsCount)
     {
+        // Calcul score avec modifs de carte
         score += soulsCount * _baseScorePerSoul;
         uiManager.UpdateScore(score);
 
@@ -113,6 +118,7 @@ public class TriGameManager : MonoBehaviour
 
     public void UpdateStarsUI()
     {
+        // Met à jour l'affichage des étoiles
         for (int i = 0; i < starImages.Length; i++)
             starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
     }
@@ -139,9 +145,10 @@ public class TriGameManager : MonoBehaviour
         SceneManager.LoadScene("SampleScene");
     }
 
-    // --- Cartes mini-jeu ---
+
     private void ApplyMiniGameCardIfAny()
     {
+        // vérifie si une carte est sélectionnée et applique ses effets
         var runtime = MiniGameCardRuntime.Instance;
         if (runtime == null || runtime.SelectedCard == null)
             return;
@@ -150,11 +157,12 @@ public class TriGameManager : MonoBehaviour
         if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Tri)
             return;
 
+        // applique les modifs de la carte
         float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
         float diffMult  = Mathf.Max(0.5f, card.difficultyMultiplier);
         float spawnMult = Mathf.Max(0.1f, card.spawnRateMultiplier);
 
-        // plus de vitesse => partie plus courte
+        // plus de vitesse = partie plus courte
         gameDuration = _baseGameDuration / speedMult;
 
         if (spawner != null)
@@ -163,13 +171,13 @@ public class TriGameManager : MonoBehaviour
             float interval = _baseSpawnInterval / speedMult;
             interval /= spawnMult;
 
-            // appliquer un chaos multiplicatif autour de l’intervalle de base dans le Spawner
+            // applique du chaos(plein d'effets différents) au spawn des âmes
             _spawnChaos = Mathf.Clamp01(card.chaosLevel);
 
             spawner.spawnInterval = interval;
         }
 
-        // score par âme augmente avec la difficulté
+        // score par âme augmenter avec la difficulté
         _baseScorePerSoul = Mathf.Max(1, Mathf.RoundToInt(_baseScorePerSoul * diffMult));
 
         // gains de stats globaux
@@ -182,7 +190,7 @@ public class TriGameManager : MonoBehaviour
         runtime.Clear();
     }
 
-    // exposé pour que le Spawner puisse récupérer le chaos (si tu veux l’utiliser dedans)
+    //Getters pour les modifs de carte
     public float GetSpawnChaos()
     {
         return _spawnChaos;
@@ -199,6 +207,8 @@ public class TriGameManager : MonoBehaviour
         }
     }
 
+
+    // Affiche le tuto et lance la partie après validation
     public void ShowTutorialAndStart()
     {
         tutorialPanel.ShowClick(

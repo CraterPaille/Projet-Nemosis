@@ -44,7 +44,7 @@ public class ChronosAttackController : MonoBehaviour
     {
         while (!ChronosGameManager.Instance) yield return null;
         gm = ChronosGameManager.Instance;
-        player = GameObject.FindGameObjectWithTag("PlayerSoul").transform;
+        player = GameObject.FindGameObjectWithTag("PlayerSoul").transform;  
         arenaBox = arena.GetComponent<BoxCollider2D>();
         UpdateArenaCache();
         StartCoroutine(AttackLoop());
