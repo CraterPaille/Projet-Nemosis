@@ -19,18 +19,10 @@ public class GodCardController : MonoBehaviour, IPointerClickHandler
     {
         god = data;
         onSelected = onSelectedCallback;
-        if (data.unlocked)
-        {
-            if (nameText != null) nameText.text = god.displayName;
-            if (iconImage != null) iconImage.sprite = god.icon;
-            if (relationText != null) relationText.text = $"{god.relation}/100";
-        }
-        else
-        {
-            if (nameText != null) nameText.text = "???";
-            if (iconImage != null) iconImage.sprite = god.icon;
-            if (relationText != null) relationText.text = "???";
-        }
+        if (nameText != null) nameText.text = god.displayName;
+        if (iconImage != null) iconImage.sprite = god.icon;
+        if (relationText != null) relationText.text = $"{god.relation}/100";
+
         if (previewButton != null)
         {
             previewButton.onClick.RemoveAllListeners();

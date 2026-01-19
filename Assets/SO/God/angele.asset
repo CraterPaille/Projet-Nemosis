@@ -16,18 +16,9 @@ MonoBehaviour:
   displayName: Angele
   icon: {fileID: -3034174056323331347, guid: bd6841fbfedc5b34bb021e9c7342b2ba, type: 3}
   unlocked: 1
-<<<<<<< Updated upstream
   relation: 0
   lastInteractionDay: 1
   interactionsToday: 17
-=======
-  Is_Unlockable: 0
-  description: 'Je suis l''unique '
-  unlockDescription: too pretty for you
-  relation: 0
-  lastInteractionDay: 1
-  interactionsToday: 22
->>>>>>> Stashed changes
   badConvos: []
   normalConvos:
   - {fileID: 11400000, guid: 3685b5a0d71aa874b8a1f8f746e638ea, type: 2}

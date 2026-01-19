@@ -3,17 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-<<<<<<< Updated upstream
 
-=======
-using UnityEngine.SceneManagement;
-using UnityEngine.EventSystems;
-using DG.Tweening;
-using Math = System.Math;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
-using System.Collections;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
->>>>>>> Stashed changes
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
@@ -30,8 +20,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject interactionHeader;
     [SerializeField] private Transform interactionContent;
     [SerializeField] private GameObject interactionButtonPrefab;
-    [SerializeField] private TextMeshProUGUI RerollTxt;
-    [SerializeField] private Button CloseInteractionButton;
 
     [Header("Village UI")]
     [SerializeField] private GameObject villagePanel;
@@ -40,27 +28,11 @@ public class UIManager : MonoBehaviour
     [Header("Stats UI")]
     [SerializeField] private GameObject PanelStats;
 
-<<<<<<< Updated upstream
     [SerializeField] private GameObject StatsFoi;
     [SerializeField] private GameObject StatsNemosis;
     [SerializeField] private GameObject StatsHumain;
     [SerializeField] private GameObject StatsArgent;
     [SerializeField] private GameObject StatsFood;
-=======
-    [SerializeField] private GameObject StatFoi;
-    [SerializeField] private Sprite[] SpritesFoi;
-
-    [SerializeField] private GameObject StatNemosis;
-    [SerializeField] private Sprite[] SpritesNemosis;
-
-    [SerializeField] private GameObject StatHumain;
-    [SerializeField] private Sprite[] SpritesHumain;
-    [SerializeField] private GameObject StatArgent;
-    [SerializeField] private Sprite[] SpritesArgent;
-
-    [SerializeField] private GameObject StatFood;
-    [SerializeField] private Sprite[] SpritesFood;
->>>>>>> Stashed changes
     [SerializeField] private TextMeshProUGUI Date;
 
     [Header("Day Mode Choice UI")]
@@ -214,9 +186,6 @@ public class UIManager : MonoBehaviour
     // --- VILLAGE UI ---
     public void SHowVillageUI()
     {
-        Debug.Log("UIManager: Affichage de l'UI du village.");
-        CloseInteractionButton.onClick.RemoveAllListeners();
-        CloseInteractionButton.onClick.AddListener(closeInteractionMenu);
         HideAllUI();
         villagePanel.SetActive(true);
     }
@@ -224,8 +193,6 @@ public class UIManager : MonoBehaviour
     // Mode 2D isométrique - cache tout l'UI pour voir le monde
     public void ShowVillage2DView()
     {
-        CloseInteractionButton.onClick.RemoveAllListeners();
-        CloseInteractionButton.onClick.AddListener(closeInteractionMenu);
         HideAllUI();
         // S'assure que le panel village UI est bien désactivé
         if (villagePanel != null)
@@ -243,21 +210,13 @@ public class UIManager : MonoBehaviour
         HideVillageUI();
         GameManager.Instance.EndHalfDay();
     }
-<<<<<<< Updated upstream
 
     // Les pilier du jeu 
-=======
-    #region CHANGE STAT UI
-    // --- STATS UI ---
-    // Empêche les coroutines de se chevaucher par panel
-    private readonly Dictionary<GameObject, Coroutine> activeStatCoroutines = new Dictionary<GameObject, Coroutine>();
->>>>>>> Stashed changes
 
     public void ChangeStatUI(StatType stat, float value)
     {
         switch (stat)
         {
-<<<<<<< Updated upstream
             case StatType.Foi:
                 StatsFoi.GetComponentInChildren<TextMeshProUGUI>().text = $" {value}";
                 break;
@@ -276,144 +235,8 @@ public class UIManager : MonoBehaviour
             default:
                 Debug.LogWarning($"Unknown stat type: {stat}");
                 break;
-=======
-            switch (stat)
-            {
-                case StatType.Foi:
-                    if (StatFoi != null)
-                        StartStatCoroutine(StatFoi, value);
-                    break;
-                case StatType.Nemosis:
-                    if (StatNemosis != null)
-                        StartStatCoroutine(StatNemosis, value);
-                    break;
-                case StatType.Human:
-                    if (StatHumain != null)
-                        StartStatCoroutine(StatHumain, value);
-                    break;
-                case StatType.Or:
-                    if (StatArgent != null)
-                        StartStatCoroutine(StatArgent, value);
-                    break;
-                case StatType.Food:
-                    if (StatFood != null)
-                        StartStatCoroutine(StatFood, value);
-                    break;
-            }
-        }
-        catch (MissingReferenceException)
-        {
-            Debug.LogWarning("[UIManager] ChangeStatUI appelé mais un objet UI a été détruit.");
->>>>>>> Stashed changes
         }
     }
-
-    private void StartStatCoroutine(GameObject panel, float targetValue)
-    {
-        if (panel == null) return;
-
-        var txt = panel.GetComponentInChildren<TextMeshProUGUI>();
-        if (txt == null) return;
-
-        int currentVal;
-        if (!int.TryParse(txt.text, out currentVal))
-        {
-            currentVal = 0;
-        }
-
-        int difference = (int)targetValue - currentVal;
-
-        // Si aucune variation, on met à jour direct
-        if (difference == 0)
-        {
-            txt.text = $"{(int)targetValue}";
-            return;
-        }
-
-        // Stop l'ancienne coroutine pour ce panel
-        Coroutine existing;
-        if (activeStatCoroutines.TryGetValue(panel, out existing) && existing != null)
-        {
-            StopCoroutine(existing);
-        }
-
-        activeStatCoroutines[panel] = StartCoroutine(ChangeStatUICoroutine(panel, difference, (int)targetValue));
-    }
-
-
-    IEnumerator ChangeStatUICoroutine(GameObject PanelStat, int difference, int valueObjectif)
-    {
-        if (PanelStat != null)
-        {
-            var txt = PanelStat.GetComponentInChildren<TextMeshProUGUI>();
-            RectTransform panelRect = PanelStat.GetComponent<RectTransform>();
-            int absDiff = Math.Abs(difference);
-
-            if (txt == null || panelRect == null)
-                yield break;
-
-            // Durée totale qui augmente de façon asymptotique (de moins en moins vite)
-            float baseDuration = 0.5f;
-            float maxAdditionalDuration = 2.5f;
-            float scaleFactor = 0.02f;
-            float totalDuration = baseDuration + maxAdditionalDuration * (1f - 1f / (1f + absDiff * scaleFactor));
-
-            // Scale qui augmente de façon asymptotique selon la différence
-            float baseScale = 0.65f;
-            float maxAdditionalScale = 0.2f; // Max +20% (donc 0.65 -> 0.85 max)
-            float targetScale = baseScale + maxAdditionalScale * (1f - 1f / (1f + absDiff * scaleFactor));
-
-            // Couleur selon la différence (rouge négatif, vert positif)
-            Color originalColor = txt.color;
-            Color targetColor = difference < 0 ? new Color(1f, 0.3f, 0.3f) : new Color(0.3f, 1f, 0.3f);
-
-            // Kill les tweens existants sur ce panel
-            DOTween.Kill(panelRect);
-            DOTween.Kill(txt);
-
-            // Animation de couleur du texte
-            txt.DOColor(targetColor, totalDuration * 0.3f).SetEase(Ease.OutQuad);
-
-            // Animation de scale du panel
-            panelRect.DOScale(targetScale, totalDuration).SetEase(Ease.InOutQuad);
-
-            // Animation de rotation gauche-droite (shake léger)
-            float rotationIntensity = 3f + 5f * (1f - 1f / (1f + absDiff * scaleFactor)); // 3° à 8° selon diff
-            panelRect.DORotate(new Vector3(0, 0, rotationIntensity), totalDuration * 0.1f, RotateMode.Fast)
-                .SetEase(Ease.InOutQuad)
-                .SetLoops(-1, LoopType.Yoyo);
-
-            int startValue = valueObjectif - difference;
-            float elapsed = 0f;
-
-            while (elapsed < totalDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / totalDuration);
-
-                // EaseInOutQuad
-                float easedT = t < 0.5f
-                    ? 2f * t * t
-                    : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
-
-                int currentValue = Mathf.RoundToInt(Mathf.Lerp(startValue, valueObjectif, easedT));
-                txt.text = $"{currentValue}";
-
-                yield return null;
-            }
-
-            // S'assurer que la valeur finale est exacte
-            txt.text = $"{valueObjectif}";
-
-            // Reset des animations
-            DOTween.Kill(panelRect);
-            txt.DOColor(originalColor, 0.3f).SetEase(Ease.OutQuad);
-            panelRect.DOScale(0.65f, 0.3f).SetEase(Ease.OutQuad);
-            panelRect.DORotate(Vector3.zero, 0.2f).SetEase(Ease.OutQuad);
-        }
-    }
-
-    #endregion
 
     public void changeDateUI()
     {
@@ -432,14 +255,6 @@ public class UIManager : MonoBehaviour
 
     public void VillageCardChoice(VillageCardCollectionSO cardCollection, int cardsToDraw)
     {
-<<<<<<< Updated upstream
-=======
-        CloseInteractionButton.onClick.RemoveAllListeners();
-        CloseInteractionButton.onClick.AddListener(RerollVillageCards);
-        if (interactionPanel == null || interactionContent == null) return;
-        RerollTxt.text = $"Rerolls : {GameManager.Instance.RerollsRemaining}";
-        
->>>>>>> Stashed changes
         HideAllUI();
         Debug.Log("UIManager: Affichage du choix de cartes de village.");
         PanelStats.SetActive(true);
@@ -472,25 +287,9 @@ public class UIManager : MonoBehaviour
         }
     }
 
-<<<<<<< Updated upstream
     /// <summary>
     /// Affiche le panel d'événement avec image, titre et description.
     /// </summary>
-=======
-    public void RerollVillageCards()
-    {
-        if(GameManager.Instance.RerollsRemaining <= 0)
-        {
-            Debug.LogWarning("UIManager: Pas de rerolls restants !");
-            return;
-        }
-        GameManager.Instance.RerollsRemaining--;
-        VillageCardChoice(GameManager.Instance.villageCardCollection, GameManager.Instance.cardsToDraw);
-        RerollTxt.text = $"Rerolls : {GameManager.Instance.RerollsRemaining}";
-    }
-
-    // --- PANEL D'ÉVÉNEMENT ---
->>>>>>> Stashed changes
     public void ShowEventPanel(Sprite image, string title, string description)
     {
         if (eventPanel == null)

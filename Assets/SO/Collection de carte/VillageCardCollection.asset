@@ -13,14 +13,9 @@ MonoBehaviour:
   m_Name: VillageCardCollection
   m_EditorClassIdentifier: Assembly-CSharp::VillageCardCollectionSO
   allVillageCards:
-<<<<<<< Updated upstream
   - {fileID: 11400000, guid: e34e4a2befbe13a4ba2830ccc84df953, type: 2}
   - {fileID: 11400000, guid: e34e4a2befbe13a4ba2830ccc84df953, type: 2}
   - {fileID: 11400000, guid: 831646e0f2473884d9c7f776ead4cdad, type: 2}
   - {fileID: 11400000, guid: 831646e0f2473884d9c7f776ead4cdad, type: 2}
   - {fileID: 11400000, guid: 8d179ffca9b7adc4bbb11a5699c39f4e, type: 2}
   - {fileID: 11400000, guid: 8d179ffca9b7adc4bbb11a5699c39f4e, type: 2}
-=======
-  - {fileID: 11400000, guid: 777c686f93cff5b49a39ad6b61bc84cf, type: 2}
-  - {fileID: 11400000, guid: e34e4a2befbe13a4ba2830ccc84df953, type: 2}
->>>>>>> Stashed changes
