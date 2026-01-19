@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro; // Ajoutez ceci en haut du fichier
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -14,12 +15,16 @@ public class MiniGameCardPanelManager : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int cardsToDraw = 3;
 
+    [Header("UI")]
+    [SerializeField] private TMP_Text rerollText; // Ajoutez ce champ
+
     // Cartes déjà utilisées (pour la journée / session en cours)
     private readonly HashSet<MiniGameCardEffectSO> _usedCards = new HashSet<MiniGameCardEffectSO>();
 
     private void OnEnable()
     {
         RandomizeCards();
+        UpdateRerollText(); // Ajoutez cet appel pour l'init
     }
 
     public void RandomizeCards()
@@ -88,10 +93,14 @@ public class MiniGameCardPanelManager : MonoBehaviour
         }
         GameManager.Instance.RerollsRemaining--;
         RandomizeCards();
-        // Mets à jour l'affichage du nombre de rerolls restants si tu as un texte dédié
-        if (UIManager.Instance != null && UIManager.Instance.RerollTxt != null)
+        UpdateRerollText(); // Ajoutez cet appel
+    }
+
+    private void UpdateRerollText()
+    {
+        if (rerollText != null)
         {
-            UIManager.Instance.RerollTxt.SetText($"Rerolls : {GameManager.Instance.RerollsRemaining}");
+            rerollText.SetText($"Rerolls : {GameManager.Instance.RerollsRemaining}");
         }
     }
 }
