@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11dd4889239fdd3478083862a08848b8, type: 3}
+  m_Name: Carte MaxFoi + 200
+  m_EditorClassIdentifier: Assembly-CSharp::VillageCard
+  cardName: TU va avoir de la foi
+  icon: {fileID: 0}
+  description: FOIOS jsqdjqmlkje ma sqjd dqf^zlksdfhj lkdqhj sldkfhjkqsdf qjskldj
+    qslkfjql
+  cardSet: 1
+  effectSO: {fileID: 11400000, guid: b7e4a1095fe15404da7a1c060a60356b, type: 2}

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
   m_Name: BuidingData 3
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: 3
-  icon: {fileID: 21300000, guid: 454d8f5771c813b4da2248da73fe5328, type: 3}
-  description: 3
+  buildingName: taille 3
+  icon: {fileID: 21300000, guid: f0ab22fd225db0f459aebdd4275e1cbd, type: 3}
+  description: 2
   gridSize: 3
   passiveEffects: []
   interactionEffects:

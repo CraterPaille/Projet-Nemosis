@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
   m_Name: BuidingData 2
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Taille de 1 par 1
-  icon: {fileID: 21300000, guid: 12e8e279a2c7d1844a3d56a7559df02c, type: 3}
+  buildingName: Taille 2
+  icon: {fileID: 21300000, guid: 95345620b606f9f419df99406af72da4, type: 3}
   description: 2
   gridSize: 2
   passiveEffects: []

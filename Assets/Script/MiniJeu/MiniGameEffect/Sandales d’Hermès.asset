@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
+  m_Name: "Sandales d\u2019Herm\xE8s"
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
+  cardName: " Sandales d\u2019Herm\xE8s"
+  description: "Tes doigts volent comme le messager des dieux. Tout va tr\xE8s vite,
+    mais tu peux gravir l\u2019Olympe du high\u2011score."
+  icon: {fileID: 0}
+  targetMiniGame: 1
+  speedMultiplier: 1.6
+  difficultyMultiplier: 1.8
+  invertControls: 1
+  spawnRateMultiplier: 1.4
+  chaosLevel: 0.5
+  rewardFlatBonus: 0
+  rewardMultiplier: 2
+  moreEnemies: 0
+  lessEnemies: 0
+  visualChaos: 0
+  oneMistakeFail: 1

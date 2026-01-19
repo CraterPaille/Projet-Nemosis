@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: ce805ca3181556f4eb2649a3bdc63eb4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7133394901442293578
+    second: pj4_laser_beam_demo_0
+  - first:
+      213: -5800523548177067676
+    second: pj4_laser_beam_demo_1
+  - first:
+      213: 5737520184288210830
+    second: pj4_laser_beam_demo_2
+  - first:
+      213: -1513570361342593110
+    second: pj4_laser_beam_demo_3
+  - first:
+      213: 7589027103467543288
+    second: pj4_laser_beam_demo_4
+  - first:
+      213: 3183625583491903451
+    second: pj4_laser_beam_demo_5
+  - first:
+      213: -3645001130411266859
+    second: pj4_laser_beam_demo_6
+  - first:
+      213: -2357038796178679866
+    second: pj4_laser_beam_demo_7
+  - first:
+      213: 2872950473255158466
+    second: pj4_laser_beam_demo_8
+  - first:
+      213: 55357492739004568
+    second: pj4_laser_beam_demo_9
+  - first:
+      213: -3090165128554518624
+    second: pj4_laser_beam_demo_10
+  - first:
+      213: -4155314907862036040
+    second: pj4_laser_beam_demo_11
+  - first:
+      213: 99325066407516430
+    second: pj4_laser_beam_demo_12
+  - first:
+      213: -8427584031736462252
+    second: pj4_laser_beam_demo_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_0
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 71
+        width: 550
+        height: 370
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4fec075ed8eef260800000000000000
+      internalID: 7133394901442293578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_1
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 51
+        width: 558
+        height: 410
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4611e9fb096608fa0800000000000000
+      internalID: -5800523548177067676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_2
+      rect:
+        serializedVersion: 2
+        x: 1263
+        y: 15
+        width: 534
+        height: 427
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8fe12c7534cf9f40800000000000000
+      internalID: 5737520184288210830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_3
+      rect:
+        serializedVersion: 2
+        x: 1867
+        y: 51
+        width: 534
+        height: 410
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa77d9d86c7befae0800000000000000
+      internalID: -1513570361342593110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_4
+      rect:
+        serializedVersion: 2
+        x: 2443
+        y: 71
+        width: 550
+        height: 370
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fa9ef431f3a15960800000000000000
+      internalID: 7589027103467543288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_5
+      rect:
+        serializedVersion: 2
+        x: 3039
+        y: 51
+        width: 558
+        height: 410
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdf61e1c9928e2c20800000000000000
+      internalID: 3183625583491903451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_6
+      rect:
+        serializedVersion: 2
+        x: 3663
+        y: 347
+        width: 86
+        height: 90
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dc60ffa8ca5a6dc0800000000000000
+      internalID: -3645001130411266859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_7
+      rect:
+        serializedVersion: 2
+        x: 3671
+        y: 71
+        width: 526
+        height: 426
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c794f7f3bd1a4fd0800000000000000
+      internalID: -2357038796178679866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_8
+      rect:
+        serializedVersion: 2
+        x: 4271
+        y: 51
+        width: 529
+        height: 410
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c20aafdb35ced720800000000000000
+      internalID: 2872950473255158466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_9
+      rect:
+        serializedVersion: 2
+        x: 3667
+        y: 335
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8985d5aa85ba4c000800000000000000
+      internalID: 55357492739004568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_10
+      rect:
+        serializedVersion: 2
+        x: 3667
+        y: 167
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a7653f10378d15d0800000000000000
+      internalID: -3090165128554518624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_11
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 71
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b19ffa6b1b5556c0800000000000000
+      internalID: -4155314907862036040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_12
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 71
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0913842f9fd06100800000000000000
+      internalID: 99325066407516430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pj4_laser_beam_demo_13
+      rect:
+        serializedVersion: 2
+        x: 3663
+        y: 75
+        width: 86
+        height: 90
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 454089179f43b0b80800000000000000
+      internalID: -8427584031736462252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 66dcb4094bcc7f449a245366d0432410
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      pj4_laser_beam_demo_0: 7133394901442293578
+      pj4_laser_beam_demo_1: -5800523548177067676
+      pj4_laser_beam_demo_10: -3090165128554518624
+      pj4_laser_beam_demo_11: -4155314907862036040
+      pj4_laser_beam_demo_12: 99325066407516430
+      pj4_laser_beam_demo_13: -8427584031736462252
+      pj4_laser_beam_demo_2: 5737520184288210830
+      pj4_laser_beam_demo_3: -1513570361342593110
+      pj4_laser_beam_demo_4: 7589027103467543288
+      pj4_laser_beam_demo_5: 3183625583491903451
+      pj4_laser_beam_demo_6: -3645001130411266859
+      pj4_laser_beam_demo_7: -2357038796178679866
+      pj4_laser_beam_demo_8: 2872950473255158466
+      pj4_laser_beam_demo_9: 55357492739004568
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

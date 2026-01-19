@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 707ed4c9bcdbe42409f64c04e5b01d27, type: 3}
+  m_Name: "Bouclier d\u2019Ath\xE9na"
+  m_EditorClassIdentifier: Assembly-CSharp::MiniGameCardEffectSO
+  cardName: " Bouclier d\u2019Ath\xE9na"
+  description: "La sagesse d\u2019Ath\xE9na te guide. Les coupures sont plus rationnelles,
+    plus pr\xE9visibles, et tu optimises chaque r\xE9paration."
+  icon: {fileID: 0}
+  targetMiniGame: 4
+  speedMultiplier: 1
+  difficultyMultiplier: 1
+  invertControls: 0
+  spawnRateMultiplier: 1
+  chaosLevel: 0.2
+  rewardFlatBonus: 0
+  rewardMultiplier: 1.3
+  moreEnemies: 0
+  lessEnemies: 1
+  visualChaos: 0
+  oneMistakeFail: 0
