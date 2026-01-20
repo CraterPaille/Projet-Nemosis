@@ -15,17 +15,14 @@ public class AudioSettings : MonoBehaviour
 
     private void Start()
     {
-        // Charger les valeurs sauvegardées
+        // Charger les valeurs sauvegardées pour initialiser les sliders
         masterSlider.value = PlayerPrefs.GetFloat("MasterVolume", 1f);
         musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
         sfxSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
         voiceSlider.value = PlayerPrefs.GetFloat("VoiceVolume", 1f);
 
-        // Appliquer immédiatement les valeurs au mixer
-        SetMasterVolume(masterSlider.value);
-        SetMusicVolume(musicSlider.value);
-        SetSFXVolume(sfxSlider.value);
-        SetVoiceVolume(voiceSlider.value);
+        // Appliquer immédiatement les valeurs au mixer via AudioManager si dispo, sinon via masterMixer
+        ApplyVolumeToSystem(masterSlider.value, musicSlider.value, sfxSlider.value, voiceSlider.value);
 
         // Ajouter des listeners aux sliders
         masterSlider.onValueChanged.AddListener(SetMasterVolume);
@@ -34,28 +31,66 @@ public class AudioSettings : MonoBehaviour
         voiceSlider.onValueChanged.AddListener(SetVoiceVolume);
     }
 
+    private void ApplyVolumeToSystem(float master, float music, float sfx, float voice)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMasterVolume(master, save: false);
+            AudioManager.Instance.SetMusicVolume(music, save: false);
+            AudioManager.Instance.SetSFXVolume(sfx, save: false);
+            AudioManager.Instance.SetVoiceVolume(voice, save: false);
+        }
+        else if (masterMixer != null)
+        {
+            masterMixer.SetFloat("MasterVolume", LinearToDB(master));
+            masterMixer.SetFloat("MusicVolume", LinearToDB(music));
+            masterMixer.SetFloat("SFXVolume", LinearToDB(sfx));
+            masterMixer.SetFloat("VoiceVolume", LinearToDB(voice));
+        }
+        else
+        {
+            Debug.LogWarning("AudioSettings : pas de AudioManager ni masterMixer assigné.");
+        }
+    }
+
     // Méthodes pour contrôler chaque volume
     public void SetMasterVolume(float value)
     {
-        masterMixer.SetFloat("MasterVolume", LinearToDB(value));
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SetMasterVolume(value);
+        else if (masterMixer != null)
+            masterMixer.SetFloat("MasterVolume", LinearToDB(value));
+
         PlayerPrefs.SetFloat("MasterVolume", value);
     }
 
     public void SetMusicVolume(float value)
     {
-        masterMixer.SetFloat("MusicVolume", LinearToDB(value));
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SetMusicVolume(value);
+        else if (masterMixer != null)
+            masterMixer.SetFloat("MusicVolume", LinearToDB(value));
+
         PlayerPrefs.SetFloat("MusicVolume", value);
     }
 
     public void SetSFXVolume(float value)
     {
-        masterMixer.SetFloat("SFXVolume", LinearToDB(value));
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SetSFXVolume(value);
+        else if (masterMixer != null)
+            masterMixer.SetFloat("SFXVolume", LinearToDB(value));
+
         PlayerPrefs.SetFloat("SFXVolume", value);
     }
 
     public void SetVoiceVolume(float value)
     {
-        masterMixer.SetFloat("VoiceVolume", LinearToDB(value));
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SetVoiceVolume(value);
+        else if (masterMixer != null)
+            masterMixer.SetFloat("VoiceVolume", LinearToDB(value));
+
         PlayerPrefs.SetFloat("VoiceVolume", value);
     }
 
@@ -70,5 +105,7 @@ public class AudioSettings : MonoBehaviour
     public void ApplySettings()
     {
         PlayerPrefs.Save();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.Save();
     }
 }

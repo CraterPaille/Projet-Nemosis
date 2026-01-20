@@ -80,9 +80,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -2098221427
-  m_SortingLayer: -2
+  m_SortingLayer: -3
   m_SortingOrder: 0
-  m_Sprite: {fileID: 5192431745680265365, guid: 5191aed3892ca654587a42a931035b69, type: 3}
+  m_Sprite: {fileID: -5787160740349681088, guid: c1f871d06b15501489f9b2629dc7e898, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -108,6 +108,13 @@ MonoBehaviour:
   speed: 1
   isFast: 0
   type: 0
+  runSprites:
+  - {fileID: -5787160740349681088, guid: c1f871d06b15501489f9b2629dc7e898, type: 3}
+  - {fileID: 4860998992641991020, guid: c1f871d06b15501489f9b2629dc7e898, type: 3}
+  - {fileID: -2421030069403073217, guid: c1f871d06b15501489f9b2629dc7e898, type: 3}
+  - {fileID: -5753097941700951379, guid: c1f871d06b15501489f9b2629dc7e898, type: 3}
+  runFrameRate: 4
+  useInitialSpriteAsIdle: 1
 --- !u!58 &4857401979671775457
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -18,6 +18,7 @@ TagManager:
   - Charge
   - City
   - DeathZone
+  - Music
   layers:
   - Default
   - TransparentFX

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using DG.Tweening;
 
 public enum WeatherMode
 {
@@ -42,6 +43,15 @@ public class GameManagerZeus : MonoBehaviour
     [Header("Options")]
     public bool autoStartOnLoad = true; // si vrai, StartGame() est appelé automatiquement à l'ouverture de la scène
 
+    [Header("Paliers étoiles")]
+    public int[] starThresholds = new int[3] { 5, 10, 20 }; // ajuster selon le gameplay
+    private bool[] starGiven = new bool[3];
+
+    [Header("UI Étoiles")]
+    public UnityEngine.UI.Image[] starImages;
+    public Sprite starOnSprite;
+    public Sprite starOffSprite;
+
     // Runtime
     private float spawnRate;
     private float currentTime;
@@ -74,6 +84,25 @@ public class GameManagerZeus : MonoBehaviour
         _baseSpawnRateCached = baseSpawnRate;
         ApplyMiniGameCardIfAny();
 
+        // Initialisation étoiles
+        if (starThresholds == null || starThresholds.Length == 0)
+            starThresholds = new int[3] { 5, 10, 20 };
+
+        starGiven = new bool[starThresholds.Length];
+        // Préparer l'affichage des étoiles si assignées — OFF doit être visible (scale = 1, couleur dim)
+        if (starImages != null)
+        {
+            for (int i = 0; i < starImages.Length; i++)
+            {
+                if (starImages[i] != null)
+                {
+                    starImages[i].sprite = starOffSprite;
+                    starImages[i].transform.localScale = Vector3.one;
+                    starImages[i].color = new Color(1f, 1f, 1f, 0.45f); // dimmer pour 'off'
+                }
+            }
+        }
+        UpdateStarsUI();
     }
 
     private void ShowTutorialAndStart()
@@ -122,7 +151,7 @@ public class GameManagerZeus : MonoBehaviour
     {
         if (enemyPrefab == null || spawnPoints == null || spawnPoints.Length == 0 || lightningController == null)
         {
-            Debug.LogError("GameManagerZeus: Prefabs or references missing! Vérifie enemyPrefab, spawnPoints et lightningController dans l'inspector.");
+            Debug.LogError("GameManagerZeus: Prefabs or references missing! Vérifie enemyPrefab, spawnPoints et lightningcontroller dans l'inspector.");
             return;
         }
 
@@ -153,6 +182,22 @@ public class GameManagerZeus : MonoBehaviour
         lightningController.bounceLightning = false;
 
         if (fogOverlay) fogOverlay.SetActive(false);
+
+        // Reset étoiles — OFF visible
+        for (int i = 0; i < starGiven.Length; i++) starGiven[i] = false;
+        if (starImages != null)
+        {
+            for (int i = 0; i < starImages.Length; i++)
+            {
+                if (starImages[i] != null)
+                {
+                    starImages[i].sprite = starOffSprite;
+                    starImages[i].transform.localScale = Vector3.one;
+                    starImages[i].color = new Color(1f, 1f, 1f, 0.45f);
+                }
+            }
+        }
+        UpdateStarsUI();
     }
 
     void ApplyWeatherModifiers()
@@ -244,6 +289,10 @@ public class GameManagerZeus : MonoBehaviour
         }
 
         UpdateUI();
+        CheckStarThresholds();
+
+        // animation score selon le type (positive)
+        PlayScoreAnimation(type, true);
     }
 
     // Appelé par Enemy.ReachCity()
@@ -277,6 +326,10 @@ public class GameManagerZeus : MonoBehaviour
         }
 
         UpdateUI();
+        CheckStarThresholds();
+
+        // animation score négative
+        PlayScoreAnimation(type, false);
     }
 
     void Update()
@@ -295,7 +348,7 @@ public class GameManagerZeus : MonoBehaviour
     void UpdateUI()
     {
         if (scoreText)
-            scoreText.text = $"Tués: {enemiesKilled}  Passés: {enemiesPassed}  Score: {score}";
+            scoreText.text = $"Score: {score} Tués: {enemiesKilled}  Passés: {enemiesPassed}  ";
     }
 
     void EndGame()
@@ -333,5 +386,104 @@ public class GameManagerZeus : MonoBehaviour
     public void OnQuitMiniGame()
     {
         SceneManager.LoadScene("SampleScene");
+    }
+
+    // --- ÉTOILES / UI ---
+    void CheckStarThresholds()
+    {
+        if (starThresholds == null || starThresholds.Length == 0) return;
+
+        for (int i = 0; i < starThresholds.Length; i++)
+        {
+            if (i >= starGiven.Length) break;
+            if (!starGiven[i] && score >= starThresholds[i])
+            {
+                starGiven[i] = true;
+                // Donne la stat (même comportement que les autres mini-jeux)
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.changeStat(StatType.Foi, 5f);
+                }
+                PlayStarPop(i);
+                UpdateStarsUI();
+            }
+        }
+    }
+
+    public void UpdateStarsUI()
+    {
+        if (starImages == null) return;
+        for (int i = 0; i < starImages.Length; i++)
+        {
+            if (starImages[i] == null) continue;
+            bool on = (i < starGiven.Length && starGiven[i]);
+            starImages[i].sprite = on ? starOnSprite : starOffSprite;
+            starImages[i].color = on ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+            // si on veut un "pop" visible pour l'acquisition, garder scale dynamique ; sinon scale = 1
+            if (on)
+                starImages[i].transform.localScale = Vector3.one;
+            else
+                starImages[i].transform.localScale = Vector3.one;
+        }
+    }
+
+    void PlayStarPop(int index)
+    {
+        if (starImages == null || index < 0 || index >= starImages.Length) return;
+        var img = starImages[index];
+        if (img == null) return;
+
+        img.DOKill();
+        Sequence s = DOTween.Sequence();
+        img.sprite = starOnSprite;
+        img.transform.localScale = Vector3.zero;
+        img.color = Color.white;
+        s.Append(img.transform.DOScale(1.4f, 0.28f).SetEase(Ease.OutBack));
+        s.Append(img.transform.DOScale(1f, 0.12f).SetEase(Ease.OutBack));
+        // petite rotation dynamique
+        img.transform.DORotate(new Vector3(0, 0, 20f), 0.35f, RotateMode.Fast).SetLoops(2, LoopType.Yoyo);
+        s.Play();
+    }
+
+    // --- ANIMATIONS SCORE selon type ---
+    void PlayScoreAnimation(EnemyType type, bool positive)
+    {
+        if (scoreText == null) return;
+
+        scoreText.transform.DOKill();
+        scoreText.DOKill();
+
+        Color original = scoreText.color;
+
+        if (positive)
+        {
+            // couleur selon le type
+            Color col = type switch
+            {
+                EnemyType.Gold => new Color(1f, 0.85f, 0.2f),
+                EnemyType.Red => new Color(1f, 0.7f, 0.7f),
+                EnemyType.Blue => new Color(0.6f, 0.8f, 1f),
+                _ => Color.white
+            };
+
+            // punch scale + color flash
+            scoreText.transform.localScale = Vector3.one;
+            scoreText.transform.DOPunchScale(Vector3.one * 0.22f, 0.35f, 10, 0.6f);
+            scoreText.DOColor(col, 0.12f).OnComplete(() => scoreText.DOColor(original, 0.35f));
+        }
+        else
+        {
+            // negative feedback: red flash + shake
+            scoreText.DOColor(new Color(1f, 0.45f, 0.45f), 0.08f).OnComplete(() => scoreText.DOColor(original, 0.3f));
+            scoreText.transform.DOShakePosition(0.35f, new Vector3(10f, 0, 0), 12, 90, false, true);
+        }
+    }
+
+    public int GetStarCount()
+    {
+        int count = 0;
+        for (int i = 0; i < starGiven.Length; i++)
+            if (starGiven[i]) count++;
+        return count;
     }
 }
