@@ -70,7 +70,6 @@ public class DOTweenManager : MonoBehaviour
             // 2. On attend que la SÉQUENCE entière soit finie
             yield return s.WaitForCompletion();
             callback?.Invoke();
-            Debug.Log("[DOTweenManager] transitionChoixJeu: callback invoqué");
             Time.timeScale = 1f; // Keep gameplay unpaused after callback
             // Créer une NOUVELLE séquence pour le retour
             DG.Tweening.Sequence s2 = DOTween.Sequence();
@@ -98,45 +97,78 @@ public class DOTweenManager : MonoBehaviour
     {
         Vector3 posInitial = cardTransform.position;
         Vector3 scaleInitial = cardTransform.localScale;
+        Quaternion rotInitial = cardTransform.rotation;
         IsAnimating = true;
         
-        // Récupérer la position du centre de l'écran en coordonnées monde
-        Vector3 screenCenter = new Vector3(Screen.width / 2f, Screen.height / 2f, 0);
+        // Positions en espace écran
+        Vector3 screenCenter = new Vector3(Screen.width / 2f, Screen.height / 2f, 0); // Milieu de l'écran
+        Vector3 screenLeftTop = new Vector3(-100, Screen.height - 150, 0); // Départ hors écran à gauche
+        Vector3 screenCenterTop = new Vector3(Screen.width / 2f, Screen.height - 80, 0); // Centre un peu plus haut (courbe)
+        Vector3 screenRightTop = new Vector3(Screen.width + 100, Screen.height - 150, 0); // Fin hors écran à droite
+        
+        // Conversion en coordonnées monde
         Vector3 worldCenter = Camera.main.ScreenToWorldPoint(screenCenter);
-        worldCenter.z = cardTransform.position.z; // Garder la profondeur Z originale
-
-        DG.Tweening.Sequence s = DOTween.Sequence();
-        s.SetUpdate(true); // Utilise le temps réel (unscaled time)
-
-        // Animation parallèle : déplacement, zoom et rotation
-        float duration = 1.5f;
+        Vector3 worldLeftTop = Camera.main.ScreenToWorldPoint(screenLeftTop);
+        Vector3 worldCenterTop = Camera.main.ScreenToWorldPoint(screenCenterTop);
+        Vector3 worldRightTop = Camera.main.ScreenToWorldPoint(screenRightTop);
         
-        // Déplacement vers le centre
-        s.Append(cardTransform.DOMoveX(worldCenter.x, duration).SetEase(Ease.OutBack));
-        
-        // Zoom en parallèle (grossissement)
-        s.Join(cardTransform.DOScale(1.3f, duration).SetEase(Ease.OutBack));
-        
-        // Rotation continue pendant le déplacement
-        s.Join(cardTransform.DORotate(new Vector3(0, 360, 0), duration * 0.5f, RotateMode.FastBeyond360)
-            .SetEase(Ease.Linear)
-            .SetLoops((int)(duration / (duration * 0.5f)), LoopType.Restart));
+        // Garder la profondeur Z originale
+        worldCenter.z = cardTransform.position.z;
+        worldLeftTop.z = cardTransform.position.z;
+        worldCenterTop.z = cardTransform.position.z;
+        worldRightTop.z = cardTransform.position.z;
 
-        yield return s.WaitForCompletion();
+        // === PHASE 1 : Carte va au milieu en tournant 360° ===
+        DG.Tweening.Sequence s1 = DOTween.Sequence();
+        s1.SetUpdate(true);
+        
+        float phase1Duration = 1f;
+        s1.Append(cardTransform.DOMove(worldCenter, phase1Duration).SetEase(Ease.OutQuad));
+        s1.Join(cardTransform.DOScale(1.3f, phase1Duration).SetEase(Ease.OutBack));
+        s1.Join(cardTransform.DORotate(new Vector3(0, 360, 0), phase1Duration, RotateMode.FastBeyond360).SetEase(Ease.Linear));
+        
+        yield return s1.WaitForCompletion();
+        
+        // === PHASE 2 : Va vers la gauche (début de la courbe) ===
+        DG.Tweening.Sequence s2 = DOTween.Sequence();
+        s2.SetUpdate(true);
+        
+        float phase2Duration = 0.5f;
+        s2.Append(cardTransform.DOMove(worldLeftTop, phase2Duration).SetEase(Ease.InQuad));
+        s2.Join(cardTransform.DOScale(0.4f, phase2Duration).SetEase(Ease.InQuad));
+        s2.Join(cardTransform.DORotate(Vector3.zero, phase2Duration).SetEase(Ease.OutQuad));
+        
+        yield return s2.WaitForCompletion();
+        
+        // === PHASE 3 : Trajectoire courbe de gauche à droite ===
+        DG.Tweening.Sequence s3 = DOTween.Sequence();
+        s3.SetUpdate(true);
+
+        float phase3Duration = 2f;
+        
+        // Déplacement en courbe CatmullRom : gauche -> centre (haut) -> droite
+        Vector3[] path = new Vector3[] { worldLeftTop, worldCenterTop, worldRightTop };
+        s3.Append(cardTransform.DOPath(path, phase3Duration, PathType.CatmullRom).SetEase(Ease.InOutSine));
         callback?.Invoke();
-        yield return new WaitForSeconds(2f);
+        // Inclinaison légère et fixe vers la droite (rotation Z de -15°)
+        s3.Join(cardTransform.DORotate(new Vector3(0, 0, -15f), phase3Duration * 0.3f).SetEase(Ease.OutQuad));
+
+        yield return s3.WaitForCompletion();
         
-        StartCoroutine(ReturnInitCard(cardTransform, posInitial, scaleInitial));
+        yield return new WaitForSeconds(1f);
+        
+        StartCoroutine(ReturnInitCard(cardTransform, posInitial, scaleInitial, rotInitial));
          
     }
 
-    public IEnumerator ReturnInitCard(Transform cardTransform, Vector3 posInitial, Vector3 scaleInitial)
+    public IEnumerator ReturnInitCard(Transform cardTransform, Vector3 posInitial, Vector3 scaleInitial, Quaternion rotInitial)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         IsAnimating = false;
-        // Rétablir la position et l'échelle initiales
+        // Rétablir la position, l'échelle et la rotation initiales
         cardTransform.position = posInitial;
         cardTransform.localScale = scaleInitial;
+        cardTransform.rotation = rotInitial;
         
 
     }
@@ -153,7 +185,7 @@ public class DOTweenManager : MonoBehaviour
         {
             
             StartCoroutine(animationCard(cardTransform, () => { card.PlayCard();}));
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(3f);
             StartCoroutine(transitionChoixJeu(() => CardUI.Instance.AfterCard()));
         }
     }
