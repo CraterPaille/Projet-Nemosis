@@ -115,6 +115,13 @@ public class DialogueRunner : MonoBehaviour
         if (responseIndex < 0 || responseIndex >= currentNode.responses.Length) return;
         var response = currentNode.responses[responseIndex];
 
+        // Ajuster immédiatement la relation du dieu si un delta est défini
+        if (currentGod != null && response.relationDelta != 0)
+        {
+            currentGod.relation += response.relationDelta;
+            Debug.Log($"[DialogueRunner] Relation de {currentGod.displayName} modifiée de {response.relationDelta}, nouvelle valeur: {currentGod.relation}");
+        }
+
         // apply all effects in order
         if (response.effects.Length > 0)
         {

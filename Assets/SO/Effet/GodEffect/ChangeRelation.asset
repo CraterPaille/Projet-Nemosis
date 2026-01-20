@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 509c673e36be31b43bbdb863fc0c6d5a, type: 3}
-  m_Name: Ajoute de la relation avec dieux des cartes
+  m_Name: ChangeRelation
   m_EditorClassIdentifier: Assembly-CSharp::ChangeGodRelationEffectSO
   effectName: 
   description: 
   isInstant: 0
   conditions: []
-  relationChange: 5
+  relationChange: -1
   godData: {fileID: 0}

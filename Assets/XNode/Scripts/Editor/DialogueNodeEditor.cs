@@ -11,15 +11,22 @@ public class DialogueNodeEditor : NodeEditor
     SerializedProperty responsesProp;
     SerializedProperty endOfPhaseProp;
 
+    // Styles reutilisables pour le texte multi-ligne et a retour automatique
+    private static GUIStyle _textAreaStyle;
+
     // Note: Some versions of the XNode NodeEditor do not expose OnEnable as overrideable.
     // Initialize SerializedProperty fields lazily in OnBodyGUI to avoid override issues.
 
+    public override int GetWidth()
+    {
+        // Largeur augmentee pour faciliter la lecture
+        return 360;
+    }
+
     public override void OnBodyGUI()
     {
-        // IMPORTANT : update serializedObject (layout safe)
         serializedObject.Update();
 
-        // lazy init SerializedProperty (avoid overriding OnEnable which may not exist)
         if (godTextProp == null)
         {
             godTextProp = serializedObject.FindProperty("godText");
@@ -29,24 +36,26 @@ public class DialogueNodeEditor : NodeEditor
 
         DialogueNode node = target as DialogueNode;
 
-        // --- PORT d'entrée (previousNode) visible en haut ---
         NodePort inPort = node.GetInputPort("previousNode");
-        if (inPort != null) NodeEditorGUILayout.PortField(new GUIContent("Entrée"), inPort);
+        if (inPort != null) NodeEditorGUILayout.PortField(new GUIContent("Entree"), inPort);
 
         EditorGUILayout.Space(6);
 
-        // Texte du dieu
-        EditorGUILayout.PropertyField(godTextProp, new GUIContent("Texte du dieu"));
+        // Texte du dieu (multiligne, wrap)
+        if (_textAreaStyle == null)
+        {
+            _textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+        }
+        EditorGUILayout.LabelField("Texte du dieu", EditorStyles.boldLabel);
+        godTextProp.stringValue = EditorGUILayout.TextArea(godTextProp.stringValue, _textAreaStyle, GUILayout.MinHeight(48));
 
         EditorGUILayout.Space(8);
 
-        // Responses array : affichage custom + port dynamique par élément
-        EditorGUILayout.LabelField("Réponses", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Reponses", EditorStyles.boldLabel);
 
         if (responsesProp != null)
         {
             EditorGUI.indentLevel++;
-            // defer deletion to avoid breaking layout (Begin/End mismatch)
             int removeIndex = -1;
             int count = responsesProp.arraySize;
             for (int i = 0; i < count; i++)
@@ -58,21 +67,17 @@ public class DialogueNodeEditor : NodeEditor
 
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"Réponse #{i + 1}", GUILayout.MaxWidth(120));
-                if (GUILayout.Button("–", GUILayout.Width(24)))
-                {
-                    // mark for removal after layout is finished
-                    removeIndex = i;
-                }
+                EditorGUILayout.LabelField($"Reponse #{i + 1}", GUILayout.MaxWidth(120));
+                if (GUILayout.Button("-", GUILayout.Width(24))) removeIndex = i;
                 EditorGUILayout.EndHorizontal();
 
-                EditorGUILayout.PropertyField(responseTextProp, new GUIContent("Texte"));
+                EditorGUILayout.LabelField("Texte", EditorStyles.miniBoldLabel);
+                responseTextProp.stringValue = EditorGUILayout.TextArea(responseTextProp.stringValue, _textAreaStyle, GUILayout.MinHeight(40));
+                EditorGUILayout.PropertyField(responseProp.FindPropertyRelative("relationDelta"), new GUIContent("Delta relation"));
                 EditorGUILayout.PropertyField(conditionsProp, new GUIContent("Conditions (SO)"));
                 EditorGUILayout.PropertyField(effectsProp, new GUIContent("Effets (SO)"));
 
-                // Affiche le port dynamique correspondant (response_i)
                 string portName = $"response_{i}";
-                // ...CHANGEMENT: utiliser GetPort() (nom du port exact) plutôt que GetOutputPort (potentiellement absent)
                 NodePort outPort = node.GetPort(portName);
                 if (outPort != null)
                 {
@@ -80,14 +85,13 @@ public class DialogueNodeEditor : NodeEditor
                 }
                 else
                 {
-                    EditorGUILayout.LabelField("Port non créé (sauvegarder pour générer)");
+                    EditorGUILayout.LabelField("Port non cree (sauvegarder pour generer)");
                 }
 
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(4);
             }
 
-            // actually remove the element outside of the layout loop
             if (removeIndex >= 0 && removeIndex < responsesProp.arraySize)
             {
                 responsesProp.DeleteArrayElementAtIndex(removeIndex);
@@ -96,20 +100,17 @@ public class DialogueNodeEditor : NodeEditor
             EditorGUI.indentLevel--;
         }
 
-        // Boutons d'ajout / suppression
-    EditorGUILayout.BeginHorizontal();
-    if (GUILayout.Button("+ Ajouter une réponse", GUILayout.ExpandWidth(true)))
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("+ Ajouter une reponse", GUILayout.ExpandWidth(true)))
         {
-            // utilise l'API serialized pour ajouter proprement (plus sûr que InsertArrayElementAtIndex)
             int newIndex = responsesProp.arraySize;
             responsesProp.arraySize = responsesProp.arraySize + 1;
             SerializedProperty newElem = responsesProp.GetArrayElementAtIndex(newIndex);
-            newElem.FindPropertyRelative("responseText").stringValue = "Nouvelle réponse";
+            newElem.FindPropertyRelative("responseText").stringValue = "Nouvelle reponse";
             newElem.FindPropertyRelative("conditions").arraySize = 0;
             newElem.FindPropertyRelative("effects").arraySize = 0;
-            // les ports seront mis à jour après ApplyModifiedProperties
         }
-        if (GUILayout.Button("Suppr. dernière", GUILayout.ExpandWidth(true)))
+        if (GUILayout.Button("Suppr. derniere", GUILayout.ExpandWidth(true)))
         {
             if (responsesProp.arraySize > 0)
                 responsesProp.DeleteArrayElementAtIndex(responsesProp.arraySize - 1);
@@ -119,21 +120,15 @@ public class DialogueNodeEditor : NodeEditor
         EditorGUILayout.Space(6);
         EditorGUILayout.PropertyField(endOfPhaseProp, new GUIContent("Fin de phase"));
 
-        // Applique les modifications - récupère si des changements ont été effectivement appliqués
         bool applied = serializedObject.ApplyModifiedProperties();
 
-        // Après avoir modifié l'array via serializedObject, force mise à jour des ports si nécessaire
         if (applied)
         {
             DialogueNode nodeRef = (DialogueNode)target;
-            // Update dynamic ports sur le node (méthode prévue côté DialogueNode)
             nodeRef.UpdateDynamicPorts();
             EditorUtility.SetDirty(nodeRef);
-            // Forcer le repaint de l'éditeur de nodes pour refléter les changements de ports
             NodeEditorWindow.RepaintAll();
 
-            // --- Synchronise les nextNode dans responses[] d'après les connexions visuelles ---
-            // Utilise reflection pour être compatible avec différentes versions de XNode.
             bool anyChange = false;
             serializedObject.Update();
             for (int i = 0; i < responsesProp.arraySize; i++)
@@ -145,10 +140,8 @@ public class DialogueNodeEditor : NodeEditor
                 DialogueNode connected = null;
                 if (outPort != null)
                 {
-                    // reflection-based helpers to find the connected node
                     object connNode = null;
                     var portType = outPort.GetType();
-                    // 1) try IsConnected + Connection
                     var isConnectedProp = portType.GetProperty("IsConnected");
                     if (isConnectedProp != null)
                     {
@@ -168,7 +161,6 @@ public class DialogueNodeEditor : NodeEditor
                         }
                     }
 
-                    // 2) try ConnectionCount / GetConnection(i) pattern
                     if (connNode == null)
                     {
                         var connCountProp = portType.GetProperty("ConnectionCount") ?? portType.GetProperty("connectionCount");
@@ -191,7 +183,6 @@ public class DialogueNodeEditor : NodeEditor
                         }
                     }
 
-                    // 3) try Connections property (array)
                     if (connNode == null)
                     {
                         var connsProp = portType.GetProperty("Connections") ?? portType.GetProperty("connections");

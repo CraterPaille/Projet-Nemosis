@@ -25,11 +25,29 @@ public class CardUI : MonoBehaviour
 
     }
 
-    public void OnActionButtonClicked()
+    public void OnActionButtonCClickedAnimation()
+    {
+        if (DOTweenManager.Instance.IsAnimating == false)
+        {
+            StartCoroutine(DOTweenManager.Instance.animationCard(gameObject.transform, OnActionCard));
+            StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(AfterCard));
+        }
+
+        
+    }
+
+    public void OnActionCard()
     {
         if (currentCard != null)
         {
             currentCard.PlayCard();
+        }
+    }
+
+    public void AfterCard()
+    {
+        if (currentCard != null)
+        {
             UIManager.Instance.closeInteractionMenu();
             GameManager.Instance.EndHalfDay();
         }

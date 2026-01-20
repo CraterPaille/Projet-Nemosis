@@ -18,7 +18,7 @@ public class MiniGameCardButton : MonoBehaviour
     {
         _button = GetComponent<Button>();
         if (_button != null)
-            _button.onClick.AddListener(OnClick);
+            _button.onClick.AddListener(OnClickAnimation);
 
         _panelManager = GetComponentInParent<MiniGameCardPanelManager>();
     }
@@ -46,6 +46,16 @@ public class MiniGameCardButton : MonoBehaviour
         if (descriptionText != null) descriptionText.text = cardData.description;
     }
 
+    private void OnClickAnimation()
+    {
+        if (DOTweenManager.Instance.IsAnimating == false)
+        {
+            StartCoroutine(DOTweenManager.Instance.animationCard(gameObject.transform, () =>
+            {
+                StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(OnClick));
+            }));
+        }
+    }
     private void OnClick()
     {
         Debug.Log($"[MiniGameCardButton] OnClick sur {cardData?.cardName}");
@@ -56,7 +66,7 @@ public class MiniGameCardButton : MonoBehaviour
         if (MiniGameCardRuntime.Instance != null)
             MiniGameCardRuntime.Instance.SelectCard(cardData);
 
-        // 2) NE PLUS SUPPRIMER de la collection, juste marquer comme utilisée
+        // 2) NE PLUS SUPPRIMER de la collection, juste marquer comme utilisï¿½e
         if (_panelManager != null)
         {
             _panelManager.MarkCardUsed(cardData);

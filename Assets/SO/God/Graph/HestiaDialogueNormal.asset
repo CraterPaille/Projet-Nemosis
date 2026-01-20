@@ -1,0 +1,343 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5215020879690325186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33af4a3114a589b4aaaee6f65d241563, type: 3}
+  m_Name: Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
+  graph: {fileID: 11400000}
+  position: {x: 232, y: -184}
+  ports:
+    keys:
+    - previousNode
+    - response_0
+    - response_1
+    values:
+    - _fieldName: previousNode
+      _node: {fileID: -5215020879690325186}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: response_1
+        node: {fileID: -1035301677169671823}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: response_0
+      _node: {fileID: -5215020879690325186}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_1
+      _node: {fileID: -5215020879690325186}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+  previousNode: {fileID: 0}
+  godText: "tous ce chemin pour que tu me rappelle s\xE8chement ma fonction, je sens
+    que j'aurais bien fait de rester a m'occuper de celui de l'Olympe\u2026"
+  responses:
+  - responseText: "peut-\xEAtre bien oui, je te rappelle que tu as particip\xE9,
+      toi aussi, au vote pour m'exclure. je n'ai visiblement plus rien a faire avec
+      vous autres!!!"
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  - responseText: "tu as raison, je n'aurais pas du \xEAtre aussi s\xE8che avec toi,
+      que dirais tu d'un banquet pour me faire pardonner ?"
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  endOfPhase: 0
+--- !u!114 &-1035301677169671823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33af4a3114a589b4aaaee6f65d241563, type: 3}
+  m_Name: Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
+  graph: {fileID: 11400000}
+  position: {x: -472, y: -520}
+  ports:
+    keys:
+    - previousNode
+    - response_0
+    - response_1
+    - response_2
+    values:
+    - _fieldName: previousNode
+      _node: {fileID: -1035301677169671823}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: response_0
+      _node: {fileID: -1035301677169671823}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: previousNode
+        node: {fileID: 5892579273597785580}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_1
+      _node: {fileID: -1035301677169671823}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: previousNode
+        node: {fileID: -5215020879690325186}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_2
+      _node: {fileID: -1035301677169671823}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: previousNode
+        node: {fileID: 5485565415221162429}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+  previousNode: {fileID: 0}
+  godText: "Bonjour N\xE9m\xE9sis, je viens pour prendre de tes nouvelles ?"
+  responses:
+  - responseText: "salutation Hestia, cela fait 3 lunes que je suis assign\xE9 a
+      cette ville, je ne voit plus personne"
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 5892579273597785580}
+  - responseText: "les foyers ne sont pas entretenu, qu'attends tu pour r\xE9chauffer
+      mes villageois !!"
+    conditions: []
+    effects:
+    - {fileID: 11400000, guid: f7420eb78a11382428105bb56cd4b244, type: 2}
+    relationDelta: 0
+    nextNode: {fileID: -5215020879690325186}
+  - responseText: oh, douce Hestia !! Je suis ravie que tu prenne le temps de me
+      parler.
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 5485565415221162429}
+  endOfPhase: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11339ad8322977b48882b562a5ddbc77, type: 3}
+  m_Name: HestiaDialogueNormal
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueGraph
+  nodes:
+  - {fileID: -1035301677169671823}
+  - {fileID: -5215020879690325186}
+  - {fileID: 5485565415221162429}
+  - {fileID: 5892579273597785580}
+  startNode: {fileID: 0}
+--- !u!114 &5485565415221162429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33af4a3114a589b4aaaee6f65d241563, type: 3}
+  m_Name: Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
+  graph: {fileID: 11400000}
+  position: {x: 88, y: 456}
+  ports:
+    keys:
+    - previousNode
+    - response_0
+    - response_1
+    - response_2
+    values:
+    - _fieldName: previousNode
+      _node: {fileID: 5485565415221162429}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: response_2
+        node: {fileID: -1035301677169671823}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: response_0
+      _node: {fileID: 5485565415221162429}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_1
+      _node: {fileID: 5485565415221162429}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_2
+      _node: {fileID: 5485565415221162429}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+  previousNode: {fileID: 0}
+  godText: "N\xE9m\xE9sis, tu nous manque a l'olympe, j'ai h\xE2te que tu reviennes
+    parmi nous."
+  responses:
+  - responseText: "finalement je suis bien, sans vous, a la t\xEAte d'un petit village.
+      Je suis libre sans vos stupide r\xE8gle."
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  - responseText: "c'est tr\xE8s gentil de t'inqui\xE9ter pour moi mais si je suis
+      la c'est par ma faute, il faut que j'expie mes fautes et que je prouve ma valeur."
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  - responseText: "moi aussi tu me manque Hestia, impossible de reproduire la chaleur
+      des foyer que tu entretiens. Je pensais revenir en moins de 3 lunes mais avec
+      les assauts r\xE9p\xE9t\xE9s de chronos, il me faudra encore une bonne lune\u2026"
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  endOfPhase: 0
+--- !u!114 &5892579273597785580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33af4a3114a589b4aaaee6f65d241563, type: 3}
+  m_Name: Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNode
+  graph: {fileID: 11400000}
+  position: {x: 168, y: -1112}
+  ports:
+    keys:
+    - previousNode
+    - response_0
+    - response_1
+    - response_2
+    values:
+    - _fieldName: previousNode
+      _node: {fileID: 5892579273597785580}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: response_0
+        node: {fileID: -1035301677169671823}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: response_0
+      _node: {fileID: 5892579273597785580}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_1
+      _node: {fileID: 5892579273597785580}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+    - _fieldName: response_2
+      _node: {fileID: 5892579273597785580}
+      _typeQualifiedName: DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 1
+      _dynamic: 1
+  previousNode: {fileID: 0}
+  godText: "c'est gentil \xE0 toi malheureusement mon fr\xE8re ne veut pas trop qu'on
+    te contacte suite a ton bannissement de l'olympe"
+  responses:
+  - responseText: et alors ? Tu es venue te moquer de moi ?
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  - responseText: pourquoi venir me voir ? Tu risque de t'attirer des ennuis a cause
+      de ta venue.
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  - responseText: "viens donc prendre une bon repas, le trajet depuis l'olympe a
+      du \xEAtre long, as tu crois\xE9 de la nemosis ?"
+    conditions: []
+    effects: []
+    relationDelta: 0
+    nextNode: {fileID: 0}
+  endOfPhase: 0

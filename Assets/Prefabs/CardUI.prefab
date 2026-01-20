@@ -334,7 +334,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: -2930853384024805191}
         m_TargetAssemblyTypeName: CardUI, Assembly-CSharp
-        m_MethodName: OnActionButtonClicked
+        m_MethodName: OnActionButtonCClickedAnimation
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

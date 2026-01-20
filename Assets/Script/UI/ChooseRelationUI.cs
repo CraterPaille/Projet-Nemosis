@@ -60,6 +60,14 @@ public class ChooseRelationUI : MonoBehaviour
     }
 
     // Called by the UI Close button when the player wants to finish the half-day from the selection screen
+    public void OnClosePressed_EndHalfDayAnimation()
+    {
+        // Notify GameManager that the half-day is finished
+        if(DOTweenManager.Instance.IsAnimating == false)
+        {
+            StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(OnClosePressed_EndHalfDay) );
+        }
+    }
     public void OnClosePressed_EndHalfDay()
     {
         // Notify GameManager that the half-day is finished
