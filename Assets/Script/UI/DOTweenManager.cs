@@ -61,10 +61,10 @@ public class DOTweenManager : MonoBehaviour
                 
                 if (nuage == NuagesParents.transform) continue; // ignore le parent
                 if (compteurs % 2 == 0) // nuage pair va à gauche
-                    s.Join(nuage.DOMoveX(nuage.position.x + 50f, 0.5f).SetEase(Ease.OutBack));
+                    s.Join(nuage.DOMoveX(nuage.position.x + 50f, 0.4f).SetEase(Ease.OutBack));
                 else // nuage impair va à droite
-                    s.Insert(delay, nuage.DOMoveX(nuage.position.x + 50f, 0.5f).SetEase(Ease.OutBack));
-                delay += 0.2f;
+                    s.Insert(delay, nuage.DOMoveX(nuage.position.x + 50f, 0.3f).SetEase(Ease.OutBack));
+                delay += 0.1f;
             }
 
             // 2. On attend que la SÉQUENCE entière soit finie
@@ -81,8 +81,8 @@ public class DOTweenManager : MonoBehaviour
                 if (nuage == NuagesParents.transform) continue; // ignore le parent
                 
                 // Utiliser DOMove relatif (delta de -50 depuis la position actuelle)
-                s2.Insert(delay, nuage.transform.DOMoveX(nuage.position.x - 50f, 0.5f).SetEase(Ease.OutBack));
-                delay += 0.2f;
+                s2.Insert(delay, nuage.transform.DOMoveX(nuage.position.x - 50f, 0.3f).SetEase(Ease.OutBack));
+                delay += 0.1f;
             }
             
             yield return s2.WaitForCompletion();
@@ -109,7 +109,7 @@ public class DOTweenManager : MonoBehaviour
         s.SetUpdate(true); // Utilise le temps réel (unscaled time)
 
         // Animation parallèle : déplacement, zoom et rotation
-        float duration = 0.8f;
+        float duration = 1.5f;
         
         // Déplacement vers le centre
         s.Append(cardTransform.DOMoveX(worldCenter.x, duration).SetEase(Ease.OutBack));
@@ -118,13 +118,13 @@ public class DOTweenManager : MonoBehaviour
         s.Join(cardTransform.DOScale(1.3f, duration).SetEase(Ease.OutBack));
         
         // Rotation continue pendant le déplacement
-        s.Join(cardTransform.DORotate(new Vector3(0, 0, 360), duration * 0.5f, RotateMode.FastBeyond360)
+        s.Join(cardTransform.DORotate(new Vector3(0, 360, 0), duration * 0.5f, RotateMode.FastBeyond360)
             .SetEase(Ease.Linear)
             .SetLoops((int)(duration / (duration * 0.5f)), LoopType.Restart));
 
         yield return s.WaitForCompletion();
         callback?.Invoke();
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(2f);
         
         StartCoroutine(ReturnInitCard(cardTransform, posInitial, scaleInitial));
          
@@ -141,6 +141,34 @@ public class DOTweenManager : MonoBehaviour
 
     }
 
+    public IEnumerator OnActionCardAnimation(Transform cardTransform, VillageCard card)
+    {
+        if (card == null)
+        {
+            Debug.LogError("[DOTweenManager] card est null dans OnActionCardAnimation!");
+            yield break;
+        }
+        
+        if (IsAnimating == false)
+        {
+            
+            StartCoroutine(animationCard(cardTransform, () => { card.PlayCard();}));
+            yield return new WaitForSeconds(2f);
+            StartCoroutine(transitionChoixJeu(() => CardUI.Instance.AfterCard()));
+        }
+    }
+
+    public IEnumerator OnActionCardMiniJeuAnimation(Transform cardTransform, Action Callback)
+    {
+        
+        if (IsAnimating == false)
+        {
+            
+            StartCoroutine(animationCard(cardTransform, () => {;}));
+            yield return new WaitForSeconds(2f);
+            StartCoroutine(transitionChoixJeu(Callback));
+        }
+    }
 
     
     #endregion

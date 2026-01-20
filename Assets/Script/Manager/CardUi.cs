@@ -11,9 +11,14 @@ public class CardUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private Button actionButton;
 
-    private VillageCard currentCard;
+    public VillageCard currentCard;
 
     public static CardUI Instance;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     public void Setup(VillageCard Card)
     {
@@ -27,10 +32,16 @@ public class CardUI : MonoBehaviour
 
     public void OnActionButtonCClickedAnimation()
     {
+        if (currentCard == null)
+        {
+            Debug.LogError("[CardUI] currentCard est null! Setup() n'a pas été appelé.");
+            return;
+        }
+        
         if (DOTweenManager.Instance.IsAnimating == false)
         {
-            StartCoroutine(DOTweenManager.Instance.animationCard(gameObject.transform, OnActionCard));
-            StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(AfterCard));
+            StartCoroutine(DOTweenManager.Instance.OnActionCardAnimation(gameObject.transform, currentCard));
+           
         }
 
         

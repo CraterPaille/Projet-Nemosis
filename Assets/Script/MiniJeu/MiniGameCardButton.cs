@@ -50,13 +50,11 @@ public class MiniGameCardButton : MonoBehaviour
     {
         if (DOTweenManager.Instance.IsAnimating == false)
         {
-            StartCoroutine(DOTweenManager.Instance.animationCard(gameObject.transform, () =>
-            {
-                StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(OnClick));
-            }));
+            StartCoroutine(DOTweenManager.Instance.OnActionCardMiniJeuAnimation(gameObject.transform, AfterOnClick));
         }
     }
-    private void OnClick()
+
+    private void AfterOnClick()
     {
         Debug.Log($"[MiniGameCardButton] OnClick sur {cardData?.cardName}");
 
