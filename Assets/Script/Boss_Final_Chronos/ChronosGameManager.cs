@@ -29,7 +29,7 @@ public class ChronosGameManager : MonoBehaviour
 
 
     [Header("Boss Hearts UI")]
-    public Image[] bossHeartImages; // 6 images à assigner dans l’Inspector
+    public Image[] bossHeartImages;
     private Tween[] heartRotateTweens;
     public Sprite heartEmpty;
     public Sprite heartQuarter;
@@ -41,6 +41,8 @@ public class ChronosGameManager : MonoBehaviour
     public TMP_Text dialogueText;
 
     public bool isPausedForJewel = false;
+    public GameObject gamepadCursor; 
+
 
     private Coroutine hpAnimCoroutine;
 
@@ -244,6 +246,20 @@ public class ChronosGameManager : MonoBehaviour
         if (attackController != null)
             attackController.enabled = false;
 
+        // Centrer le joueur et désactiver le mouvement
+        var player = GameObject.FindGameObjectWithTag("PlayerSoul");
+        if (player != null)
+        {
+            // Récupère la box d'arène et son centre
+            var arenaBox = attackController != null ? attackController.arena.GetComponent<BoxCollider2D>() : null;
+            var arenaCenter = arenaBox != null ? (Vector2)arenaBox.bounds.center : Vector2.zero;
+            player.transform.position = arenaCenter;
+
+            var playerSoul = player.GetComponent<PlayerSoul>();
+            if (playerSoul != null)
+                playerSoul.SetMovementEnabled(false);
+        }
+
         dialogueText.text = "* Un joyau ! Choisis : Attaquer ou Te soigner.";
         // Ici, affiche les boutons ou options pour le choix (à relier dans l'UI)
     }
@@ -251,14 +267,50 @@ public class ChronosGameManager : MonoBehaviour
     public void ChooseAttack()
     {
         Attack();
+        UnlockPlayerMovement();
+
+        // Désactive le curseur manette APRÈS le choix
+        if (gamepadCursor != null)
+            gamepadCursor.SetActive(false);
+
         ResumeAttacks();
     }
 
     public void ChooseHeal()
     {
         Heal();
+        UnlockPlayerMovement();
+
+        // Désactive le curseur manette APRÈS le choix
+        if (gamepadCursor != null)
+            gamepadCursor.SetActive(false);
+
         ResumeAttacks();
     }
+
+    private void UnlockPlayerMovement()
+    {
+        var player = GameObject.FindGameObjectWithTag("PlayerSoul");
+        if (player != null)
+        {
+            var playerSoul = player.GetComponent<PlayerSoul>();
+            if (playerSoul != null)
+            {
+                playerSoul.ExitJusticeMode();
+                playerSoul.SetMovementEnabled(true);
+            }
+
+            // Désactive les boucliers si actifs
+            var shieldCtrl = player.GetComponent<JusticeShieldController>();
+            if (shieldCtrl != null)
+                shieldCtrl.DeactivateShields();
+        }
+
+        // Désactive explicitement le GamepadCursor
+        if (gamepadCursor != null)
+            gamepadCursor.SetActive(false);
+    }
+
 
     private void ResumeAttacks()
     {

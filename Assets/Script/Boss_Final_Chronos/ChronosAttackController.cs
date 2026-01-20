@@ -33,6 +33,8 @@ public class ChronosAttackController : MonoBehaviour
     private bool isJusticeMode;
     private bool hasPhase5Pattern;
     private Coroutine timeFluxCo;
+    public GameObject gamepadCursor;
+
 
     void OnEnable()
     {
@@ -457,7 +459,13 @@ public class ChronosAttackController : MonoBehaviour
         jewel.transform.localScale = Vector3.zero;
         jewel.transform.DOScale(0.3f, 0.3f).SetEase(Ease.OutBack);
 
+        // Active le curseur manette AVANT le choix
+        if (gamepadCursor != null)
+            gamepadCursor.SetActive(true);
+
+        // Affiche le canvas de choix
         choiceCanvas.gameObject.SetActive(true);
+
         bool done = false;
         attackButton.onClick.RemoveAllListeners();
         healButton.onClick.RemoveAllListeners();

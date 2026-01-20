@@ -864,6 +864,7 @@ MonoBehaviour:
   minWallGap: 2
   boneRainMinSpacing: 0.3
   boneRainSlowMultiplier: 1.6
+  gamepadCursor: {fileID: 1535717667}
 --- !u!4 &406765805
 Transform:
   m_ObjectHideFlags: 0
@@ -1056,6 +1057,7 @@ RectTransform:
   - {fileID: 279216970}
   - {fileID: 2065058049}
   - {fileID: 1458267628}
+  - {fileID: 1535717668}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1922,6 +1924,7 @@ MonoBehaviour:
   heartFull: {fileID: 21300000, guid: 1903410401aad0245ad29aa2c2c37b8e, type: 3}
   dialogueText: {fileID: 1827025979}
   isPausedForJewel: 0
+  gamepadCursor: {fileID: 1535717667}
   sfxSource: {fileID: 470473095}
   sfxDamage: {fileID: 0}
   sfxHeal: {fileID: 8300000, guid: 5e8342db7568745448f9177ea70ff279, type: 3}
@@ -2023,7 +2026,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1123227095}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1056449585}
+        m_TargetAssemblyTypeName: ChronosGameManager, Assembly-CSharp
+        m_MethodName: Heal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1123227095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7657,6 +7672,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1486809908}
   m_CullTransparentMesh: 1
+--- !u!1 &1535717667
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1535717668}
+  - component: {fileID: 1535717669}
+  m_Layer: 0
+  m_Name: GamepadCursor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1535717668
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535717667}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -515.88293, y: -290.0592, z: 0}
+  m_LocalScale: {x: 1.00008, y: 1.00008, z: 1.00008}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 454648820}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1535717669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535717667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c031d42633dcbf4ba42e10551c73ae9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamepadCursor
+  moveCursor: {fileID: -8784545083839296357, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  click: {fileID: 3001919216989983466, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  cursorSpeed: 1000
+  stickDeadzone: 0.15
+  cursorTexture: {fileID: 2800000, guid: 18201740013b56c40a8831f36396a43c, type: 3}
+  cursorClickTexture: {fileID: 2800000, guid: df933cc3eb8653f45b1f56329407019e, type: 3}
+  cursorMode: 0
+  hotSpot: {x: 0, y: 0}
 --- !u!1 &1597485154
 GameObject:
   m_ObjectHideFlags: 0

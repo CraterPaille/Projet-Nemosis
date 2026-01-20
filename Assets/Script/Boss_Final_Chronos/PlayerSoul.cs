@@ -143,4 +143,9 @@ public class PlayerSoul : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+
+    public void SetMovementEnabled(bool enabled)
+    {
+        canMove = enabled;
+    }
 }

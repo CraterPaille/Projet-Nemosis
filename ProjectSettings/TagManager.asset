@@ -16,6 +16,8 @@ TagManager:
   - Jewel
   - PlayerSoul
   - Charge
+  - City
+  - DeathZone
   layers:
   - Default
   - TransparentFX
@@ -52,6 +54,9 @@ TagManager:
   m_SortingLayers:
   - name: Background
     uniqueID: 2196745869
+    locked: 0
+  - name: BackGround2
+    uniqueID: 1195906219
     locked: 0
   - name: Buttons
     uniqueID: 3413274237
