@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
+using UnityEngine.Audio;
 
 public class GameManagerRhytme : MonoBehaviour
 {
@@ -143,6 +144,21 @@ public class GameManagerRhytme : MonoBehaviour
             laneLayout.ApplyInverted(_invertControlsRhythm);
         if (invertInfoText != null)
             invertInfoText.gameObject.SetActive(_invertControlsRhythm);
+
+        // Assurer que la source audio du mini-jeu est routée vers le groupe "Music"
+        if (theMusic != null)
+        {
+            var groups = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
+            foreach (var g in groups)
+            {
+                if (g != null && g.name == "Music")
+                {
+                    theMusic.outputAudioMixerGroup = g;
+                    Debug.Log("[Rhytme] theMusic routée vers AudioMixerGroup 'Music'");
+                    break;
+                }
+            }
+        }
 
         theMusic.pitch = _speedMultiplier;   // 2f => double tempo audio
         Debug.Log($"[Rhytme] Musique pitch réglé à {_speedMultiplier}x");
@@ -372,7 +388,7 @@ public class GameManagerRhytme : MonoBehaviour
                 }
             }
         }
-        UpdateStarsUI(); 
+        UpdateStarsUI();
 
     }
 
@@ -527,5 +543,5 @@ public class GameManagerRhytme : MonoBehaviour
         SceneManager.LoadScene("SampleScene");
     }
 
-   
+
 }
