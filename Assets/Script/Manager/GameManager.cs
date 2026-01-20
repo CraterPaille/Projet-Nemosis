@@ -39,6 +39,10 @@ public class GameManager : MonoBehaviour
     [Header("Mini-jeu du dimanche")]
     public MiniGameLauncher miniGameLauncher;
 
+    [Header("Fallback mini-jeux (utilisé si MiniGameLauncher non assigné)")]
+    [Tooltip("Liste de scènes de mini-jeux (noms exacts Build Settings). Si vide, 'RhythmScene' sera utilisée.")]
+    public string[] sundayMiniGameFallbackScenes = { "RhythmScene" };
+
     [Header("Durée de la campagne")]
     [Tooltip("Nombre total de jours dans une partie (1 mois = 28 jours)")]
     public int totalDays = 28;
@@ -211,20 +215,32 @@ public class GameManager : MonoBehaviour
 
     private void LaunchSundayMiniGame()
     {
-        Debug.Log("[GameManager] Dimanche matin : lancement automatique d'un mini-jeu aléatoire !");
+        Debug.Log("[GameManager] Dimanche matin : tentative de lancement d'un mini-jeu aléatoire !");
 
+        // Désactiver l'UI principale si présente
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetUIActive(false);
+
+        // Si un MiniGameLauncher est assigné, déléguer le choix
         if (miniGameLauncher != null)
         {
             miniGameLauncher.LaunchRandomSundayMiniGame();
-            Debug.Log("[GameManager] Mini-jeu lancé via MiniGameLauncher.");
+            Debug.Log("[GameManager] MiniGameLauncher utilisé pour lancer un mini‑jeu.");
+            return;
         }
-        else
-        {
-            if (UIManager.Instance != null)
-                UIManager.Instance.SetUIActive(false);
 
-            SceneManager.LoadScene("RhythmScene");
+        // Sinon, fallback : choisir une scène aléatoire dans la liste publique
+        if (sundayMiniGameFallbackScenes != null && sundayMiniGameFallbackScenes.Length > 0)
+        {
+            string scene = sundayMiniGameFallbackScenes[Random.Range(0, sundayMiniGameFallbackScenes.Length)];
+            Debug.Log($"[GameManager] Fallback : chargement de la scène mini‑jeu '{scene}'.");
+            SceneManager.LoadScene(scene);
+            return;
         }
+
+        // Dernier recours : charger RhythmScene
+        Debug.LogWarning("[GameManager] Aucun MiniGameLauncher ni fallback défini, chargement de 'RhythmScene'.");
+        SceneManager.LoadScene("RhythmScene");
     }
 
     public void MiniJeuCardPanelAnimation()
