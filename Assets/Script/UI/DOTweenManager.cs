@@ -11,7 +11,7 @@ public class DOTweenManager : MonoBehaviour
     public static DOTweenManager Instance;
 
     [Header("Animations et effets")]
-    bool isAnimating = false;    // Update is called once per frame
+    public bool IsAnimating = false;    // Update is called once per frame
 
     [Header("Choix de mode")]
     public GameObject villageModeUI;
@@ -35,76 +35,48 @@ public class DOTweenManager : MonoBehaviour
     #region mode de jeu
     public IEnumerator transitionChoixJeu(Action callback)
     {
+        IsAnimating = true;
         TMPro.TextMeshProUGUI titreVillage = villageModeUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        
+        // Stocker les positions initiales
+        Transform[] nuages = NuagesParents.GetComponentsInChildren<Transform>();
+        
         DG.Tweening.Sequence s = DOTween.Sequence();
+        s.SetUpdate(true); // Utilise le temps réel (unscaled time)
 
-        // On ajoute plein d'animations qui jouent en même temps (Join) ou à la suite (Append)
-        s.Append(titreVillage.DOFade(200, 2f)); // 1. On fait disparaître le texte "Village"
-        foreach (Transform nuage in NuagesParents.GetComponentsInChildren<Transform>())
+        // Fade du titre puis décalage des nuages un par un avec délai entre chaque
+        float delay = 0f;
+        foreach (Transform nuage in nuages)
         {
-            s.Join(nuage.DOMoveX(nuage.position.x + 32.5f, 2f).SetEase(Ease.OutBack));
+            if (nuage == NuagesParents.transform) continue; // ignore le parent
+            
+            s.Insert(delay, nuage.DOMoveX(nuage.position.x + 50f, 0.7f).SetEase(Ease.OutBack));
+            delay += 0.2f;
         }
 
         // 2. On attend que la SÉQUENCE entière soit finie
         yield return s.WaitForCompletion();
         callback?.Invoke();
-        foreach (Transform nuage in NuagesParents.GetComponentsInChildren<Transform>())
+        Time.timeScale = 0f; // S'assure que le temps est à 1
+        // Créer une NOUVELLE séquence pour le retour
+        DG.Tweening.Sequence s2 = DOTween.Sequence();
+        s2.SetUpdate(true); // Utilise le temps réel (unscaled time)
+        delay = 0f;
+        foreach (Transform nuage in nuages)
         {
-            s.Join(nuage.DOMoveX(nuage.position.x - 32.5f, 2f).SetEase(Ease.OutBack));
+            if (nuage == NuagesParents.transform) continue; // ignore le parent
+            
+            // Utiliser DOMove relatif (delta de -50 depuis la position actuelle)
+            s2.Insert(delay, nuage.transform.DOMoveX(nuage.position.x - 50f, 1f).SetEase(Ease.OutBack));
+            delay += 0.2f;
         }
+        
+        yield return s2.WaitForCompletion();
+        Time.timeScale = 1f;
+        IsAnimating = false;
     }
 
-    public IEnumerator TransitionVillage()
-    {
-        TMPro.TextMeshProUGUI titreVillage = villageModeUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-        DG.Tweening.Sequence s = DOTween.Sequence();
-
-        // On ajoute plein d'animations qui jouent en même temps (Join) ou à la suite (Append)
-        s.Append(titreVillage.DOFade(200, 2f)).SetEase(Ease.InOutQuart); // 1. On fait disparaître le texte "Village"
-
-        // 2. On attend que la SÉQUENCE entière soit finie
-        yield return s.WaitForCompletion();
-
-    }
-
-    public IEnumerator TransitionVillageCard()
-    {
-        TMPro.TextMeshProUGUI titreVillage = villageModeUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-        DG.Tweening.Sequence s = DOTween.Sequence();
-
-        // On ajoute plein d'animations qui jouent en même temps (Join) ou à la suite (Append)
-        s.Append(titreVillage.DOFade(200, 2f)).SetEase(Ease.InOutQuad); // 1. On fait disparaître le texte "Village"
-
-        // 2. On attend que la SÉQUENCE entière soit finie
-        yield return s.WaitForCompletion();
-
-    }
-
-    public IEnumerator TransitionRelationn()
-    {
-        TMPro.TextMeshProUGUI titreVillage = villageModeUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-        DG.Tweening.Sequence s = DOTween.Sequence();
-
-        // On ajoute plein d'animations qui jouent en même temps (Join) ou à la suite (Append)
-        s.Append(titreVillage.DOFade(200, 2f)).SetEase(Ease.InOutQuad); // 1. On fait disparaître le texte "Village"
-
-        // 2. On attend que la SÉQUENCE entière soit finie
-        yield return s.WaitForCompletion();
-
-    }
-
-    public IEnumerator TransitionMiniGameCard()
-    {
-        TMPro.TextMeshProUGUI titreVillage = villageModeUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-        DG.Tweening.Sequence s = DOTween.Sequence();
-
-        // On ajoute plein d'animations qui jouent en même temps (Join) ou à la suite (Append)
-        s.Append(titreVillage.DOFade(200, 2f)).SetEase(Ease.InOutQuad); // 1. On fait disparaître le texte "Village"
-
-        // 2. On attend que la SÉQUENCE entière soit finie
-        yield return s.WaitForCompletion();
-
-    }
+    
     #endregion
 }
 

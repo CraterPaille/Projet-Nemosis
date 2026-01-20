@@ -229,6 +229,7 @@ public class GameManager : MonoBehaviour
 
     public void MiniJeuCardPanelAnimation()
     {
+        if(DOTweenManager.Instance.IsAnimating) return;
         StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(OpenMiniJeuCardPanel));
     }
     public void OpenMiniJeuCardPanel()
@@ -240,6 +241,7 @@ public class GameManager : MonoBehaviour
 
     public void ChooseVillageAnimation()
     {
+         if(DOTweenManager.Instance.IsAnimating) return;
         StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseVillage));
     }
 
@@ -251,6 +253,7 @@ public class GameManager : MonoBehaviour
 
     public void ChooseVillageCardsTransition()
     {
+        if(DOTweenManager.Instance.IsAnimating) return;
         StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseVillageCards));
     }
 
@@ -262,6 +265,7 @@ public class GameManager : MonoBehaviour
 
     public void RelationTransitionAnimation()
     {
+        if(DOTweenManager.Instance.IsAnimating) return;
         StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(ChooseRelationTransition));
     }
 

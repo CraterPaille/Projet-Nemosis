@@ -68,5 +68,8 @@ TagManager:
   - name: "Fl\xE8ches"
     uniqueID: 74593903
     locked: 0
+  - name: Animation
+    uniqueID: 1846688529
+    locked: 0
   m_RenderingLayers:
   - Default

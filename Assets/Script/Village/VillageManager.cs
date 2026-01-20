@@ -298,6 +298,11 @@ public class VillageManager : MonoBehaviour
         return gridOrigin + new Vector3(worldX, worldY, 0f);
     }
 
+    public void OnCloseVillageAnimation()
+    {
+        if(DOTweenManager.Instance.IsAnimating)return;
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(CloseVillage));
+    }
     public void CloseVillage()
     {
         // Nettoie les bâtiments 2D
