@@ -241,27 +241,31 @@ public class ChronosGameManager : MonoBehaviour
     public void OnJewelCollected()
     {
         isPausedForJewel = true;
-        // Désactive le contrôleur d'attaque
+
+        // Pause les attaques du boss (si souhaité) — on garde ce comportement pour éviter des projectiles instantanés pendant le choix
         var attackController = FindFirstObjectByType<ChronosAttackController>();
         if (attackController != null)
             attackController.enabled = false;
 
-        // Centrer le joueur et désactiver le mouvement
+        // NE PLUS centrer ni désactiver le mouvement du joueur : on lui laisse la liberté de se déplacer pendant le choix
         var player = GameObject.FindGameObjectWithTag("PlayerSoul");
         if (player != null)
         {
-            // Récupère la box d'arène et son centre
-            var arenaBox = attackController != null ? attackController.arena.GetComponent<BoxCollider2D>() : null;
-            var arenaCenter = arenaBox != null ? (Vector2)arenaBox.bounds.center : Vector2.zero;
-            player.transform.position = arenaCenter;
-
             var playerSoul = player.GetComponent<PlayerSoul>();
             if (playerSoul != null)
-                playerSoul.SetMovementEnabled(false);
+            {
+                // S'assurer qu'il n'est pas dans un mode qui bloque le mouvement
+                playerSoul.ExitJusticeMode();
+                playerSoul.SetMovementEnabled(true);
+            }
         }
 
+        // Message + affichage du curseur manette si présent
         dialogueText.text = "* Un joyau ! Choisis : Attaquer ou Te soigner.";
-        // Ici, affiche les boutons ou options pour le choix (à relier dans l'UI)
+        if (gamepadCursor != null)
+            gamepadCursor.SetActive(true);
+
+        // Ici : afficher les boutons/options de l'UI (inchangé, à relier côté UI)
     }
 
     public void ChooseAttack()
