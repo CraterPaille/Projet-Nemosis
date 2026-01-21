@@ -12,9 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
   m_Name: BuidingData WeBelive
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: taille 4
-  icon: {fileID: 21300000, guid: f0ab22fd225db0f459aebdd4275e1cbd, type: 3}
-  description: qdqsdqsdq
+  buildingName: 'moulin '
+  description: Un moulin anime
+  visualType: 1
+  icon: {fileID: 0}
+  animationSprites:
+  - {fileID: -7145108927493435506, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: -8934844957939161921, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: 7266143141688762277, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: -7804106425553641083, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: 5003624780398304483, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: 2567503010260232459, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: -5960513796377112896, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  animationFPS: 7
   gridSize: 4
   passiveEffects: []
   interactionEffects:

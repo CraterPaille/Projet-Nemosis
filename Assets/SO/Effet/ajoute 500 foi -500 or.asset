@@ -17,7 +17,5 @@ MonoBehaviour:
   isInstant: 0
   conditions: []
   RessourceToAdd:
-  - statType: 1
+  - statType: 3
     amount: 500
-  - statType: 4
-    amount: -500

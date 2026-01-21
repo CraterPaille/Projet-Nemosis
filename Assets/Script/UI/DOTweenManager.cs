@@ -1,10 +1,10 @@
 using UnityEngine;
 using DG.Tweening;
-using Unity.VisualScripting;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 public class DOTweenManager : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -12,6 +12,7 @@ public class DOTweenManager : MonoBehaviour
 
     [Header("Animations et effets")]
     public bool IsAnimating = false;    // Update is called once per frame
+    public GameObject HorlogeUI;
 
     [Header("Choix de mode")]
     public GameObject villageModeUI;
@@ -25,6 +26,7 @@ public class DOTweenManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            HorlogeUI.SetActive(false);
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -50,7 +52,7 @@ public class DOTweenManager : MonoBehaviour
             Transform[] nuages = NuagesParents.GetComponentsInChildren<Transform>();
             
             DG.Tweening.Sequence s = DOTween.Sequence();
-            s.SetUpdate(true); // Utilise le temps réel (unscaled time)
+            s.SetUpdate(false); // Utilise le temps réel (unscaled time)
 
             // Fade du titre puis décalage des nuages un par un avec délai entre chaque
             float delay = 0f;
@@ -70,10 +72,10 @@ public class DOTweenManager : MonoBehaviour
             // 2. On attend que la SÉQUENCE entière soit finie
             yield return s.WaitForCompletion();
             callback?.Invoke();
-            Time.timeScale = 1f; // Keep gameplay unpaused after callback
+            // Keep gameplay unpaused after callback
             // Créer une NOUVELLE séquence pour le retour
             DG.Tweening.Sequence s2 = DOTween.Sequence();
-            s2.SetUpdate(true); // Utilise le temps réel (unscaled time)
+            s2.SetUpdate(false); // Utilise le temps réel (unscaled time)
             delay = 0f;
             foreach (Transform nuage in nuages)
             {
@@ -88,7 +90,7 @@ public class DOTweenManager : MonoBehaviour
         }
         finally
         {
-            Time.timeScale = 1f;
+            //Time.timeScale = 1f;
             IsAnimating = false;
         }
     }
@@ -185,7 +187,7 @@ public class DOTweenManager : MonoBehaviour
         {
             
             StartCoroutine(animationCard(cardTransform, () => { card.PlayCard();}));
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(4.5f);
             StartCoroutine(transitionChoixJeu(() => CardUI.Instance.AfterCard()));
         }
     }
@@ -201,7 +203,6 @@ public class DOTweenManager : MonoBehaviour
             StartCoroutine(transitionChoixJeu(Callback));
         }
     }
-
     
     #endregion
 }

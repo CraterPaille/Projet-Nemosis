@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11dd4889239fdd3478083862a08848b8, type: 3}
   m_Name: Card 500 foi et or
   m_EditorClassIdentifier: Assembly-CSharp::VillageCard
-  cardName: Foi contre argent
+  cardName: ARGENT PLUS
   icon: {fileID: -4919783380165033945, guid: 5daae032e18077543a82818273802e59, type: 3}
-  description: Ajoute 500 foi contre de l'or
+  description: PLUSSSS
   cardSet: 1
   effectSO: {fileID: 11400000, guid: 3f042e1412841954cbd55631baa95c00, type: 2}

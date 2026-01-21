@@ -15,3 +15,4 @@ MonoBehaviour:
   allVillageCards:
   - {fileID: 11400000, guid: 777c686f93cff5b49a39ad6b61bc84cf, type: 2}
   - {fileID: 11400000, guid: cfe5dae31eff1704f80eddd0664953a6, type: 2}
+  - {fileID: 11400000, guid: da280ba81f9e2484d89d3fd18deb97cd, type: 2}

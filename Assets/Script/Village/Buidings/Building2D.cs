@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections;
 
 public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -104,13 +105,58 @@ public class Building2D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         buildingData = data;
         manager = villageManager;
         
-        // Assigne le sprite depuis les données
-        if (spriteRenderer != null && data.icon != null)
+        if (spriteRenderer == null) return;
+
+        // Gère le visuel selon le type (Sprite ou Animation)
+        switch (data.visualType)
         {
-            spriteRenderer.sprite = data.icon;
-            
-            // Auto-scale le sprite selon la taille du footprint
-            ScaleSpriteToFootprint(data.gridSize, villageManager);
+            case BuildingVisualType.Animation:
+                if (data.animationSprites != null && data.animationSprites.Length > 0)
+                {
+                    // Assigne le premier sprite pour le scale initial
+                    spriteRenderer.sprite = data.animationSprites[0];
+                    ScaleSpriteToFootprint(data.gridSize, villageManager);
+                    
+                    // Lance l'animation de sprites
+                    StartCoroutine(PlaySpriteAnimation(data.animationSprites, data.animationFPS));
+                }
+                else if (data.icon != null)
+                {
+                    // Fallback sur le sprite si pas de sprites d'animation
+                    spriteRenderer.sprite = data.icon;
+                    ScaleSpriteToFootprint(data.gridSize, villageManager);
+                }
+                break;
+
+            case BuildingVisualType.Sprite:
+            default:
+                if (data.icon != null)
+                {
+                    spriteRenderer.sprite = data.icon;
+                    ScaleSpriteToFootprint(data.gridSize, villageManager);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Joue une animation de sprites en boucle
+    /// </summary>
+    private IEnumerator PlaySpriteAnimation(Sprite[] sprites, float fps)
+    {
+        if (sprites == null || sprites.Length == 0) yield break;
+        
+        float frameDuration = 1f / Mathf.Max(1f, fps);
+        int index = 0;
+
+        while (true)
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = sprites[index];
+            }
+            index = (index + 1) % sprites.Length;
+            yield return new WaitForSeconds(frameDuration);
         }
     }
 
