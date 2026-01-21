@@ -2,33 +2,53 @@ using UnityEngine;
 
 public class Jewel : MonoBehaviour
 {
-    [SerializeField] private string poolTag = "Jewel"; // Assure-toi que ce tag existe dans ObjectPooler.pools
+    [SerializeField] private string poolTag = "Jewel";
 
-    // Cache du tag pour éviter les allocations
-    private static readonly int PlayerTagHash = "PlayerSoul".GetHashCode();
+    // Cache des composants et références
+    private static ChronosGameManager gameManager;
+    private static ObjectPooler pooler;
+    private Transform cachedTransform;
+
+    // Optimisation: CompareTag est plus rapide que GetHashCode
+    private const string PLAYER_TAG = "PlayerSoul";
+
+    private void Awake()
+    {
+        // Cache le transform une seule fois
+        cachedTransform = transform;
+    }
+
+    private void OnEnable()
+    {
+        // Cache les singletons au premier enable si nécessaire
+        if (gameManager == null)
+            gameManager = ChronosGameManager.Instance;
+
+        if (pooler == null)
+            pooler = ObjectPooler.Instance;
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Comparaison optimisée avec hashcode
-        if (other.tag.GetHashCode() == PlayerTagHash)
+        // CompareTag est plus performant que GetHashCode
+        if (!other.CompareTag(PLAYER_TAG)) return;
+
+        // Appel au GameManager
+        gameManager.OnJewelCollected();
+
+        // Désactive immédiatement
+        gameObject.SetActive(false);
+
+        // Retourne à la pool de manière optimisée
+        if (pooler != null && pooler.poolDictionary.ContainsKey(poolTag))
         {
-            ChronosGameManager.Instance.OnJewelCollected();
-
-            // Désactive
-            gameObject.SetActive(false);
-
-            // Si la pool existe, retourne l'objet dedans, sinon fallback : reparenter
-            if (ObjectPooler.Instance != null)
-            {
-                if (ObjectPooler.Instance.poolDictionary != null && ObjectPooler.Instance.poolDictionary.ContainsKey(poolTag))
-                {
-                    ObjectPooler.Instance.ReturnToPool(poolTag, gameObject);
-                }
-                else
-                {
-                    transform.SetParent(ObjectPooler.Instance.transform);
-                }
-            }
+            // Le SetActive(false) est déjà fait, ReturnToPool le gérera
+            pooler.ReturnToPool(poolTag, gameObject);
+        }
+        else
+        {
+            // Fallback: reparenter en utilisant le transform caché
+            cachedTransform.SetParent(pooler.transform);
         }
     }
 }

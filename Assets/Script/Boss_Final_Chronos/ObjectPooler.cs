@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,60 +15,66 @@ public class ObjectPooler : MonoBehaviour
     public List<Pool> pools;
     public Dictionary<string, Queue<GameObject>> poolDictionary;
 
+    // Cache pour éviter les lookups répétés
+    private Dictionary<string, Pool> poolDefinitions;
+    private Transform cachedTransform;
+
     void Awake()
     {
         Instance = this;
-        poolDictionary = new Dictionary<string, Queue<GameObject>>();
+        cachedTransform = transform;
+        poolDictionary = new Dictionary<string, Queue<GameObject>>(pools.Count);
+        poolDefinitions = new Dictionary<string, Pool>(pools.Count);
 
         foreach (Pool pool in pools)
         {
-            Queue<GameObject> objectPool = new Queue<GameObject>();
+            Queue<GameObject> objectPool = new Queue<GameObject>(pool.size);
+
             for (int i = 0; i < pool.size; i++)
             {
-                GameObject obj = Instantiate(pool.prefab, transform);
+                GameObject obj = Instantiate(pool.prefab, cachedTransform);
                 obj.SetActive(false);
                 objectPool.Enqueue(obj);
             }
+
             poolDictionary.Add(pool.tag, objectPool);
+            poolDefinitions.Add(pool.tag, pool);
         }
     }
 
-    // VERSION AVEC PARAMÈTRE activateImmediately
+    // Version optimisée avec TryGetValue
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation, Transform parent = null, bool activateImmediately = true)
     {
-        if (!poolDictionary.ContainsKey(tag))
+        if (!poolDictionary.TryGetValue(tag, out Queue<GameObject> queue))
         {
             Debug.LogWarning($"ObjectPooler: pool with tag '{tag}' not found.");
             return null;
         }
 
-        Queue<GameObject> queue = poolDictionary[tag];
         GameObject objectToSpawn = null;
-
-        // Parcours sécurisé de la queue pour trouver le premier objet INACTIF
         int attempts = queue.Count;
+
+        // Parcours optimisé pour trouver un objet inactif
         for (int i = 0; i < attempts; i++)
         {
-            var candidate = queue.Dequeue();
-            // Si l'objet est inactif, on le récupère (on ne le remet pas en queue maintenant)
+            GameObject candidate = queue.Dequeue();
+
             if (!candidate.activeInHierarchy)
             {
                 objectToSpawn = candidate;
                 break;
             }
-            // Sinon on le remet en queue pour préserver l'ordre
+
             queue.Enqueue(candidate);
         }
 
-        // Si aucun objet inactif trouvé, instancie un nouveau (fallback)
+        // Fallback: instancier si aucun objet disponible
         if (objectToSpawn == null)
         {
-            Pool poolDef = pools.Find(p => p.tag == tag);
-            if (poolDef != null && poolDef.prefab != null)
+            if (poolDefinitions.TryGetValue(tag, out Pool poolDef) && poolDef.prefab != null)
             {
-                objectToSpawn = Instantiate(poolDef.prefab);
+                objectToSpawn = Instantiate(poolDef.prefab, cachedTransform);
                 objectToSpawn.SetActive(false);
-                // Ne pas enqueue ici : il sera retourné via ReturnToPool
             }
             else
             {
@@ -78,12 +83,12 @@ public class ObjectPooler : MonoBehaviour
             }
         }
 
-        // Configure position/rotation/parent
-        objectToSpawn.transform.SetParent(parent);
-        objectToSpawn.transform.position = position;
-        objectToSpawn.transform.rotation = rotation;
+        // Configure l'objet
+        Transform objTransform = objectToSpawn.transform;
+        objTransform.SetParent(parent);
+        objTransform.position = position;
+        objTransform.rotation = rotation;
 
-        // Active seulement si demandé
         if (activateImmediately)
         {
             objectToSpawn.SetActive(true);
@@ -92,29 +97,37 @@ public class ObjectPooler : MonoBehaviour
         return objectToSpawn;
     }
 
-    // Méthode pour retourner un objet à la pool
+    // Version optimisée avec TryGetValue
+    public bool TryReturnToPool(string tag, GameObject obj)
+    {
+        if (obj == null) return false;
+
+        if (poolDictionary != null && poolDictionary.TryGetValue(tag, out Queue<GameObject> queue))
+        {
+            obj.SetActive(false);
+            obj.transform.SetParent(cachedTransform);
+            queue.Enqueue(obj);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Méthode legacy pour compatibilité
     public void ReturnToPool(string tag, GameObject obj)
     {
-        if (obj == null) return;
-
-        if (poolDictionary != null && poolDictionary.ContainsKey(tag))
+        if (!TryReturnToPool(tag, obj))
         {
-            obj.SetActive(false);
-            obj.transform.SetParent(transform);
-            poolDictionary[tag].Enqueue(obj);
-        }
-        else
-        {
-            // fallback: désactive et parent au pool root si disponible
             obj.SetActive(false);
             if (Instance != null)
-                obj.transform.SetParent(Instance.transform);
+                obj.transform.SetParent(cachedTransform);
         }
     }
 
+    // Gestionnaire de retours différés optimisé
     public static class PoolReturnManager
     {
-        private static List<(string tag, GameObject obj)> pending = new List<(string, GameObject)>();
+        private static List<(string tag, GameObject obj)> pending = new List<(string, GameObject)>(32);
 
         public static void AddPendingReturn(string tag, GameObject obj)
         {
@@ -123,12 +136,15 @@ public class ObjectPooler : MonoBehaviour
 
         public static void ProcessPendingReturns()
         {
+            if (Instance == null || pending.Count == 0) return;
+
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 var (tag, obj) = pending[i];
+
                 if (obj != null && !obj.activeInHierarchy)
                 {
-                    ObjectPooler.Instance.ReturnToPool(tag, obj);
+                    Instance.TryReturnToPool(tag, obj);
                     pending.RemoveAt(i);
                 }
             }
@@ -138,5 +154,11 @@ public class ObjectPooler : MonoBehaviour
     void LateUpdate()
     {
         PoolReturnManager.ProcessPendingReturns();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 }

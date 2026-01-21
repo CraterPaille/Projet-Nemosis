@@ -4,29 +4,57 @@ public class Bone : MonoBehaviour
 {
     public float speed = 4f;
     public int damage = 5;
+    [SerializeField] private string poolTag = "needle";
 
-    [SerializeField] private string poolTag = "needle"; // Tag utilisé par ObjectPooler
-
-    // Constantes pré-calculées
+    // Constantes
     private const float DESPAWN_Y = -6f;
-    private static readonly int PlayerTagHash = "PlayerSoul".GetHashCode();
+    private const string PLAYER_TAG = "PlayerSoul";
 
-    // Cache pour éviter les allocations
-    private Vector3 movement;
+    // Cache pour éviter les allocations et les appels répétés
+    private static ChronosGameManager gameManager;
+    private static ObjectPooler pooler;
+    private Transform cachedTransform;
+    private Vector3 cachedPosition;
+    private float speedDeltaTime;
+
+    // Flag pour éviter les appels multiples
+    private bool isReturning;
+
+    void Awake()
+    {
+        cachedTransform = transform;
+    }
 
     void OnEnable()
     {
-        // Pré-calcule le vecteur de mouvement
-        movement = Vector2.down * speed;
+        // Reset le flag
+        isReturning = false;
+
+        // Cache les singletons une seule fois
+        if (gameManager == null)
+            gameManager = ChronosGameManager.Instance;
+
+        if (pooler == null)
+            pooler = ObjectPooler.Instance;
     }
 
     void Update()
     {
-        // Utilise le vecteur pré-calculé et Time.deltaTime
-        transform.position += movement * Time.deltaTime;
+        // Évite les calculs si l'objet est déjà en train d'être retourné
+        if (isReturning) return;
+
+        // Pré-calcule speed * Time.deltaTime une seule fois
+        speedDeltaTime = speed * Time.deltaTime;
+
+        // Cache la position actuelle
+        cachedPosition = cachedTransform.position;
+
+        // Déplace l'objet vers le bas
+        cachedPosition.y -= speedDeltaTime;
+        cachedTransform.position = cachedPosition;
 
         // Vérification optimisée de la position Y
-        if (transform.position.y < DESPAWN_Y)
+        if (cachedPosition.y < DESPAWN_Y)
         {
             ReturnToPoolOrDisable();
         }
@@ -34,24 +62,32 @@ public class Bone : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // Comparaison optimisée avec hashcode
-        if (other.tag.GetHashCode() == PlayerTagHash)
-        {
-            ChronosGameManager.Instance.DamagePlayer(damage);
-            ReturnToPoolOrDisable();
-        }
+        // Évite les traitements multiples
+        if (isReturning) return;
+
+        // CompareTag est plus performant que GetHashCode
+        if (!other.CompareTag(PLAYER_TAG)) return;
+
+        // Applique les dégâts
+        gameManager.DamagePlayer(damage);
+
+        // Retourne à la pool
+        ReturnToPoolOrDisable();
     }
 
-    // Retourne l'objet à la pool si possible, sinon désactive simplement.
+    // Retourne l'objet à la pool si possible
     private void ReturnToPoolOrDisable()
     {
-        if (ObjectPooler.Instance != null &&
-            ObjectPooler.Instance.poolDictionary != null &&
-            !string.IsNullOrEmpty(poolTag) &&
-            ObjectPooler.Instance.poolDictionary.ContainsKey(poolTag) &&
-            gameObject.activeInHierarchy)
+        // Évite les appels multiples
+        if (isReturning) return;
+        isReturning = true;
+
+        // Vérification simplifiée
+        if (pooler != null &&
+            pooler.poolDictionary != null &&
+            pooler.poolDictionary.ContainsKey(poolTag))
         {
-            ObjectPooler.Instance.ReturnToPool(poolTag, gameObject);
+            pooler.ReturnToPool(poolTag, gameObject);
         }
         else
         {

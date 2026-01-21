@@ -11,34 +11,50 @@ public class Laser : MonoBehaviour
     public int lifeTime = 3;
 
     [Header("Sprite Sheet Animation")]
-    public Sprite[] loopFrames;          // frames pour l'animation en boucle (ex : laser actif)
-    public float framesPerSecond = 12f;  // cadence d'animation
+    public Sprite[] loopFrames;
+    public float framesPerSecond = 12f;
 
-    [Header("SFX (assigner dans l'inspecteur)")]
+    [Header("SFX")]
     public AudioClip shieldHitSfx;
     public AudioClip playerHitSfx;
     public float sfxVolume = 1f;
 
-    [Header("Audio (optionnel)")]
-    public AudioSource sfxSource; // assigner si tu veux réutiliser une source existante (routée sur le groupe SFX)
+    [Header("Audio")]
+    public AudioSource sfxSource;
 
     [Header("Life / Cut settings")]
-    public bool immediateDestroyOnLifeEnd = true;    // true = couper tout et détruire immédiatement au lifeTime
-                                                     // false = appeler DestroyWithImpact quand le temps est écoulé
+    public bool immediateDestroyOnLifeEnd = true;
 
+    // Cache
     private SpriteRenderer spriteRenderer;
     private Coroutine spriteAnimCoroutine;
     private AudioMixerGroup sfxMixerGroup;
+    private Transform cachedTransform;
+    private WaitForSeconds frameDelay;
+    private Collider2D[] cachedColliders;
+    private ParticleSystem[] cachedParticles;
+    private AudioSource[] cachedAudioSources;
+
+    // Constantes
+    private const string SHIELD_TAG = "Shield";
+    private const string PLAYER_TAG = "PlayerSoul";
+    private static ChronosGameManager gameManager;
 
     public void SetDamage(int dmg)
     {
         damage = dmg;
-        Debug.Log($"Laser damage set to {dmg}");
     }
 
     void Awake()
     {
-        // Ensure an AudioSource exists (either assigned in inspector or created)
+        cachedTransform = transform;
+
+        // Cache les composants
+        cachedColliders = GetComponentsInChildren<Collider2D>(true);
+        cachedParticles = GetComponentsInChildren<ParticleSystem>(true);
+        cachedAudioSources = GetComponentsInChildren<AudioSource>(true);
+
+        // Setup AudioSource
         if (sfxSource == null)
         {
             sfxSource = GetComponent<AudioSource>();
@@ -46,20 +62,23 @@ public class Laser : MonoBehaviour
             {
                 sfxSource = gameObject.AddComponent<AudioSource>();
                 sfxSource.playOnAwake = false;
-                sfxSource.spatialBlend = 0f; // 2D
+                sfxSource.spatialBlend = 0f;
             }
         }
 
-        // Try to find an AudioMixerGroup likely named "SFX" (case-insensitive substring match)
-        var groups = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
-        foreach (var g in groups)
+        // Find AudioMixerGroup (une seule fois)
+        if (sfxMixerGroup == null)
         {
-            if (g == null) continue;
-            string n = g.name.ToLowerInvariant();
-            if (n.Contains("sfx") || n.Contains("sfxs") || n.Contains("sound") || n.Contains("sfx_group"))
+            AudioMixerGroup[] groups = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
+            foreach (AudioMixerGroup g in groups)
             {
-                sfxMixerGroup = g;
-                break;
+                if (g == null) continue;
+                string n = g.name.ToLowerInvariant();
+                if (n.Contains("sfx"))
+                {
+                    sfxMixerGroup = g;
+                    break;
+                }
             }
         }
 
@@ -72,16 +91,25 @@ public class Laser : MonoBehaviour
         hasHitShield = false;
         hasHitPlayer = false;
 
-        // Cache components
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        // Cache singleton
+        if (gameManager == null)
+            gameManager = ChronosGameManager.Instance;
 
-        // Start sprite-sheet loop animation if frames provided
+        // Cache components
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        // Pré-calcule le frameDelay
+        if (frameDelay == null && framesPerSecond > 0)
+            frameDelay = new WaitForSeconds(1f / framesPerSecond);
+
+        // Start animation
         if (spriteRenderer != null && loopFrames != null && loopFrames.Length > 0)
         {
             spriteAnimCoroutine = StartCoroutine(PlayLoopAnimation());
         }
 
-        // Safety destroy / cut in case the spawner didn't schedule one
+        // Safety destroy
         CancelInvoke(nameof(ForceDestroy));
         Invoke(nameof(ForceDestroy), lifeTime);
     }
@@ -94,91 +122,80 @@ public class Laser : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log($"[LASER] Collision with: {other.gameObject.name} (Tag: {other.tag})");
-
-        // PRIORITÉ 1 : Bouclier (tag exact "Shield")
-        if (other.CompareTag("Shield") && !hasHitShield)
+        // Shield priority
+        if (other.CompareTag(SHIELD_TAG) && !hasHitShield)
         {
-            // Délègue le traitement (son + destruction) à la méthode publique pour s'assurer que le son est joué
             OnBlockedByShield();
             return;
         }
 
-        // PRIORITÉ 2 : Joueur (tag exact "PlayerSoul")
-        if (other.CompareTag("PlayerSoul") && !hasHitPlayer && !hasHitShield)
+        // Player hit
+        if (other.CompareTag(PLAYER_TAG) && !hasHitPlayer && !hasHitShield)
         {
             hasHitPlayer = true;
-            Debug.Log($" [LASER] HIT PLAYER for {damage} damage!");
-            ChronosGameManager.Instance.DamagePlayer(damage);
+            gameManager.DamagePlayer(damage);
 
-            // Jouer le sfx via la source du laser (routée sur SFX si disponible)
             if (playerHitSfx != null)
             {
                 if (sfxSource != null)
                     sfxSource.PlayOneShot(playerHitSfx, sfxVolume);
                 else
-                    SpawnOneShotAtPosition(playerHitSfx, transform.position);
+                    SpawnOneShotAtPosition(playerHitSfx, cachedTransform.position);
             }
-
-            // IMPORTANT : on N'APPELLE PLUS DestroyWithImpact ici pour laisser le laser vivre jusqu'à la fin de sa lifetime.
-            // Si tu veux éviter que le laser touche le joueur plusieurs fois, hasHitPlayer empêche les traitements répétés.
             return;
         }
     }
 
-    // Méthode publique appelée par les boucliers (JusticeShield) pour centraliser le traitement
     public void OnBlockedByShield()
     {
         if (hasHitShield) return;
         hasHitShield = true;
-        Debug.Log($" [LASER] BLOCKED by shield! Processing block.");
 
         if (shieldHitSfx != null)
-            SpawnOneShotAtPosition(shieldHitSfx, transform.position);
+            SpawnOneShotAtPosition(shieldHitSfx, cachedTransform.position);
 
         DestroyWithImpact();
     }
 
-    // Crée une AudioSource temporaire au monde pour jouer un clip, utile si l'objet émetteur va être détruit
     void SpawnOneShotAtPosition(AudioClip clip, Vector3 pos)
     {
         if (clip == null) return;
+
         GameObject go = new GameObject($"SFX_{clip.name}");
         go.transform.position = pos;
-        var src = go.AddComponent<AudioSource>();
+        AudioSource src = go.AddComponent<AudioSource>();
         src.playOnAwake = false;
-        src.spatialBlend = 0f; // 2D
-        if (sfxMixerGroup != null) src.outputAudioMixerGroup = sfxMixerGroup;
+        src.spatialBlend = 0f;
+
+        if (sfxMixerGroup != null)
+            src.outputAudioMixerGroup = sfxMixerGroup;
+
         src.PlayOneShot(clip, sfxVolume);
         Destroy(go, clip.length + 0.1f);
     }
 
-    // Détruit immédiatement (aucune animation d'outro)
     public void DestroyWithImpact()
     {
-        // Avoid multiple calls
         if (!gameObject.activeInHierarchy) return;
 
-        // Stop loop animation
         StopSpriteAnimation();
-
-        // Pas d'animation supplémentaire : destruction immédiate
         Destroy(gameObject);
-
-        // Ensure we won't call ForceDestroy later
         CancelInvoke(nameof(ForceDestroy));
     }
 
     IEnumerator PlayLoopAnimation()
     {
-        if (spriteRenderer == null || loopFrames == null || loopFrames.Length == 0) yield break;
-        float delay = 1f / Mathf.Max(0.0001f, framesPerSecond);
+        if (spriteRenderer == null || loopFrames == null || loopFrames.Length == 0)
+            yield break;
+
         int idx = 0;
+        int frameCount = loopFrames.Length;
+
         while (true)
         {
             spriteRenderer.sprite = loopFrames[idx];
-            idx = (idx + 1) % loopFrames.Length;
-            yield return new WaitForSeconds(delay);
+            idx = (idx + 1) % frameCount;
+            yield return frameDelay;
         }
     }
 
@@ -191,10 +208,8 @@ public class Laser : MonoBehaviour
         }
     }
 
-    // Fallback destroy if nothing else called it
     void ForceDestroy()
     {
-        // Si on veut couper *tout* immédiatement : stoppe l'animation, les collisions, et détruit
         if (immediateDestroyOnLifeEnd)
         {
             CutEverythingImmediate();
@@ -202,34 +217,33 @@ public class Laser : MonoBehaviour
             return;
         }
 
-        // Sinon détruit via DestroyWithImpact
         DestroyWithImpact();
     }
 
-    // Coupe tous les systèmes visuels / collisions sans jouer d'outro
     void CutEverythingImmediate()
     {
         CancelInvoke(nameof(ForceDestroy));
-
-        // Stop sprite animation
         StopSpriteAnimation();
 
-        // Désactive tous les colliders pour éviter de nouvelles collisions
-        var cols = GetComponentsInChildren<Collider2D>(true);
-        foreach (var c in cols) c.enabled = false;
-
-        // Cache et disparaît le sprite immédiatement
-        if (spriteRenderer != null)
+        // Utilise le cache de colliders
+        foreach (Collider2D c in cachedColliders)
         {
-            spriteRenderer.enabled = false;
+            if (c != null) c.enabled = false;
         }
 
-        // Désactive tout ParticleSystem présent
-        var parts = GetComponentsInChildren<ParticleSystem>(true);
-        foreach (var p in parts) p.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = false;
 
-        // Stoppe les audios enfants
-        var audios = GetComponentsInChildren<AudioSource>(true);
-        foreach (var a in audios) a.Stop();
+        // Utilise le cache de particles
+        foreach (ParticleSystem p in cachedParticles)
+        {
+            if (p != null) p.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        // Utilise le cache d'audio sources
+        foreach (AudioSource a in cachedAudioSources)
+        {
+            if (a != null) a.Stop();
+        }
     }
 }
