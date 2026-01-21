@@ -16,13 +16,41 @@ public class JusticeShieldController : MonoBehaviour
     private bool isActive = false;
 
     // Angles fixes pour les 4 directions : 0°=droite, 90°=haut, 180°=gauche, 270°=bas
+    [SerializeField]
     private int leftShieldDirection = 2; // 0=droite, 1=haut, 2=gauche, 3=bas
+    [SerializeField]
     private int rightShieldDirection = 0;
+
+    // Sauvegarde des états initiaux (éditeur)
+    private Vector3 leftInitialLocalPos;
+    private Vector3 rightInitialLocalPos;
+    private Quaternion leftInitialLocalRot;
+    private Quaternion rightInitialLocalRot;
+    private float leftInitialAngle;
+    private float rightInitialAngle;
 
     void Start()
     {
         if (playerSprite != null)
             originalColor = playerSprite.color;
+
+        // Mémoriser position/rotation locales initiales par rapport au joueur
+        if (leftShield != null)
+        {
+            leftInitialLocalPos = transform.InverseTransformPoint(leftShield.transform.position);
+            leftInitialLocalRot = Quaternion.Inverse(transform.rotation) * leftShield.transform.rotation;
+            leftInitialAngle = Mathf.Atan2(leftInitialLocalPos.y, leftInitialLocalPos.x) * Mathf.Rad2Deg;
+            leftInitialAngle = (leftInitialAngle + 360f) % 360f;
+        }
+
+        if (rightShield != null)
+        {
+            rightInitialLocalPos = transform.InverseTransformPoint(rightShield.transform.position);
+            rightInitialLocalRot = Quaternion.Inverse(transform.rotation) * rightShield.transform.rotation;
+            rightInitialAngle = Mathf.Atan2(rightInitialLocalPos.y, rightInitialLocalPos.x) * Mathf.Rad2Deg;
+            rightInitialAngle = (rightInitialAngle + 360f) % 360f;
+        }
+
         DeactivateShields();
     }
 
@@ -59,20 +87,36 @@ public class JusticeShieldController : MonoBehaviour
 
     void UpdateShieldPositions()
     {
-        // Convertit les directions (0-3) en angles (0°, 90°, 180°, 270°)
-        float leftAngle = leftShieldDirection * 90f;
-        float rightAngle = rightShieldDirection * 90f;
+        // Target angles (global) déterminés par l'index
+        float targetLeftAngle = leftShieldDirection * 90f;
+        float targetRightAngle = rightShieldDirection * 90f;
 
-        // Positionne les boucliers
-        leftShield.transform.position = transform.position +
-            new Vector3(Mathf.Cos(leftAngle * Mathf.Deg2Rad),
-                       Mathf.Sin(leftAngle * Mathf.Deg2Rad), 0) * shieldDistance;
-        leftShield.transform.rotation = Quaternion.Euler(0, 0, leftAngle);
+        // --- Gauche ---
+        if (leftShield != null)
+        {
+            // delta = rotation à appliquer par rapport à la position/rotation initiale
+            float deltaLeft = Mathf.DeltaAngle(leftInitialAngle, targetLeftAngle);
+            // nouvelle position locale : on utilise la direction initiale normalisée et la distance souhaitée
+            Vector3 basisLeft = leftInitialLocalPos.sqrMagnitude > 1e-6f ? leftInitialLocalPos.normalized : Vector3.right;
+            Vector3 rotatedLocalLeft = Quaternion.Euler(0, 0, deltaLeft) * basisLeft * shieldDistance;
+            leftShield.transform.position = transform.TransformPoint(rotatedLocalLeft);
 
-        rightShield.transform.position = transform.position +
-            new Vector3(Mathf.Cos(rightAngle * Mathf.Deg2Rad),
-                       Mathf.Sin(rightAngle * Mathf.Deg2Rad), 0) * shieldDistance;
-        rightShield.transform.rotation = Quaternion.Euler(0, 0, rightAngle);
+            // nouvelle rotation : on applique la même rotation relative sur la rotation locale initiale
+            Quaternion newLocalRotLeft = Quaternion.Euler(0, 0, deltaLeft) * leftInitialLocalRot;
+            leftShield.transform.rotation = transform.rotation * newLocalRotLeft;
+        }
+
+        // --- Droite ---
+        if (rightShield != null)
+        {
+            float deltaRight = Mathf.DeltaAngle(rightInitialAngle, targetRightAngle);
+            Vector3 basisRight = rightInitialLocalPos.sqrMagnitude > 1e-6f ? rightInitialLocalPos.normalized : Vector3.right;
+            Vector3 rotatedLocalRight = Quaternion.Euler(0, 0, deltaRight) * basisRight * shieldDistance;
+            rightShield.transform.position = transform.TransformPoint(rotatedLocalRight);
+
+            Quaternion newLocalRotRight = Quaternion.Euler(0, 0, deltaRight) * rightInitialLocalRot;
+            rightShield.transform.rotation = transform.rotation * newLocalRotRight;
+        }
     }
 
     public void ActivateShields()
@@ -84,9 +128,6 @@ public class JusticeShieldController : MonoBehaviour
         if (playerSprite != null)
             playerSprite.color = justiceColor;
 
-        // Position initiale : gauche à gauche (180°), droit à droite (0°)
-        leftShieldDirection = 2;
-        rightShieldDirection = 0;
         UpdateShieldPositions();
 
         Debug.Log("Justice Shields: ACTIVATED (4 directions mode)");

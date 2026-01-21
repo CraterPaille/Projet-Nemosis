@@ -12,7 +12,7 @@ public class ChronosGameManager : MonoBehaviour
     public int playerMaxHP = 92;
     public int playerHP;
     public Image playerHPBar;
-    public TMP_Text playerHPText; 
+    public TMP_Text playerHPText;
 
     [Header("Boss HP")]
     public int bossMaxHearts = 6;
@@ -41,7 +41,7 @@ public class ChronosGameManager : MonoBehaviour
     public TMP_Text dialogueText;
 
     public bool isPausedForJewel = false;
-    public GameObject gamepadCursor; 
+    public GameObject gamepadCursor;
 
 
     private Coroutine hpAnimCoroutine;
@@ -185,11 +185,18 @@ public class ChronosGameManager : MonoBehaviour
 
     public void Heal()
     {
-        // Exemple : soigne le joueur d’une valeur fixe (ex : 20 HP)
-        int healAmount = 20;
         int oldHP = playerHP;
+        int healAmount = playerMaxHP - playerHP;
 
-        playerHP = Mathf.Min(playerHP + healAmount, playerMaxHP);
+        if (healAmount <= 0)
+        {
+            dialogueText.text = "* Tu es déjà à pleine santé.";
+            PlayDialogueEffect();
+            return;
+        }
+
+        // Remet toute la vie
+        playerHP = playerMaxHP;
 
         // Effet visuel
         playerHPBar.DOColor(Color.green, 0.15f)
@@ -203,7 +210,7 @@ public class ChronosGameManager : MonoBehaviour
             .SetEase(Ease.OutBack)
             .OnPlay(() =>
             {
-                sfxSource.PlayOneShot(sfxHeal);
+                if (sfxSource != null && sfxHeal != null) sfxSource.PlayOneShot(sfxHeal);
             })
             .OnComplete(() =>
             {
@@ -231,7 +238,6 @@ public class ChronosGameManager : MonoBehaviour
 
         UpdateUI();
         dialogueText.text = $"* Tu te soignes de {healAmount} PV !";
-        // Ajoute ici ta logique de soin spéciale
     }
 
     // Exemple pour un effet de heal (retour à Instantiate/Destroy)
@@ -247,7 +253,6 @@ public class ChronosGameManager : MonoBehaviour
         if (attackController != null)
             attackController.enabled = false;
 
-        // NE PLUS centrer ni désactiver le mouvement du joueur : on lui laisse la liberté de se déplacer pendant le choix
         var player = GameObject.FindGameObjectWithTag("PlayerSoul");
         if (player != null)
         {
@@ -265,7 +270,6 @@ public class ChronosGameManager : MonoBehaviour
         if (gamepadCursor != null)
             gamepadCursor.SetActive(true);
 
-        // Ici : afficher les boutons/options de l'UI (inchangé, à relier côté UI)
     }
 
     public void ChooseAttack()
@@ -362,7 +366,7 @@ public class ChronosGameManager : MonoBehaviour
                 .SetEase(Ease.OutBack)
                 .OnComplete(() =>
                 {
-                bossHeartImages[i].rectTransform.DOScale(1f, 0.1f);
+                    bossHeartImages[i].rectTransform.DOScale(1f, 0.1f);
                 });
                 bossHeartImages[i].rectTransform.DOShakeRotation(0.2f, 15f);
                 StopHeartRotation(i);// Cœur actuel, arrête la rotation
@@ -406,7 +410,7 @@ public class ChronosGameManager : MonoBehaviour
     void PlayPlayerDamageEffects()
     {
         // Shake léger
-        playerHPBar.rectTransform.DOShakePosition( 0.2f, strength: new Vector3(10f, 0, 0), vibrato: 15)
+        playerHPBar.rectTransform.DOShakePosition(0.2f, strength: new Vector3(10f, 0, 0), vibrato: 15)
     .OnPlay(() =>
     {
         sfxSource.PlayOneShot(sfxDamage);
@@ -437,7 +441,7 @@ public class ChronosGameManager : MonoBehaviour
         dialogueText.rectTransform
             .DOScale(1f, 0.15f)
             .SetEase(Ease.OutBack)
-            .OnPlay(() => {sfxSource.PlayOneShot(sfxDamage, 0.3f);});
+            .OnPlay(() => { sfxSource.PlayOneShot(sfxDamage, 0.3f); });
     }
 
 

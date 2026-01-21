@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class GasterBlaster : MonoBehaviour
@@ -17,8 +17,8 @@ public class GasterBlaster : MonoBehaviour
     [HideInInspector] public Vector3 forcedDirection = Vector3.zero;
 
     // Tags optionnels pour utiliser la pool
-    public string laserPoolTag = "";  // ex: "Laser"
-    public string chargePoolTag = ""; // ex: "Charge"
+    public string laserPoolTag = "Laser";  // ex: "Laser"
+    public string chargePoolTag = "Charge"; // ex: "Charge"
 
     private Transform player;
     private Vector3 targetDirection;
@@ -40,7 +40,7 @@ public class GasterBlaster : MonoBehaviour
 
     private IEnumerator SequenceRoutine()
     {
-        // Attendre initialDelay si n�cessaire (temps normal)
+        // Attendre initialDelay si nécessaire (temps normal)
         if (initialDelay > 0f)
         {
             yield return new WaitForSeconds(initialDelay);
@@ -79,7 +79,15 @@ public class GasterBlaster : MonoBehaviour
         GameObject charge = null;
         if (chargeEffectPrefab != null && firePoint != null)
         {
-            charge = Instantiate(chargeEffectPrefab, firePoint.position, firePoint.rotation, firePoint);
+            if (!string.IsNullOrEmpty(chargePoolTag) && ObjectPooler.Instance != null &&
+                ObjectPooler.Instance.poolDictionary != null && ObjectPooler.Instance.poolDictionary.ContainsKey(chargePoolTag))
+            {
+                charge = ObjectPooler.Instance.SpawnFromPool(chargePoolTag, firePoint.position, firePoint.rotation, firePoint, true);
+            }
+            else
+            {
+                charge = Instantiate(chargeEffectPrefab, firePoint.position, firePoint.rotation, firePoint);
+            }
         }
 
         // Temps de charge (temps normal)
@@ -87,7 +95,20 @@ public class GasterBlaster : MonoBehaviour
 
         // Retire l'effet de charge
         if (charge != null)
-            Destroy(charge);
+        {
+            // Si provient de la pool, on retourne à la pool ; sinon, on détruit
+            if (ObjectPooler.Instance != null && !string.IsNullOrEmpty(chargePoolTag) &&
+                ObjectPooler.Instance.poolDictionary != null && ObjectPooler.Instance.poolDictionary.ContainsKey(chargePoolTag) &&
+                charge.transform.IsChildOf(ObjectPooler.Instance.transform) == false) // best-effort check
+            {
+                ObjectPooler.Instance.ReturnToPool(chargePoolTag, charge);
+            }
+            else
+            {
+                // Si l'objet était parenté (spawnFromPool l'a déjà parenté), ReturnToPool sera utilisé préférentiellement ci‑dessus.
+                Destroy(charge);
+            }
+        }
 
         // Tire le laser
         if (laserPrefab == null)
@@ -103,33 +124,62 @@ public class GasterBlaster : MonoBehaviour
 
         Debug.Log($"GasterBlaster FIRING: pos={firePoint.position} dir={targetDirection} speed={laserSpeed}");
 
-        GameObject laser = Instantiate(laserPrefab, firePoint.position, Quaternion.identity);
-        laser.transform.right = targetDirection;
+        GameObject laser = null;
 
-        // Configure le laser
-        var laserComp = laser.GetComponent<Laser>();
-        if (laserComp != null)
-            laserComp.SetDamage(damage);
-
-        var laserMove = laser.GetComponent<LaserMovement>();
-        if (laserMove != null)
+        if (!string.IsNullOrEmpty(laserPoolTag) && ObjectPooler.Instance != null &&
+            ObjectPooler.Instance.poolDictionary != null && ObjectPooler.Instance.poolDictionary.ContainsKey(laserPoolTag))
         {
-            laserMove.speed = laserSpeed;
-            laserMove.useRealtime = false; // Toujours temps normal maintenant
-            Debug.Log($"LaserMovement configured: speed={laserSpeed}");
+            laser = ObjectPooler.Instance.SpawnFromPool(laserPoolTag, firePoint.position, Quaternion.identity, null, true);
         }
         else
         {
-            Debug.LogError("GasterBlaster: LaserMovement component MISSING on laser prefab!");
+            laser = Instantiate(laserPrefab, firePoint.position, Quaternion.identity);
         }
 
-        Destroy(laser, laserDuration);
+        if (laser != null)
+        {
+            laser.transform.right = targetDirection;
 
-        // D�sactive le blaster apr�s un d�lai
+            var laserComp = laser.GetComponent<Laser>();
+            if (laserComp != null)
+                laserComp.SetDamage(damage);
+
+            // Si on a une pool, retourne l'objet plus tard à la pool ; sinon détruis après durée
+            if (!string.IsNullOrEmpty(laserPoolTag) && ObjectPooler.Instance != null &&
+                ObjectPooler.Instance.poolDictionary != null && ObjectPooler.Instance.poolDictionary.ContainsKey(laserPoolTag))
+            {
+                StartCoroutine(ReturnToPoolLater(laserPoolTag, laser, laserDuration));
+            }
+            else
+            {
+                Destroy(laser, laserDuration);
+            }
+        }
+
+        // Désactive le blaster après un délai
         yield return new WaitForSeconds(aimTime + 0.1f);
         gameObject.SetActive(false);
 
         if (ObjectPooler.Instance != null)
             transform.SetParent(ObjectPooler.Instance.transform);
+    }
+
+    private IEnumerator ReturnToPoolLater(string tag, GameObject obj, float delay)
+    {
+        if (delay > 0f) yield return new WaitForSeconds(delay);
+
+        if (obj == null) yield break;
+
+        if (ObjectPooler.Instance != null &&
+            ObjectPooler.Instance.poolDictionary != null &&
+            ObjectPooler.Instance.poolDictionary.ContainsKey(tag))
+        {
+            // Si l'objet est toujours actif, ReturnToPool s'en chargera (mettra SetActive(false) et l'enque)
+            ObjectPooler.Instance.ReturnToPool(tag, obj);
+        }
+        else
+        {
+            Destroy(obj);
+        }
     }
 }
