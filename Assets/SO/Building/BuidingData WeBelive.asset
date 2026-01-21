@@ -17,13 +17,13 @@ MonoBehaviour:
   visualType: 1
   icon: {fileID: 0}
   animationSprites:
-  - {fileID: -7145108927493435506, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: -8934844957939161921, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: 7266143141688762277, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: -7804106425553641083, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: 5003624780398304483, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: 2567503010260232459, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
-  - {fileID: -5960513796377112896, guid: 5d6bd656b2a45264d9a746f6048f01b2, type: 3}
+  - {fileID: 7049123516778312478, guid: 5215a2c45d1330b439aa47d6e6dab9f5, type: 3}
+  - {fileID: 8326010211320332940, guid: c7ecac6999e652343974c00071e279fb, type: 3}
+  - {fileID: 4057521643378071890, guid: 5d60b2ee8f39c6743b206e7cec2fb341, type: 3}
+  - {fileID: 8038994737501566327, guid: 53a6b94091c2e594bb15d592ce5b310b, type: 3}
+  - {fileID: -6738572930136418663, guid: 88378201525c48d40ba97b23c75715db, type: 3}
+  - {fileID: 7824551064632434648, guid: 175d90bd8fcb7e946a38a7e1ffd8f07f, type: 3}
+  - {fileID: -4666518133828316896, guid: 65deb50248d91504eb33a9753e81e2e8, type: 3}
   animationFPS: 7
   gridSize: 4
   passiveEffects: []
