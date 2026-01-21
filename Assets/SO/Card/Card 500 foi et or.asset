@@ -16,4 +16,4 @@ MonoBehaviour:
   icon: {fileID: -4919783380165033945, guid: 5daae032e18077543a82818273802e59, type: 3}
   description: Ajoute 500 foi contre de l'or
   cardSet: 1
-  effectSO: {fileID: 11400000, guid: 4f49d7afc262fbb49bc4260773a97259, type: 2}
+  effectSO: {fileID: 11400000, guid: 3f042e1412841954cbd55631baa95c00, type: 2}
