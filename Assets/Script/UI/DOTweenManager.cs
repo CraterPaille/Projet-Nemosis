@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
 public class DOTweenManager : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -35,8 +36,9 @@ public class DOTweenManager : MonoBehaviour
         }
     }
     #region mode de jeu
-    public IEnumerator transitionChoixJeu(Action callback)
+    public IEnumerator transitionChoixJeu(Action callback, bool endday = false)
     {
+        if (endday && GameManager.Instance.currentTime == DayTime.Matin){endday = false;}
         IsAnimating = true;
         try
         {
@@ -71,7 +73,9 @@ public class DOTweenManager : MonoBehaviour
 
             // 2. On attend que la SÉQUENCE entière soit finie
             yield return s.WaitForCompletion();
+            Debug.Log("[DOTweenManager] Animation de transition terminée, exécution du callback.");
             callback?.Invoke();
+            
             // Keep gameplay unpaused after callback
             // Créer une NOUVELLE séquence pour le retour
             DG.Tweening.Sequence s2 = DOTween.Sequence();
@@ -93,6 +97,13 @@ public class DOTweenManager : MonoBehaviour
             //Time.timeScale = 1f;
             IsAnimating = false;
         }
+        if (endday)
+            {   
+                IsAnimating = true;
+                StartCoroutine(OnActionEndDayAnimation());
+                yield return new WaitForSeconds(3.5f);
+                IsAnimating = false;
+            }
     }
 
     public IEnumerator animationCard(Transform cardTransform, Action callback)
@@ -188,7 +199,7 @@ public class DOTweenManager : MonoBehaviour
             
             StartCoroutine(animationCard(cardTransform, () => { card.PlayCard();}));
             yield return new WaitForSeconds(4.5f);
-            StartCoroutine(transitionChoixJeu(() => CardUI.Instance.AfterCard()));
+            StartCoroutine(transitionChoixJeu(() => CardUI.Instance.AfterCard(), true));
         }
     }
 
@@ -200,8 +211,24 @@ public class DOTweenManager : MonoBehaviour
             
             StartCoroutine(animationCard(cardTransform, () => {;}));
             yield return new WaitForSeconds(2f);
-            StartCoroutine(transitionChoixJeu(Callback));
+            StartCoroutine(transitionChoixJeu(Callback, true));
         }
+    }
+
+    public IEnumerator OnActionEndDayAnimation()
+    {
+         Debug.Log("[DOTweenManager] FAAAAAAAAAAAAAAAAAAAAAAA");
+        Transform horlogeRect = HorlogeUI.GetComponent<Transform>();
+        horlogeRect.position = new Vector2(0, 50f);
+        horlogeRect.DOMove(new Vector2(0, -20f), 0.1f).SetEase(Ease.OutBack);
+        HorlogeUI.SetActive(true);
+        Debug.Log("[DOTweenManager] Début de l'animation de fin de journée.");
+        horlogeRect.DOScale(0.4f, 0.5f).SetEase(Ease.OutBack);
+        horlogeRect.DOMoveY(0f, 0.5f).SetEase(Ease.OutBack);
+        yield return new WaitForSeconds(0.3f);
+        horlogeRect.DORotate(new Vector3(0, 0, 360f), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutBack);
+        yield return new WaitForSeconds(2f);
+        HorlogeUI.SetActive(false);
     }
     
     #endregion
