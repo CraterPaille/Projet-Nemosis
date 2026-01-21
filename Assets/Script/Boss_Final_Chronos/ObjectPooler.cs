@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,19 +46,22 @@ public class ObjectPooler : MonoBehaviour
         Queue<GameObject> queue = poolDictionary[tag];
         GameObject objectToSpawn = null;
 
-        // Cherche un objet inactif dans la queue
-        if (queue.Count > 0)
+        // Parcours sécurisé de la queue pour trouver le premier objet INACTIF
+        int attempts = queue.Count;
+        for (int i = 0; i < attempts; i++)
         {
-            objectToSpawn = queue.Dequeue();
-            if (objectToSpawn.activeInHierarchy)
+            var candidate = queue.Dequeue();
+            // Si l'objet est inactif, on le récupère (on ne le remet pas en queue maintenant)
+            if (!candidate.activeInHierarchy)
             {
-                // Si actif, remets en queue et cherche un autre
-                queue.Enqueue(objectToSpawn);
-                objectToSpawn = null;
+                objectToSpawn = candidate;
+                break;
             }
+            // Sinon on le remet en queue pour préserver l'ordre
+            queue.Enqueue(candidate);
         }
 
-        // Si aucun inactif trouvé, instancie un nouveau (éviter si possible)
+        // Si aucun objet inactif trouvé, instancie un nouveau (fallback)
         if (objectToSpawn == null)
         {
             Pool poolDef = pools.Find(p => p.tag == tag);
@@ -65,7 +69,7 @@ public class ObjectPooler : MonoBehaviour
             {
                 objectToSpawn = Instantiate(poolDef.prefab);
                 objectToSpawn.SetActive(false);
-                // Ne pas enqueue ici, car il sera retourné via ReturnToPool
+                // Ne pas enqueue ici : il sera retourné via ReturnToPool
             }
             else
             {
@@ -91,11 +95,21 @@ public class ObjectPooler : MonoBehaviour
     // Méthode pour retourner un objet à la pool
     public void ReturnToPool(string tag, GameObject obj)
     {
-      
+        if (obj == null) return;
 
-        obj.SetActive(false);
-        obj.transform.SetParent(transform);
-        poolDictionary[tag].Enqueue(obj);
+        if (poolDictionary != null && poolDictionary.ContainsKey(tag))
+        {
+            obj.SetActive(false);
+            obj.transform.SetParent(transform);
+            poolDictionary[tag].Enqueue(obj);
+        }
+        else
+        {
+            // fallback: désactive et parent au pool root si disponible
+            obj.SetActive(false);
+            if (Instance != null)
+                obj.transform.SetParent(Instance.transform);
+        }
     }
 
     public static class PoolReturnManager
