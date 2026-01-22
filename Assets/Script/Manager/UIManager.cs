@@ -350,38 +350,153 @@ public class UIManager : MonoBehaviour
     // --- STATS UI ---
     // Empêche les coroutines de se chevaucher par panel
     private readonly Dictionary<GameObject, Coroutine> activeStatCoroutines = new Dictionary<GameObject, Coroutine>();
+    private readonly Dictionary<GameObject, Image> statImages = new Dictionary<GameObject, Image>();
 
     public void ChangeStatUI(StatType stat, float value)
     {
         try
         {
+            GameObject panel = null;
             switch (stat)
             {
                 case StatType.Foi:
-                    if (StatFoi != null)
-                        StartStatCoroutine(StatFoi, value);
+                    panel = StatFoi;
                     break;
                 case StatType.Nemosis:
-                    if (StatNemosis != null)
-                        StartStatCoroutine(StatNemosis, value);
+                    panel = StatNemosis;
                     break;
                 case StatType.Human:
-                    if (StatHumain != null)
-                        StartStatCoroutine(StatHumain, value);
+                    panel = StatHumain;
                     break;
                 case StatType.Or:
-                    if (StatArgent != null)
-                        StartStatCoroutine(StatArgent, value);
+                    panel = StatArgent;
                     break;
                 case StatType.Food:
-                    if (StatFood != null)
-                        StartStatCoroutine(StatFood, value);
+                    panel = StatFood;
                     break;
             }
+
+            if (panel == null)
+                return;
+
+            UpdateStatSprite(panel, stat, value);
+            StartStatCoroutine(panel, value);
         }
         catch (MissingReferenceException)
         {
             Debug.LogWarning("[UIManager] ChangeStatUI appelé mais un objet UI a été détruit.");
+        }
+    }
+
+    private void UpdateStatSprite(GameObject panel, StatType stat, float currentValue)
+    {
+        if (panel == null)
+            return;
+
+        Image statImage = GetStatImage(panel);
+        Sprite[] spriteSet = GetSpritesForStat(stat);
+
+        if (statImage == null || spriteSet == null || spriteSet.Length == 0)
+            return;
+
+        float maxValue = GetStatMaxValue(stat);
+        int spriteIndex = ComputeSpriteIndex(currentValue, maxValue, spriteSet.Length);
+        spriteIndex = Mathf.Clamp(spriteIndex, 0, spriteSet.Length - 1);
+
+        Sprite chosenSprite = spriteSet[spriteIndex];
+        bool spriteChanged = statImage.sprite != chosenSprite;
+
+        statImage.sprite = chosenSprite;
+        FlashStatImage(statImage, spriteChanged);
+    }
+
+    private Image GetStatImage(GameObject panel)
+    {
+        Image cached;
+        if (statImages.TryGetValue(panel, out cached) && cached != null)
+            return cached;
+
+        Image img = panel.GetComponent<Image>();
+        if (img == null)
+        {
+            img = panel.GetComponentInChildren<Image>();
+        }
+
+        if (img != null)
+            statImages[panel] = img;
+
+        return img;
+    }
+
+    private Sprite[] GetSpritesForStat(StatType stat)
+    {
+        switch (stat)
+        {
+            case StatType.Foi:
+                return SpritesFoi;
+            case StatType.Nemosis:
+                return SpritesNemosis;
+            case StatType.Human:
+                return SpritesHumain;
+            case StatType.Or:
+                return SpritesArgent;
+            case StatType.Food:
+                return SpritesFood;
+            default:
+                return null;
+        }
+    }
+
+    private float GetStatMaxValue(StatType stat)
+    {
+        if (GameManager.Instance != null)
+        {
+            float maxValue;
+            if (GameManager.Instance.MaxValeurs.TryGetValue(stat, out maxValue))
+            {
+                return Mathf.Max(1f, maxValue);
+            }
+        }
+
+        return 100f;
+    }
+
+    private int ComputeSpriteIndex(float value, float maxValue, int spriteCount)
+    {
+        if (spriteCount <= 0)
+            return 0;
+
+        float safeMax = maxValue <= 0.01f ? 1f : maxValue;
+        float normalized = Mathf.Clamp01(value / safeMax);
+        int index = Mathf.FloorToInt(normalized * spriteCount);
+        if (index >= spriteCount)
+            index = spriteCount - 1;
+
+        return index;
+    }
+
+    private void FlashStatImage(Image statImage, bool spriteChanged)
+    {
+        if (statImage == null)
+            return;
+
+        Color originalColor = statImage.color;
+        DOTween.Kill(statImage);
+
+        statImage.color = new Color(1f, 1f, 1f, originalColor.a);
+
+        // Petite pulsation pour signaler le changement de valeur/sprite
+        var seq = DOTween.Sequence();
+        float fadedAlpha = originalColor.a * 0.4f;
+
+        seq.Append(statImage.DOFade(fadedAlpha, 0.08f));
+        seq.Append(statImage.DOFade(originalColor.a, 0.12f));
+        seq.Join(statImage.DOColor(originalColor, 0.2f).SetEase(Ease.OutQuad));
+
+        // Si le sprite n'a pas changé (même tranche), on évite de répéter l'effet trop longtemps
+        if (!spriteChanged)
+        {
+            seq.SetLoops(1, LoopType.Restart);
         }
     }
 

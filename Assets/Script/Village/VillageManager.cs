@@ -301,7 +301,7 @@ public class VillageManager : MonoBehaviour
     public void OnCloseVillageAnimation()
     {
         if(DOTweenManager.Instance.IsAnimating)return;
-        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(CloseVillage));
+        StartCoroutine(DOTweenManager.Instance.transitionChoixJeu(CloseVillage, true));
     }
     public void CloseVillage()
     {

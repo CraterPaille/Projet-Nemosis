@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public enum DayTime { Matin, Aprem }
 
@@ -313,7 +314,7 @@ public class GameManager : MonoBehaviour
             currentTime = DayTime.Matin;
             currentDay++;
             currentWeekDay = weekDays[(currentDay - 1) % 7];
-            EndDay();
+            StartCoroutine(EndDay());
         }
 
         Debug.Log($"Ending half day: {currentTime} of day {currentDay} currentWeekDay = {currentWeekDay}");
@@ -337,9 +338,10 @@ public class GameManager : MonoBehaviour
         ChooseGameMode();
     }
 
-    public void EndDay()
-    {
-        if (campaignFinished) return;
+    public IEnumerator EndDay()
+    {   
+        yield return new WaitForSeconds(2.8f);
+        if (campaignFinished) yield break;
 
         var schedule = FindFirstObjectByType<ScheduleShow>();
         if (schedule != null)
@@ -361,7 +363,6 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Fin de journée : Perte de nourriture de {foodLoss}, Nourriture restante : {Valeurs[StatType.Food]}");
-        Valeurs[StatType.Food] -= foodLoss;
 
         GameEvents.TriggerDayEnd();
 
