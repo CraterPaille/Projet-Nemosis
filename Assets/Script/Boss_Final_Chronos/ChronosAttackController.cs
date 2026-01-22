@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ChronosAttackController : MonoBehaviour
 {
@@ -300,21 +301,10 @@ public class ChronosAttackController : MonoBehaviour
             yield return wait2s;
         }
 
-        yield return VictorySequence();
-    }
+       SceneManager.LoadScene("EndScene");
+        yield return wait2s;
 
-    IEnumerator VictorySequence()
-    {
-        VictoryScreen victoryScreen = FindFirstObjectByType<VictoryScreen>();
-
-        if (victoryScreen == null)
-        {
-            Debug.LogError("VictoryScreen not found!");
-            gm.dialogueText.text = " VICTOIRE !";
-            yield break;
-        }
-
-        victoryScreen.PlayVictoryAnimation();
+        // Arrêter les coroutines d'attaque / comportement du boss
         StopAllCoroutines();
     }
 
@@ -557,7 +547,6 @@ public class ChronosAttackController : MonoBehaviour
         Time.timeScale = 1f;
         timeFluxCo = null;
     }
-
     IEnumerator PatternTimeStopJustice()
     {
         if (!justiceController) yield break;
@@ -586,8 +575,11 @@ public class ChronosAttackController : MonoBehaviour
             float charge = Mathf.Max(0.8f, 1.5f - w * 0.15f);
             float speed = 3f + w * 0.3f;
 
-            // Spawn exactement une needle par côté, ordre aléatoire
-            yield return SpawnCardinalNeedlesOrdered(player.position, 8f, speed, 0.28f);
+            // Augmenter le nombre par vague : wave 1 -> 2 par côté, wave 5 -> 6 par côté
+            int perSide = Mathf.Clamp(1 + w, 1, 6);
+
+            // Spawn needles cardinales (remplace les blasters/lasers pour la Phase 5)
+            yield return SpawnCardinalNeedles(player.position, 8f, speed, perSide);
             yield return new WaitForSeconds(Mathf.Max(2.5f, 4f - w * 0.3f));
         }
 
@@ -600,57 +592,6 @@ public class ChronosAttackController : MonoBehaviour
 
         gm.dialogueText.text = "* Le temps reprend son cours.";
         yield return wait1s;
-    }
-
-    // Spawn exactly one needle per cardinal side, in random order.
-    IEnumerator SpawnCardinalNeedlesOrdered(Vector3 center, float radius, float speed, float delayBetween = 0.3f)
-    {
-        const float outsideOffset = 1f;
-
-        // Prepare shuffled order [0..3]
-        List<int> order = new List<int> { 0, 1, 2, 3 };
-        for (int i = 0; i < order.Count; i++)
-        {
-            int j = Random.Range(i, order.Count);
-            int tmp = order[i];
-            order[i] = order[j];
-            order[j] = tmp;
-        }
-
-        foreach (int idx in order)
-        {
-            Vector3 dir = cardinalDirs[idx];
-
-            // Place exactly on arena border + offset
-            Vector3 basePos = new Vector3(
-                arenaCenter.x + dir.x * (arenaSize.x * 0.5f + outsideOffset),
-                arenaCenter.y + dir.y * (arenaSize.y * 0.5f + outsideOffset),
-                0f);
-
-            // direction vers le joueur
-            Vector3 moveDir = (player.position - basePos).normalized;
-            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
-            Quaternion rot = Quaternion.Euler(0, 0, angle);
-
-            GameObject needle = Spawn("needle", basePos, rot, false);
-            if (needle)
-            {
-                var nd = needle.GetComponent<Bone>();
-                if (nd != null)
-                {
-                    nd.moveMode = Bone.MoveMode.Directional;
-                    nd.moveDirection = moveDir;
-                    nd.speed = speed;
-                    nd.maxLifetime = 6f; // sécurité
-                }
-
-                // Force visual rotation / orientation
-                needle.transform.rotation = rot;
-                needle.SetActive(true);
-            }
-
-            yield return new WaitForSeconds(delayBetween);
-        }
     }
 
     IEnumerator SpawnCardinalNeedles(Vector3 center, float radius, float speed, int perSideCount = 1)
