@@ -8,7 +8,7 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
-    [Header("Mixer & paramètres exposés")]
+    [Header("Mixer & paramï¿½tres exposï¿½s")]
     public AudioMixer masterMixer;
     public string masterParam = "MasterVolume";
     public string musicParam = "MusicVolume";
@@ -17,7 +17,10 @@ public class AudioManager : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
-
+    [Header("Audio Sources")]
+    public AudioSource musicAudioSource;
+    public AudioSource sfxAudioSource;
+    public AudioSource voiceAudioSource;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,10 +32,10 @@ public class AudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Appliquer les valeurs sauvegardées immédiatement
+        // Appliquer les valeurs sauvegardï¿½es immï¿½diatement
         ApplySavedVolumes();
 
-        // Ré-applications retardées pour écraser d'éventuels overrides d'initialisation
+        // Rï¿½-applications retardï¿½es pour ï¿½craser d'ï¿½ventuels overrides d'initialisation
         StartCoroutine(ReapplyNextFrame());
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -45,14 +48,14 @@ public class AudioManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // applique puis réapplique la frame suivante (protège contre overrides post-load)
+        // applique puis rï¿½applique la frame suivante (protï¿½ge contre overrides post-load)
         ApplySavedVolumes();
         StartCoroutine(ReapplyNextFrame());
     }
 
     private IEnumerator ReapplyNextFrame()
     {
-        // attendre la fin du frame courant et du suivant pour être sûr
+        // attendre la fin du frame courant et du suivant pour ï¿½tre sï¿½r
         yield return null;
         yield return null;
         ApplySavedVolumes();
@@ -78,16 +81,17 @@ public class AudioManager : MonoBehaviour
     {
         if (masterMixer == null)
         {
-            if (enableDebugLogs) Debug.LogWarning("AudioManager : masterMixer non assigné.");
+            if (enableDebugLogs) Debug.LogWarning("AudioManager : masterMixer non assignï¿½.");
             return;
         }
 
         if (masterMixer.GetFloat(param, out float val))
             Debug.Log($"AudioManager : param '{param}' = {val} dB");
         else
-            Debug.LogWarning($"AudioManager : param exposé '{param}' introuvable dans le AudioMixer.");
+            Debug.LogWarning($"AudioManager : param exposï¿½ '{param}' introuvable dans le AudioMixer.");
     }
 
+    #region Set Volume Methods
     public void SetMasterVolume(float linear, bool save = true)
     {
         if (masterMixer != null)
@@ -126,9 +130,57 @@ public class AudioManager : MonoBehaviour
         if (linear <= 0.0001f) return -80f;
         return Mathf.Log10(linear) * 20f;
     }
-
+    #endregion
     public void Save()
     {
         PlayerPrefs.Save();
+    }
+
+    public void PlayLoopMusic(AudioClip clip)
+    {
+        if (musicAudioSource == null)
+        {
+            if (enableDebugLogs) Debug.LogWarning("AudioManager: musicAudioSource non assignï¿½.");
+            return;
+        }
+
+        if (musicAudioSource.clip == clip && musicAudioSource.isPlaying)
+        {
+            if (enableDebugLogs) Debug.Log("AudioManager: La musique est dï¿½ï¿½jï¿½ en cours de lecture.");
+            return;
+        }
+
+        musicAudioSource.clip = clip;
+        musicAudioSource.loop = true;
+        musicAudioSource.Play();
+
+        if (enableDebugLogs) Debug.Log($"AudioManager: Lecture de la musique en boucle '{clip.name}'.");
+    }
+
+    public void StopLoopMusic()
+    {
+        if (musicAudioSource == null)
+        {
+            if (enableDebugLogs) Debug.LogWarning("AudioManager: musicAudioSource non assignï¿½.");
+            return;
+        }
+
+        musicAudioSource.Stop();
+        musicAudioSource.clip = null;
+
+        if (enableDebugLogs) Debug.Log("AudioManager: Musique en boucle arrï¿½tï¿½e.");
+    }
+
+    public void PlaySFX(AudioClip clip)
+    {
+        if (sfxAudioSource == null)
+        {
+            if (enableDebugLogs) Debug.LogWarning("AudioManager: sfxAudioSource non assignï¿½.");
+            return;
+        }
+
+        sfxAudioSource.PlayOneShot(clip);
+
+        if (enableDebugLogs) Debug.Log($"AudioManager: Lecture du SFX '{clip.name}'.");
     }
 }

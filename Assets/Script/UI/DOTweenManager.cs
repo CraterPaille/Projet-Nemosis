@@ -21,7 +21,8 @@ public class DOTweenManager : MonoBehaviour
     public GameObject miniGameCardModeUI;
     public GameObject villageCardModeUI;
     public GameObject NuagesParents;
-
+    [Header("Effets audio")]
+    public AudioClip transitionSound;
     private void Awake()
     {
         if (Instance == null)
@@ -38,6 +39,10 @@ public class DOTweenManager : MonoBehaviour
     #region mode de jeu
     public IEnumerator transitionChoixJeu(Action callback, bool endday = false)
     {
+        if (transitionSound != null)
+        {
+            AudioManager.Instance.PlaySFX(transitionSound);
+        }
         if (endday && GameManager.Instance.currentTime == DayTime.Matin){endday = false;}
         IsAnimating = true;
         try

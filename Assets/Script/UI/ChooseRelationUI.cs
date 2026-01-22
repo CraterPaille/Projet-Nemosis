@@ -20,14 +20,15 @@ public class ChooseRelationUI : MonoBehaviour
     public TMP_Text niveauRelationText;
     public Button toTalkButton;
     public TMP_Text talkButtonText;
+    public TMP_Text GodSelectedNameText;
 
     public GodDataSO selectedGod;
     private int NombreDialogues = 0;
 
     public TMP_Text GodNameText;
 
-    private bool firstOpen = true;
-   
+    public bool firstOpen = true;
+
 
     void Awake()
     {
@@ -132,6 +133,7 @@ public class ChooseRelationUI : MonoBehaviour
                 informationText.text = selectedGod.unlockDescription;
         } 
         if (niveauRelationText != null) niveauRelationText.text = $"{selectedGod.relation}/100\nNiveau relation";
+        if (GodSelectedNameText != null) GodSelectedNameText.text = selectedGod.displayName;
     }
 
     public void OnTalkButtonPressed()
@@ -144,6 +146,11 @@ public class ChooseRelationUI : MonoBehaviour
         ChooseGodPanel.SetActive(false);
         // choose a dialogue graph from tier
         var tier = selectedGod.GetTier();
+        if(selectedGod.musicLoop != null)
+        {
+            AudioManager.Instance.StopLoopMusic();
+            AudioManager.Instance.PlayLoopMusic(selectedGod.musicLoop);
+        }
         List<DialogueGraph> pool = (tier == GodDataSO.RelationTier.Bad) ? selectedGod.badConvos :
                                    (tier == GodDataSO.RelationTier.Good) ? selectedGod.goodConvos : selectedGod.normalConvos;
         if (pool == null || pool.Count == 0)

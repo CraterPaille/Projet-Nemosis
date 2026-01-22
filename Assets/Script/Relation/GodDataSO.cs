@@ -21,6 +21,8 @@ public class GodDataSO : ScriptableObject
     // Interaction tracking
     public float lastInteractionDay = 0;
     public int interactionsToday = 0;
+    [Header("Music")]
+    public AudioClip musicLoop;
 
     [Header("Dialogues (petits graphs)")]
     public List<DialogueGraph> badConvos = new List<DialogueGraph>();
