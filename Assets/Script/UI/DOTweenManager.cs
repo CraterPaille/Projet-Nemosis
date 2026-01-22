@@ -13,7 +13,8 @@ public class DOTweenManager : MonoBehaviour
 
     [Header("Animations et effets")]
     public bool IsAnimating = false;    // Update is called once per frame
-    public GameObject HorlogeUI;
+    public GameObject HorlogeFond;
+    public GameObject HorlogeCadre;
 
     [Header("Choix de mode")]
     public GameObject villageModeUI;
@@ -28,7 +29,8 @@ public class DOTweenManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            HorlogeUI.SetActive(false);
+            HorlogeFond.SetActive(false);
+            HorlogeCadre.SetActive(false);
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -222,18 +224,56 @@ public class DOTweenManager : MonoBehaviour
 
     public IEnumerator OnActionEndDayAnimation()
     {
-         Debug.Log("[DOTweenManager] FAAAAAAAAAAAAAAAAAAAAAAA");
-        Transform horlogeRect = HorlogeUI.GetComponent<Transform>();
-        horlogeRect.position = new Vector2(0, 50f);
-        horlogeRect.DOMove(new Vector2(0, -20f), 0.1f).SetEase(Ease.OutBack);
-        HorlogeUI.SetActive(true);
         Debug.Log("[DOTweenManager] Début de l'animation de fin de journée.");
-        horlogeRect.DOScale(0.4f, 0.5f).SetEase(Ease.OutBack);
-        horlogeRect.DOMoveY(0f, 0.5f).SetEase(Ease.OutBack);
+        
+        // Obtenir les transforms du fond et du cadre
+        Transform fondTransform = HorlogeFond.GetComponent<Transform>();
+        Transform cadreTransform = HorlogeCadre.GetComponent<Transform>();
+        
+        // Position de départ (en haut, hors écran)
+        float startY = Screen.height + 5f;
+        float targetY = 0f;
+        
+        // Positionner les éléments hors écran
+        fondTransform.position = new Vector2(0, startY);
+        cadreTransform.position = new Vector2(0, startY);
+        
+        // Réinitialiser les rotations
+        fondTransform.rotation = Quaternion.Euler(0, 0, 180f); // Commence côté sombre
+        cadreTransform.rotation = Quaternion.identity;
+        WaitForSeconds wait = new WaitForSeconds(0.1f);
+        // Activer les GameObjects
+        HorlogeFond.SetActive(true);
+        HorlogeCadre.SetActive(true);
+        
+        // Créer une séquence pour l'animation
+        DG.Tweening.Sequence s = DOTween.Sequence();
+        s.SetUpdate(false);
+        
+        // Phase 1: Les deux objets descendent du ciel ensemble
+        s.Append(fondTransform.DOMoveY(targetY, 0.9f).SetEase(Ease.OutBounce));
+        s.Join(cadreTransform.DOMoveY(targetY, 0.9f).SetEase(Ease.OutBounce));
+        
+        // Phase 2: Le fond fait plusieurs tours (2.5 tours = 900° pour finir à 180°)
+        // 180° (départ) + 900° = 1080° total, ce qui donne 3 tours complets = 180° final
+        s.Append(fondTransform.DORotate(new Vector3(0, 0, 900f), 2.5f, RotateMode.FastBeyond360).SetEase(Ease.InOutBack));
+        
+        // Phase 3: Léger balancement du cadre de gauche à droite
+        
+        s.Join(cadreTransform.DORotate(new Vector3(0, 0, 10f), 0.35f).SetEase(Ease.InOutSine));
+        s.Append(cadreTransform.DORotate(new Vector3(0, 0, -10f), 0.35f).SetEase(Ease.InOutSine));
+        s.Append(cadreTransform.DORotate(new Vector3(0, 0, 5f), 0.2f).SetEase(Ease.InOutSine));
+        s.Append(cadreTransform.DORotate(new Vector3(0, 0, 0f), 0.1f).SetEase(Ease.InOutSine));
+        
+        // Attendre la fin de toutes les animations
+        yield return s.WaitForCompletion();
+        
+        // Pause pour que le joueur voie l'horloge
         yield return new WaitForSeconds(0.3f);
-        horlogeRect.DORotate(new Vector3(0, 0, 360f), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutBack);
-        yield return new WaitForSeconds(2f);
-        HorlogeUI.SetActive(false);
+        
+        // Désactiver les GameObjects
+        HorlogeFond.SetActive(false);
+        HorlogeCadre.SetActive(false);
     }
     
     #endregion
