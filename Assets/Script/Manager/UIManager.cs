@@ -272,6 +272,7 @@ public class UIManager : MonoBehaviour
         if (interactionPanel == null) return;
 
         HideAllUI();
+        RerollTxt.text = "";
         interactionPanel.SetActive(true);
 
         if (interactionHeader != null)
@@ -650,7 +651,8 @@ public class UIManager : MonoBehaviour
 
         HideAllUI();
         interactionPanel.SetActive(true);
-
+        Image imageHeader = interactionHeader.GetComponentInChildren<Image>();
+        imageHeader.sprite = null;
         if (interactionHeader != null)
         {
             var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();
