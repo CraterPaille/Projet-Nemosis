@@ -11,7 +11,8 @@ public class MiniGameLauncher : MonoBehaviour
         "RhythmScene",
         "NuitGlaciale",
         "Zeus_gameScene",
-        "Tri"
+        "Tri",
+        "JUMP"
     };
 
     // Méthode pour lancer le mini-jeu Chyron
@@ -40,6 +41,10 @@ public class MiniGameLauncher : MonoBehaviour
     {
         DisableUIAndLoadScene("Tri");
     }
+    public void LaunchJUMPGame()
+    {
+        DisableUIAndLoadScene("JUMP");
+    }
 
     public void ReturnToMainMenu()
     {
@@ -48,9 +53,26 @@ public class MiniGameLauncher : MonoBehaviour
 
     /// <summary>
     /// Lance un mini-jeu aléatoire parmi la liste sundayMiniGameScenes.
+    /// Si on est le dernier dimanche matin (dernier jour de la campagne),
+    /// lance la scène du boss final "boss-chronos".
     /// </summary>
     public void LaunchRandomSundayMiniGame()
     {
+        // Vérification du cas Boss final : dernier dimanche matin
+        if (GameManager.Instance != null)
+        {
+            bool isSunday = GameManager.Instance.currentWeekDay == "Dimanche";
+            bool isMorning = GameManager.Instance.currentTime == DayTime.Matin;
+            bool isLastDay = GameManager.Instance.currentDay >= GameManager.Instance.totalDays;
+
+            if (isSunday && isMorning && isLastDay)
+            {
+                Debug.Log("[MiniGameLauncher] Dernier dimanche matin détecté -> lancement du Boss final 'boss-chronos'.");
+                DisableUIAndLoadScene("Boss_Final_Chronos");
+                return;
+            }
+        }
+
         if (sundayMiniGameScenes == null || sundayMiniGameScenes.Length == 0)
         {
             Debug.LogWarning("[MiniGameLauncher] Aucune scène de mini-jeu configurée pour le dimanche.");
@@ -72,7 +94,7 @@ public class MiniGameLauncher : MonoBehaviour
             UIManager.Instance.MarkMiniGameLaunch();
             UIManager.Instance.SetUIActive(false);
         }
-        
+
         SceneManager.LoadScene(sceneName);
     }
 }
