@@ -10,6 +10,7 @@ using Math = System.Math;
 using UnityEditor.Localization.Plugins.XLIFF.V20;
 using System.Collections;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
+using System; // ajouté pour Enum.GetValues
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
@@ -120,6 +121,9 @@ public class UIManager : MonoBehaviour
     {
         if (scene.name == MAIN_SCENE_NAME)
         {
+            // Rebind references to objects that live in the scene (they are destroyed/recreated when changing scene).
+            RebindSceneUI();
+
             SetUIActive(true);
             EnsureEventSystem();
 
@@ -128,10 +132,12 @@ public class UIManager : MonoBehaviour
                 returningFromMiniGame = false;
 
                 if (GameManager.Instance != null)
-                {
                     GameManager.Instance.EndHalfDay();
-                }
             }
+
+            // Après le rebinding, forcer une mise à jour visuelle des stats/date
+            RefreshAllStatsUI();
+            changeDateUI();
         }
     }
 
@@ -356,6 +362,11 @@ public class UIManager : MonoBehaviour
     {
         try
         {
+            // Ne pas tenter de lancer de coroutine si le composant ou son GameObject est inactif.
+            // Ceci évite l'erreur Unity: "Coroutine couldn't be started because the game object 'UIManager' is inactive!"
+            if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+                return;
+
             GameObject panel = null;
             switch (stat)
             {
@@ -507,6 +518,14 @@ public class UIManager : MonoBehaviour
         var txt = panel.GetComponentInChildren<TextMeshProUGUI>();
         if (txt == null) return;
 
+        // Si ce composant est inactif on ne démarre pas la coroutine (Unity interdit StartCoroutine sur un objet inactif).
+        // On mettra à jour directement le texte pour que la donnée reste cohérente.
+        if (!isActiveAndEnabled)
+        {
+            txt.text = $"{(int)targetValue}";
+            return;
+        }
+
         int currentVal;
         if (!int.TryParse(txt.text, out currentVal))
         {
@@ -628,7 +647,7 @@ public class UIManager : MonoBehaviour
         CloseInteractionButton.onClick.AddListener(RerollVillageCards);
         if (interactionPanel == null || interactionContent == null) return;
         RerollTxt.text = $"Rerolls : {GameManager.Instance.RerollsRemaining}";
-        
+
         HideAllUI();
         interactionPanel.SetActive(true);
 
@@ -645,8 +664,7 @@ public class UIManager : MonoBehaviour
         List<VillageCard> currentChoices = new List<VillageCard>();
         for (int i = 0; i < cardsToDraw && pool.Count > 0; i++)
         {
-            int index = Random.Range(0, pool.Count);
-            var card = pool[index];
+            int index = UnityEngine.Random.Range(0, pool.Count); var card = pool[index];
             pool.RemoveAt(index);
             currentChoices.Add(card);
         }
@@ -670,7 +688,7 @@ public class UIManager : MonoBehaviour
 
     public void RerollVillageCards()
     {
-        if(GameManager.Instance.RerollsRemaining <= 0)
+        if (GameManager.Instance.RerollsRemaining <= 0)
         {
             Debug.LogWarning("UIManager: Pas de rerolls restants !");
             return;
@@ -752,6 +770,97 @@ public class UIManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[UIManager] Impossible de charger : GameManager.Instance est null.");
+        }
+    }
+
+    // -----------------------
+    // Nouveaux utilitaires
+    // -----------------------
+    /// <summary>
+    /// Tente de ré-associer les références UI qui vivent dans la scène (elles sont détruites et recréées lors des changements de scène).
+    /// Cette méthode n'est pas fiable à 100% si les objets n'ont pas les noms attendus dans la hiérarchie,
+    /// mais couvre le cas courant où les GameObjects portent les mêmes noms que les champs.
+    /// </summary>
+    private void RebindSceneUI()
+    {
+        // Ne remplace que si null ou l'objet a été détruit
+        try
+        {
+            if (tooltipPanel == null) tooltipPanel = FindFirst("TooltipPanel", "Tooltip");
+            if (interactionPanel == null) interactionPanel = FindFirst("InteractionPanel", "Interaction");
+            if (villagePanel == null) villagePanel = FindFirst("VillagePanel", "Village");
+            if (dayModeChoicePanel == null) dayModeChoicePanel = FindFirst("DayModeChoicePanel", "DayModeChoicePanel");
+            if (miniJeuCardPanel == null) miniJeuCardPanel = FindFirst("MiniJeuCardPanel", "MiniJeuCardPanel");
+            if (PanelStats == null) PanelStats = FindFirst("PanelStats", "PanelStats");
+
+            // Stat panels : essayer plusieurs variantes (anciens noms et nouveaux fournis)
+            if (StatFoi == null) StatFoi = FindFirst("StatFoi", "foi", "Foi");
+            if (StatNemosis == null) StatNemosis = FindFirst("StatNemosis", "Nemosis", "nemosis");
+            if (StatHumain == null) StatHumain = FindFirst("StatHumain", "Human", "human");
+            if (StatArgent == null) StatArgent = FindFirst("StatArgent", "Argent", "argent");
+            if (StatFood == null) StatFood = FindFirst("StatFood", "Food", "food");
+
+            // Date / Dates (l'utilisateur indique "Dates")
+            if (Date == null)
+            {
+                var go = FindFirstObj("Date", "Dates", "dates");
+                if (go != null)
+                {
+                    var tmp = go.GetComponent<TextMeshProUGUI>();
+                    if (tmp == null)
+                        tmp = go.GetComponentInChildren<TextMeshProUGUI>();
+                    if (tmp != null) Date = tmp;
+                }
+            }
+
+            // Réinitialiser le cache d'images pour éviter d'utiliser des références invalides
+            statImages.Clear();
+
+            // Si certains éléments sont trouvés mais doivent être masqués par défaut, reproduire l'état attendu
+            if (PanelStats != null && !PanelStats.activeSelf)
+                PanelStats.SetActive(true);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[UIManager] RebindSceneUI a échoué : {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Cherche dans la scène le premier GameObject correspondant aux noms fournis (ordre prioritaire).
+    /// </summary>
+    private GameObject FindFirstObj(params string[] names)
+    {
+        foreach (var n in names)
+        {
+            if (string.IsNullOrEmpty(n)) continue;
+            var go = GameObject.Find(n);
+            if (go != null) return go;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Retourne le GameObject correspondant au premier nom trouvé, utile pour assigner directement aux champs GameObject.
+    /// </summary>
+    private GameObject FindFirst(params string[] names)
+    {
+        return FindFirstObj(names);
+    }
+
+    /// <summary>
+    /// Force la mise à jour visuelle des stats pour refléter GameManager.Valeurs après un changement de scène / retour de mini-jeu.
+    /// </summary>
+    private void RefreshAllStatsUI()
+    {
+        if (GameManager.Instance == null) return;
+
+        foreach (StatType st in Enum.GetValues(typeof(StatType)))
+        {
+            if (GameManager.Instance.Valeurs != null && GameManager.Instance.Valeurs.TryGetValue(st, out float val))
+            {
+                ChangeStatUI(st, val);
+            }
         }
     }
 }

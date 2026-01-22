@@ -6,17 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Menu_principal.unity
+    guid: 17ad7928508747a47a4df92e18c33dcf
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    guid: 125c84bf3b02d364a884cbc84a17e08f
   - enabled: 1
     path: Assets/Scenes/Menu_option.unity
     guid: 8c7df01d48ab6b14b8989a312e72457f
   - enabled: 1
     path: Assets/Scenes/ChyronTraverse.unity
     guid: b869bf0be9389594aa680ee91750454f
-  - enabled: 1
-    path: Assets/Scenes/Menu_principal.unity
-    guid: 17ad7928508747a47a4df92e18c33dcf
   - enabled: 1
     path: Assets/Scenes/NuitGlaciale.unity
     guid: 794392b160729cf448ac01d30e8a8be1
@@ -41,6 +41,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Boss_Final_Chronos.unity
     guid: eaac0c636f5cf8d45ae6540a367900e5
+  - enabled: 1
+    path: Assets/Scenes/JUMP.unity
+    guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 44958e268e61ecb4e847952500f6bea5, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

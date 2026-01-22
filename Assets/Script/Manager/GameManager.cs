@@ -218,9 +218,13 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("[GameManager] Dimanche matin : tentative de lancement d'un mini-jeu aléatoire !");
 
-        // Désactiver l'UI principale si présente
+        // Ne pas désactiver le GameObject UIManager (corrige l'erreur Coroutine couldn't be started...)
         if (UIManager.Instance != null)
-            UIManager.Instance.SetUIActive(false);
+        {
+            // Masque proprement les panels et marque qu'on lance un mini‑jeu
+            UIManager.Instance.HideAllUIForMiniGame();
+            UIManager.Instance.MarkMiniGameLaunch();
+        }
 
         // Si un MiniGameLauncher est assigné, déléguer le choix
         if (miniGameLauncher != null)

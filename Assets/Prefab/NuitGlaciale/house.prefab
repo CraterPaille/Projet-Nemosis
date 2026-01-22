@@ -81,12 +81,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1923994175756728024, guid: a51c1b987ade9b34fbb9429a493c2436, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 37f7f20ff2d9f94428919e831a54be8f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.28, y: 1.21}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -129,9 +129,9 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.28, y: 1.21}
-    newSize: {x: 1.28, y: 1.21}
+    pivot: {x: 0.5, y: 0.2}
+    oldSize: {x: 0.8671875, y: 1}
+    newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -151,5 +151,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::House
   isOn: 1
-  onSprite: {fileID: -1923994175756728024, guid: a51c1b987ade9b34fbb9429a493c2436, type: 3}
-  offSprite: {fileID: 1310383053476188414, guid: 4260130d8e83bfe47806ae4a9d0030b3, type: 3}
+  onSprite: {fileID: 21300000, guid: de8220b571179114faeca467f1db99d7, type: 3}
+  offSprite: {fileID: 21300000, guid: 37f7f20ff2d9f94428919e831a54be8f, type: 3}

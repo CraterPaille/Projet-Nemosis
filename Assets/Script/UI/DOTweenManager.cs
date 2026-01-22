@@ -81,6 +81,13 @@ public class DOTweenManager : MonoBehaviour
             // 2. On attend que la SÉQUENCE entière soit finie
             yield return s.WaitForCompletion();
             Debug.Log("[DOTweenManager] Animation de transition terminée, exécution du callback.");
+
+            // S'assurer que l'UI est active avant d'appeler le callback qui peut déclencher des mises à jour UI/coroutines
+            if (UIManager.Instance != null && !UIManager.Instance.gameObject.activeInHierarchy)
+            {
+                UIManager.Instance.SetUIActive(true);
+            }
+
             callback?.Invoke();
             
             // Keep gameplay unpaused after callback

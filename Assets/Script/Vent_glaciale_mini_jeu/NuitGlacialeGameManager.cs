@@ -11,12 +11,12 @@ public class NuitGlacialeGameManager : MonoBehaviour
     public static NuitGlacialeGameManager Instance;
 
     [Header("Références")]
-    public Transform housesParent;       
-    public TextMeshProUGUI timerText;    
+    public Transform housesParent;
+    public TextMeshProUGUI timerText;
 
     [Header("Paramètres de jeu")]
-    public float duration = 60f;         
-    public float interval = 3f;          
+    public float duration = 60f;
+    public float interval = 3f;
     public float intervalDecrease = 0.9f; // Accélération progressive
 
     [Header("Génération de maisons")]
@@ -95,11 +95,45 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     public void StartMiniGame()
     {
+        // Sécurité : vérifier les références essentielles
+        if (housesParent == null)
+        {
+            Debug.LogError("[NuitGlaciale] StartMiniGame annulé : housesParent n'est pas assigné dans l'Inspector.");
+            return;
+        }
+
+        if (housePrefab == null)
+        {
+            Debug.LogWarning("[NuitGlaciale] housePrefab non assigné : génération des maisons impossible. Abandon du démarrage.");
+            return;
+        }
+
+        // S'assurer que les maisons existent ; si non, générer
+        houses = housesParent.GetComponentsInChildren<House>();
+        if (houses == null || houses.Length == 0)
+        {
+            Debug.Log("[NuitGlaciale] Aucune house trouvée, génération automatique avant démarrage.");
+            GenerateRandomHouses();
+            houses = housesParent.GetComponentsInChildren<House>();
+        }
+
+        if (houses == null || houses.Length == 0)
+        {
+            Debug.LogError("[NuitGlaciale] Aucun House trouvé après tentative de génération. StartMiniGame annulé.");
+            return;
+        }
+
+        // Si le jeu est démarré manuellement, on considère le tutoriel validé
+        tutorialValidated = true;
+
         timeLeft = duration;
         isRunning = true;
 
         foreach (var h in houses)
-            h.SetState(true);
+        {
+            if (h != null)
+                h.SetState(true);
+        }
 
         StartCoroutine(HouseFailures());
     }
@@ -148,15 +182,18 @@ public class NuitGlacialeGameManager : MonoBehaviour
             timerText.text = Mathf.CeilToInt(timeLeft).ToString();
 
         int offCount = 0;
-        foreach (var h in houses)
-            if (!h.isOn) offCount++;
+        if (houses != null)
+        {
+            foreach (var h in houses)
+                if (h != null && !h.isOn) offCount++;
+        }
 
         // Nouvelle logique pour le max de maisons éteintes
         int maxAllowedOff;
-        if (houses.Length % 2 == 0)
+        if (houses != null && houses.Length % 2 == 0)
             maxAllowedOff = (houses.Length / 2) - 1;
         else
-            maxAllowedOff = Mathf.CeilToInt(houses.Length / 2f);
+            maxAllowedOff = Mathf.CeilToInt((houses != null && houses.Length > 0 ? houses.Length : minHouses) / 2f);
 
         if (offCount >= maxAllowedOff)
             Lose();
@@ -186,8 +223,11 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
             // combien de maisons sont allumées
             int onCount = 0;
-            foreach (var h in houses)
-                if (h.isOn) onCount++;
+            if (houses != null)
+            {
+                foreach (var h in houses)
+                    if (h != null && h.isOn) onCount++;
+            }
 
             int maxExtinguishable = Mathf.FloorToInt(onCount / 2f);
             if (maxExtinguishable < 1)
@@ -223,32 +263,58 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     IEnumerator SpawnAnimation(GameObject obj)
     {
+        // Protection : si l'objet a déjà été détruit ou non assigné, on sort.
+        if (obj == null)
+            yield break;
+
         float duration = 0.3f;
         float elapsed = 0f;
 
         Vector3 initialScale = Vector3.zero;
         Vector3 targetScale = Vector3.one;
 
-        obj.transform.localScale = initialScale;
+        // Sauvegarder la référence Transform (non nécessaire mais évite plusieurs .transform calls)
+        Transform t = obj.transform;
+        if (t == null)
+            yield break;
+
+        // Initialisation sécurisée
+        t.localScale = initialScale;
 
         while (elapsed < duration)
         {
-            obj.transform.localScale = Vector3.Lerp(initialScale, targetScale, elapsed / duration);
+            // L'objet peut être détruit pendant la coroutine ; sortir proprement si c'est le cas.
+            if (obj == null)
+                yield break;
+
+            // Re-obtenir le Transform au cas où l'objet ait été renommé/reparenté (sécurisé)
+            t = obj.transform;
+            t.localScale = Vector3.Lerp(initialScale, targetScale, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        obj.transform.localScale = targetScale;
+        if (obj != null)
+        {
+            obj.transform.localScale = targetScale;
+        }
     }
 
     House GetRandomOnHouse()
     {
         var onHouses = new List<House>();
-        foreach (var h in houses)
-            if (h.isOn) onHouses.Add(h);
+        if (houses != null)
+        {
+            foreach (var h in houses)
+                if (h != null && h.isOn) onHouses.Add(h);
+        }
 
         if (onHouses.Count == 0)
-            return houses[Random.Range(0, houses.Length)];
+        {
+            if (houses != null && houses.Length > 0)
+                return houses[Random.Range(0, houses.Length)];
+            return null;
+        }
 
         return onHouses[Random.Range(0, onHouses.Count)];
     }
@@ -306,7 +372,7 @@ public class NuitGlacialeGameManager : MonoBehaviour
             var houseCmp = h.GetComponent<House>();
             if (houseCmp != null) houseCmp.enabled = true;
 
-            // Démarrer l’animation de spawn
+            // Démarrer l’animation de spawn (sécurisé : la coroutine vérifie si l'objet est détruit)
             StartCoroutine(SpawnAnimation(h));
         }
     }
