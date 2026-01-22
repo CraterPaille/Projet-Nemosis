@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 4396842872430510340}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 1.52064, y: 2.25974, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 2, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -61,7 +61,11 @@ MonoBehaviour:
   shieldHitSfx: {fileID: 8300000, guid: 3233b382a6ec72c47b477faace9d85f8, type: 3}
   playerHitSfx: {fileID: 8300000, guid: 37aa93aaba138f244a91d080317b80cc, type: 3}
   sfxVolume: 1
+  sfxSource: {fileID: 0}
   immediateDestroyOnLifeEnd: 1
+  blockedEffectDuration: 3
+  blockedTint: {r: 1, g: 0, b: 0.012905121, a: 1}
+  blockedScaleAmplitude: 0.12
 --- !u!212 &3899804997286678604
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -106,8 +110,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -178871803
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 7133394901442293578, guid: ce805ca3181556f4eb2649a3bdc63eb4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -145,7 +149,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
 --- !u!61 &4176542988623072196
 BoxCollider2D:

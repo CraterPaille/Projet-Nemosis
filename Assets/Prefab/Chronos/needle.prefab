@@ -178,5 +178,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e16374772b1c60442a9fbea3d8fa4a8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bone
+  moveMode: 0
+  moveDirection: {x: 0, y: -1}
   speed: 4
   damage: 5
+  poolTag: needle
+  visual: {fileID: 0}
+  visualForward: 0
+  visualRotationOffset: 90
+  maxLifetime: 10

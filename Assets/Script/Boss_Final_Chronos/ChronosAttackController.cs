@@ -33,7 +33,6 @@ public class ChronosAttackController : MonoBehaviour
     private Camera mainCamera;
     private ObjectPooler pooler;
 
-    private bool isJusticeMode;
     private bool hasPhase5Pattern;
     private Coroutine timeFluxCo;
     public GameObject gamepadCursor;
@@ -294,7 +293,7 @@ public class ChronosAttackController : MonoBehaviour
         gm.bossCurrentHP = 0;
         gm.UpdateUI();
 
-        string[] msgs = { "* ...", "* Incroyable...", "* Tu as vraiment... gagné.", "* Félicitations, humain." };
+        string[] msgs = { "* ...", "* Incroyable...", "* Tu as vraiment... gagné.", "* Félicitations, Némésis." };
         foreach (string m in msgs)
         {
             gm.dialogueText.text = m;
@@ -311,7 +310,7 @@ public class ChronosAttackController : MonoBehaviour
         if (victoryScreen == null)
         {
             Debug.LogError("VictoryScreen not found!");
-            gm.dialogueText.text = "* ★ VICTOIRE ! ★";
+            gm.dialogueText.text = " VICTOIRE !";
             yield break;
         }
 
@@ -565,7 +564,6 @@ public class ChronosAttackController : MonoBehaviour
 
         gm.dialogueText.text = "* Le temps s'arrête...";
         yield return wait1_5s;
-        isJusticeMode = true;
 
         if (timeFluxCo != null)
         {
@@ -588,7 +586,8 @@ public class ChronosAttackController : MonoBehaviour
             float charge = Mathf.Max(0.8f, 1.5f - w * 0.15f);
             float speed = 3f + w * 0.3f;
 
-            yield return SpawnCardinalBlasters(player.position, 8f, charge, speed);
+            // Spawn exactement une needle par côté, ordre aléatoire
+            yield return SpawnCardinalNeedlesOrdered(player.position, 8f, speed, 0.28f);
             yield return new WaitForSeconds(Mathf.Max(2.5f, 4f - w * 0.3f));
         }
 
@@ -596,7 +595,6 @@ public class ChronosAttackController : MonoBehaviour
         yield return wait2s;
 
         justiceController.DeactivateShields();
-        isJusticeMode = false;
 
         if (ps) ps.ExitJusticeMode();
 
@@ -604,31 +602,107 @@ public class ChronosAttackController : MonoBehaviour
         yield return wait1s;
     }
 
-    IEnumerator SpawnCardinalBlasters(Vector3 center, float radius, float charge, float speed)
+    // Spawn exactly one needle per cardinal side, in random order.
+    IEnumerator SpawnCardinalNeedlesOrdered(Vector3 center, float radius, float speed, float delayBetween = 0.3f)
     {
-        foreach (Vector3 dir in cardinalDirs)
+        const float outsideOffset = 1f;
+
+        // Prepare shuffled order [0..3]
+        List<int> order = new List<int> { 0, 1, 2, 3 };
+        for (int i = 0; i < order.Count; i++)
         {
-            Vector3 pos = center + dir * radius;
+            int j = Random.Range(i, order.Count);
+            int tmp = order[i];
+            order[i] = order[j];
+            order[j] = tmp;
+        }
 
-            if (!InCam(pos) || !OutBox(pos)) continue;
+        foreach (int idx in order)
+        {
+            Vector3 dir = cardinalDirs[idx];
 
-            float angle = Mathf.Atan2(-dir.y, -dir.x) * Mathf.Rad2Deg;
-            GameObject gb = Spawn("GasterBlaster", pos, Quaternion.Euler(0, 0, angle), false);
+            // Place exactly on arena border + offset
+            Vector3 basePos = new Vector3(
+                arenaCenter.x + dir.x * (arenaSize.x * 0.5f + outsideOffset),
+                arenaCenter.y + dir.y * (arenaSize.y * 0.5f + outsideOffset),
+                0f);
 
-            if (gb)
+            // direction vers le joueur
+            Vector3 moveDir = (player.position - basePos).normalized;
+            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.Euler(0, 0, angle);
+
+            GameObject needle = Spawn("needle", basePos, rot, false);
+            if (needle)
             {
-                GasterBlaster gbc = gb.GetComponent<GasterBlaster>();
-                if (gbc)
+                var nd = needle.GetComponent<Bone>();
+                if (nd != null)
                 {
-                    gbc.chargeDuration = charge;
-                    gbc.laserSpeed = speed;
-                    gbc.forceCardinalDirection = true;
-                    gbc.forcedDirection = -dir;
-                    gbc.initialDelay = 0;
+                    nd.moveMode = Bone.MoveMode.Directional;
+                    nd.moveDirection = moveDir;
+                    nd.speed = speed;
+                    nd.maxLifetime = 6f; // sécurité
                 }
-                gb.SetActive(true);
+
+                // Force visual rotation / orientation
+                needle.transform.rotation = rot;
+                needle.SetActive(true);
             }
 
+            yield return new WaitForSeconds(delayBetween);
+        }
+    }
+
+    IEnumerator SpawnCardinalNeedles(Vector3 center, float radius, float speed, int perSideCount = 1)
+    {
+        const float outsideOffset = 1f;
+
+        foreach (Vector3 dir in cardinalDirs)
+        {
+            // Position de base placée exactement sur le bord de l'arène + offset
+            Vector3 basePos = new Vector3(
+                arenaCenter.x + dir.x * (arenaSize.x * 0.5f + outsideOffset),
+                arenaCenter.y + dir.y * (arenaSize.y * 0.5f + outsideOffset),
+                0f);
+
+            // choisir l'axe de dispersion (perp)
+            Vector3 perp = (Mathf.Abs(dir.y) > 0.5f) ? Vector3.right : Vector3.up;
+
+            // spread adapté à l'arène (empirique)
+            float spread = (Mathf.Abs(dir.y) > 0.5f) ? Mathf.Max(1f, arenaSize.x * 0.6f) : Mathf.Max(1f, arenaSize.y * 0.6f);
+            int n = Mathf.Max(1, perSideCount);
+            float spacing = (n > 1) ? (spread / (n - 1)) : 0f;
+            float start = -spread / 2f;
+
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 offset = perp * (start + i * spacing);
+                Vector3 spawnPos = basePos + offset;
+
+                // direction vers le joueur
+                Vector3 moveDir = (player.position - spawnPos).normalized;
+                float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
+                Quaternion rot = Quaternion.Euler(0, 0, angle);
+
+                GameObject needle = Spawn("needle", spawnPos, rot, false);
+                if (needle)
+                {
+                    var nd = needle.GetComponent<Bone>();
+                    if (nd != null)
+                    {
+                        nd.moveMode = Bone.MoveMode.Directional;
+                        nd.moveDirection = moveDir;
+                        nd.speed = speed;
+                        nd.maxLifetime = 6f; // sécurité
+                    }
+
+                    // Forcer orientation visuelle (Bone.OnEnable appliquera aussi l'angle configurable)
+                    needle.transform.rotation = rot;
+                    needle.SetActive(true);
+                }
+            }
+
+            // petit délai entre côtés
             yield return wait0_3s;
         }
     }

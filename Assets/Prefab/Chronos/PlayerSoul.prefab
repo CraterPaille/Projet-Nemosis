@@ -203,6 +203,8 @@ MonoBehaviour:
   shieldDistance: 1.5
   playerSprite: {fileID: 1174626466722722605}
   justiceColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  leftShieldDirection: 2
+  rightShieldDirection: 0
 --- !u!1 &3621716808341872037
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,7 +342,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 1, y: 0.5}
   m_EdgeRadius: 0
 --- !u!114 &4191547533671395334
 MonoBehaviour:
@@ -355,6 +357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JusticeShield
   blockedCount: 0
+  blockAngleThreshold: 45
 --- !u!50 &6466991474056653537
 Rigidbody2D:
   serializedVersion: 5
@@ -488,6 +491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JusticeShield
   blockedCount: 0
+  blockAngleThreshold: 45
 --- !u!50 &6619720574982554878
 Rigidbody2D:
   serializedVersion: 5
@@ -545,7 +549,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -559,5 +563,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 1, y: 0.5}
   m_EdgeRadius: 0

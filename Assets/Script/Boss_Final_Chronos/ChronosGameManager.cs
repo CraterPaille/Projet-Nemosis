@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using DG.Tweening;
+using UnityEngine.Audio;
 
 public class ChronosGameManager : MonoBehaviour
 {
@@ -40,6 +41,25 @@ public class ChronosGameManager : MonoBehaviour
     [Header("Boss Image (fade)")]
     public Image bossImage; // <-- Référence à l'image du boss à placer dans l'inspecteur
 
+    [Header("Boss Movement (infinite)")]
+    public bool enableBossInfinityMovement = true;
+    [Tooltip("Vitesse globale du mouvement")]
+    public float infinitySpeed = 1f;
+    [Tooltip("Amplitude X en pixels (anchoredPosition)")]
+    public float infinityRadiusX = 120f;
+    [Tooltip("Amplitude Y en pixels (anchoredPosition)")]
+    public float infinityRadiusY = 60f;
+
+    [Header("Boss Trail (rémanence)")]
+    [Tooltip("Intervalle entre spawn de traînée en secondes")]
+    public float trailSpawnInterval = 0.06f;
+    [Tooltip("Nombre maximum d'images rémanentes (pool)")]
+    public int trailPoolSize = 12;
+    [Tooltip("Durée du fondu des rémanences")]
+    public float trailFadeDuration = 0.8f;
+    [Tooltip("Échelle appliquée aux rémanences")]
+    public float trailScaleMultiplier = 0.95f;
+
     [Header("UI")]
     public TMP_Text dialogueText;
 
@@ -59,6 +79,16 @@ public class ChronosGameManager : MonoBehaviour
     private RectTransform playerHPTextRect;
     private RectTransform dialogueTextRect;
     private Camera mainCamera;
+
+    // Boss movement cache
+    private RectTransform bossRect;
+    private Vector2 bossCenterAnchored;
+    private float infinityT = 0f;
+    private float trailTimer = 0f;
+
+    // Trail pool
+    private Image[] trailPool;
+    private int trailIndex = 0;
 
     // Constantes pré-calculées
     private const float HP_ANIM_DURATION = 0.5f;
@@ -98,6 +128,43 @@ public class ChronosGameManager : MonoBehaviour
         // Initialiser l'alpha de l'image du boss à pleine opacité
         UpdateBossImageAlpha(instant: true);
 
+        // Boss rect + centre pour le mouvement
+        if (bossImage != null)
+        {
+            bossRect = bossImage.rectTransform;
+            bossCenterAnchored = bossRect.anchoredPosition;
+            InitializeTrailPool();
+        }
+
+        // ROUTER la source SFX vers le groupe "SFX" du mixer (si présent)
+        if (sfxSource != null)
+        {
+            AudioMixerGroup target = null;
+
+            if (AudioManager.Instance != null && AudioManager.Instance.masterMixer != null)
+            {
+                var groups = AudioManager.Instance.masterMixer.FindMatchingGroups("SFX");
+                if (groups != null && groups.Length > 0)
+                    target = groups[0];
+            }
+
+            if (target == null)
+            {
+                var all = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
+                foreach (var g in all)
+                {
+                    if (g != null && g.name.ToLowerInvariant().Contains("sfx"))
+                    {
+                        target = g;
+                        break;
+                    }
+                }
+            }
+
+            if (target != null)
+                sfxSource.outputAudioMixerGroup = target;
+        }
+
         dialogueText.text = "* Chronos t'observe avec un sourire.";
     }
 
@@ -113,8 +180,21 @@ public class ChronosGameManager : MonoBehaviour
             }
         }
 
+        // Kill any active tweens on pool
+        if (trailPool != null)
+        {
+            foreach (var t in trailPool)
+                if (t != null) t.DOKill();
+        }
+
         if (Instance == this)
             Instance = null;
+    }
+
+    void Update()
+    {
+        if (enableBossInfinityMovement && bossImage != null && bossRect != null)
+            AnimateBossInfinity();
     }
 
     public void DamagePlayer(int dmg)
@@ -231,6 +311,9 @@ public class ChronosGameManager : MonoBehaviour
             // Optionnel : désactiver le raycast ou l'objet une fois invisible
             if (bossImage != null)
                 bossImage.raycastTarget = false;
+
+            // Arrêter le mouvement et nettoyer les traînées
+            StopBossMovementAndClearTrails();
         }
 
         UpdateUI();
@@ -565,6 +648,113 @@ public class ChronosGameManager : MonoBehaviour
             // Garder l'objet actif si vous voulez d'autres animations, sinon désactivez-le:
             // bossImage.gameObject.SetActive(false);
             bossImage.raycastTarget = false;
+        }
+    }
+
+    // -----------------------------
+    // Mouvement infini + rémanence
+    // -----------------------------
+    private void InitializeTrailPool()
+    {
+        if (bossImage == null) return;
+
+        // Créer le pool d'Images en tant qu'enfants du même parent que bossImage
+        Transform parent = bossImage.transform.parent;
+        trailPool = new Image[Mathf.Max(1, trailPoolSize)];
+        for (int i = 0; i < trailPool.Length; i++)
+        {
+            GameObject go = new GameObject($"BossTrail_{i}", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            Image img = go.AddComponent<Image>();
+            img.raycastTarget = false;
+            // Copier la taille et sprite du boss
+            img.rectTransform.sizeDelta = bossImage.rectTransform.sizeDelta;
+            img.sprite = bossImage.sprite;
+            img.color = new Color(1f, 1f, 1f, 0f);
+            go.SetActive(false);
+            trailPool[i] = img;
+        }
+        trailIndex = 0;
+    }
+
+    private void AnimateBossInfinity()
+    {
+        // Lissajous / figure-8 approximatif : x = A*sin(t), y = B*sin(2t)/2
+        infinityT += Time.deltaTime * infinitySpeed;
+        float x = infinityRadiusX * Mathf.Sin(infinityT);
+        float y = infinityRadiusY * (Mathf.Sin(infinityT * 2f) * 0.5f);
+        Vector2 newPos = bossCenterAnchored + new Vector2(x, y);
+        bossRect.anchoredPosition = newPos;
+
+        // Optionnel : légère rotation pour dynamique
+        bossRect.localEulerAngles = new Vector3(0f, 0f, Mathf.Sin(infinityT) * 6f);
+
+        // Spawn rémanence
+        trailTimer += Time.deltaTime;
+        if (trailTimer >= trailSpawnInterval)
+        {
+            SpawnTrailAt(newPos);
+            trailTimer = 0f;
+        }
+    }
+
+    private void SpawnTrailAt(Vector2 anchoredPos)
+    {
+        if (trailPool == null || trailPool.Length == 0 || bossImage == null) return;
+
+        Image t = trailPool[trailIndex];
+        trailIndex = (trailIndex + 1) % trailPool.Length;
+
+        if (t == null) return;
+
+        // Préparer l'image du trail
+        t.sprite = bossImage.sprite;
+        t.gameObject.SetActive(true);
+        RectTransform tr = t.rectTransform;
+        tr.anchoredPosition = anchoredPos;
+        tr.localScale = bossRect.localScale * trailScaleMultiplier;
+
+        // Copier couleur actuelle du boss (avec alpha)
+        Color baseColor = bossImage.color;
+        baseColor.a = Mathf.Clamp01(baseColor.a); // s'assurer
+        t.color = baseColor;
+
+        // Kill tweens précédents
+        t.DOKill();
+
+        // Animation : fondu vers 0 + déplacement léger
+        Vector2 jitter = new Vector2(Random.Range(-8f, 8f), Random.Range(-8f, 8f));
+        tr.DOAnchorPos(anchoredPos + jitter, trailFadeDuration).SetEase(Ease.OutQuad);
+        t.DOFade(0f, trailFadeDuration).SetEase(Ease.OutQuad).OnComplete(() =>
+        {
+            if (t != null)
+            {
+                t.gameObject.SetActive(false);
+                // remettre alpha à 0 pour sécurité
+                Color c = t.color;
+                t.color = new Color(c.r, c.g, c.b, 0f);
+            }
+        });
+    }
+
+    private void StopBossMovementAndClearTrails()
+    {
+        enableBossInfinityMovement = false;
+
+        if (bossImage != null)
+        {
+            bossImage.DOKill();
+            bossImage.DOFade(0f, 0.5f);
+        }
+
+        if (trailPool != null)
+        {
+            foreach (var t in trailPool)
+            {
+                if (t == null) continue;
+                t.DOKill();
+                t.gameObject.SetActive(false);
+            }
         }
     }
 }
