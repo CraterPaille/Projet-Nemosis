@@ -601,6 +601,54 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Chyron",
+            "id": "82bedafc-2820-43b8-ab2b-a54cf6b01612",
+            "actions": [
+                {
+                    "name": "Left",
+                    "type": "Value",
+                    "id": "7305e14b-378e-4fad-9b35-971603785b85",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Right",
+                    "type": "Value",
+                    "id": "6ce9e6ef-4e8f-4d26-8b02-316f56444553",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "c55846c8-cfc9-45ed-9e0e-a30b38c428ab",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Left",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f2882b3-0e77-4cc9-a6a4-c0d224f7947d",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [

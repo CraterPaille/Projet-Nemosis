@@ -1,18 +1,17 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.Video;
 using DG.Tweening;
 using UnityEngine.EventSystems;
-using System;
 
 public class MiniGameTutorialPanel : MonoBehaviour
 {
     [Header("Main UI")]
     public TMP_Text titleText;
     public Button continueButton;
-    public Button backButton; // Optionnel
+    public Button backButton;
     public VideoPlayer videoPlayer;
     public RawImage videoDisplay;
 
@@ -34,15 +33,15 @@ public class MiniGameTutorialPanel : MonoBehaviour
     public Color inactiveDeviceColor = new Color(0.22f, 0.25f, 0.32f, 1f);
 
     [Header("Rebind UI - Clavier")]
-    public TMP_Text[] laneLabelsKeyboard; // 0 à 3
-    public TMP_Text[] currentKeyLabelsKeyboard; // Affichage "Touche actuelle : D"
-    public Button[] rebindLaneButtonsKeyboard; // 0 à 3
-    public Image[] laneIconsKeyboard; // Icônes colorées des lanes
+    public TMP_Text[] laneLabelsKeyboard;
+    public TMP_Text[] currentKeyLabelsKeyboard;
+    public Button[] rebindLaneButtonsKeyboard;
+    public Image[] laneIconsKeyboard;
 
     [Header("Rebind UI - Manette")]
-    public TMP_Text[] laneLabelsGamepad; // 0 à 3
+    public TMP_Text[] laneLabelsGamepad;
     public TMP_Text[] currentKeyLabelsGamepad;
-    public Button[] rebindLaneButtonsGamepad; // 0 à 3
+    public Button[] rebindLaneButtonsGamepad;
     public Image[] laneIconsGamepad;
 
     [Header("Tips Section")]
@@ -59,7 +58,6 @@ public class MiniGameTutorialPanel : MonoBehaviour
     private InputAction[] actionsGamepad;
     private bool isAnimating = false;
 
-    // animation parameters
     [Header("Animation Parameters")]
     public float backgroundFadeDuration = 0.35f;
     public float containerPopDuration = 0.45f;
@@ -96,30 +94,11 @@ public class MiniGameTutorialPanel : MonoBehaviour
         if (contentContainer != null) contentOriginalScale = contentContainer.localScale;
     }
 
-    private void OnEnable()
-    {
-        // InputManager ne contient pas d'événement global pour les bindings.
-        // Mettre à jour à l'activation pour refléter l'état actuel des bindings.
-        UpdateControlBindings();
-    }
+    // ==================== MÃ‰THODES PUBLIQUES ====================
 
-    private void OnDisable()
-    {
-        // Aucun abonnement à désabonner (InputManager n'expose pas d'événement OnBindingsChanged).
-    }
-
-    // Méthode publique que d'autres composants peuvent appeler lorsque les bindings ont changé.
-    public void RefreshBindings()
-    {
-        UpdateControlBindings();
-    }
-
-    private void HandleBindingsChanged()
-    {
-        // Gardée pour compatibilité interne si appelée manuellement.
-        UpdateControlBindings();
-    }
-
+    /// <summary>
+    /// Version standard pour jeux avec 4 lanes (Rhythm)
+    /// </summary>
     public void Show(
         string miniGameName,
         InputAction[] actionsKeyboard,
@@ -130,31 +109,53 @@ public class MiniGameTutorialPanel : MonoBehaviour
         this.actionsKeyboard = actionsKeyboard;
         this.actionsGamepad = actionsGamepad;
 
-        titleText.text = $"Contrôles : {miniGameName}";
+        titleText.text = $"ContrÃ´les : {miniGameName}";
+
+        // RÃ©afficher toutes les lanes
+        ShowAllLanes();
         UpdateControlBindings();
         SetupVideo(tutorialClip);
-
-        if (tipsSection != null)
-        {
-            if (!string.IsNullOrEmpty(tip))
-            {
-                tipsSection.SetActive(true);
-                tipText.text = tip;
-            }
-            else
-            {
-                tipsSection.SetActive(false);
-            }
-        }
+        SetupTip(tip);
 
         ShowDeviceControls(true);
         gameObject.SetActive(true);
         AnimateIn();
     }
 
+    /// <summary>
+    /// Version spÃ©ciale pour Chyron (seulement 2 contrÃ´les: Gauche/Droite)
+    /// </summary>
+    public void ShowChyron(
+        string miniGameName,
+        InputAction[] actionsKeyboard,
+        InputAction[] actionsGamepad,
+        VideoClip tutorialClip = null,
+        string tip = null)
+    {
+        this.actionsKeyboard = actionsKeyboard;
+        this.actionsGamepad = actionsGamepad;
+
+        titleText.text = $"ContrÃ´les : {miniGameName}";
+
+        // Mettre Ã  jour seulement les 2 premiÃ¨res lanes
+        UpdateChyronControlBindings();
+        SetupVideo(tutorialClip);
+        SetupTip(tip);
+
+        // Cacher les lanes 2 et 3
+        HideUnusedLanes();
+
+        ShowDeviceControls(true);
+        gameObject.SetActive(true);
+        AnimateIn();
+    }
+
+    /// <summary>
+    /// Version simplifiÃ©e pour les jeux sans rebind (comme click)
+    /// </summary>
     public void ShowSimple(string miniGameName, VideoClip tutorialClip = null, string tip = null)
     {
-        titleText.text = $"Contrôles : {miniGameName}";
+        titleText.text = $"ContrÃ´les : {miniGameName}";
 
         if (keyboardControlsPanel != null) keyboardControlsPanel.SetActive(false);
         if (gamepadControlsPanel != null) gamepadControlsPanel.SetActive(false);
@@ -162,19 +163,7 @@ public class MiniGameTutorialPanel : MonoBehaviour
         if (gamepadToggleButton != null) gamepadToggleButton.gameObject.SetActive(false);
 
         SetupVideo(tutorialClip);
-
-        if (tipsSection != null)
-        {
-            if (!string.IsNullOrEmpty(tip))
-            {
-                tipsSection.SetActive(true);
-                tipText.text = tip;
-            }
-            else
-            {
-                tipsSection.SetActive(false);
-            }
-        }
+        SetupTip(tip);
 
         gameObject.SetActive(true);
         AnimateIn();
@@ -195,6 +184,24 @@ public class MiniGameTutorialPanel : MonoBehaviour
         });
     }
 
+    // ==================== MÃ‰THODES PRIVÃ‰ES ====================
+
+    private void SetupTip(string tip)
+    {
+        if (tipsSection != null)
+        {
+            if (!string.IsNullOrEmpty(tip))
+            {
+                tipsSection.SetActive(true);
+                tipText.text = tip;
+            }
+            else
+            {
+                tipsSection.SetActive(false);
+            }
+        }
+    }
+
     private void ShowDeviceControls(bool showKeyboard)
     {
         if (keyboardControlsPanel != null)
@@ -212,13 +219,15 @@ public class MiniGameTutorialPanel : MonoBehaviour
         if (keyboardToggleButton != null)
         {
             var keyboardImage = keyboardToggleButton.GetComponent<Image>();
-            keyboardImage.color = keyboardActive ? keyboardActiveColor : inactiveDeviceColor;
+            if (keyboardImage != null)
+                keyboardImage.color = keyboardActive ? keyboardActiveColor : inactiveDeviceColor;
         }
 
         if (gamepadToggleButton != null)
         {
             var gamepadImage = gamepadToggleButton.GetComponent<Image>();
-            gamepadImage.color = keyboardActive ? inactiveDeviceColor : gamepadActiveColor;
+            if (gamepadImage != null)
+                gamepadImage.color = keyboardActive ? inactiveDeviceColor : gamepadActiveColor;
         }
     }
 
@@ -226,44 +235,153 @@ public class MiniGameTutorialPanel : MonoBehaviour
     {
         if (actionsKeyboard != null)
         {
-            for (int i = 0; i < actionsKeyboard.Length && i < laneLabelsKeyboard.Length; i++)
+            for (int i = 0; i < actionsKeyboard.Length && i < 4; i++)
             {
-                string binding = GetBindingDisplayString(actionsKeyboard[i], "<Keyboard>");
-                if (laneLabelsKeyboard[i] != null)
+                if (i < laneLabelsKeyboard.Length && laneLabelsKeyboard[i] != null)
                     laneLabelsKeyboard[i].text = $"Lane {i}";
 
-                if (currentKeyLabelsKeyboard != null && i < currentKeyLabelsKeyboard.Length && currentKeyLabelsKeyboard[i] != null)
-                    currentKeyLabelsKeyboard[i].text = $" {binding}";
+                if (i < currentKeyLabelsKeyboard.Length && currentKeyLabelsKeyboard[i] != null)
+                {
+                    string binding = GetBindingDisplayString(actionsKeyboard[i], "<Keyboard>");
+                    currentKeyLabelsKeyboard[i].text = $"{binding}";
+                }
 
-                if (rebindLaneButtonsKeyboard != null && i < rebindLaneButtonsKeyboard.Length && rebindLaneButtonsKeyboard[i] != null)
+                if (i < rebindLaneButtonsKeyboard.Length && rebindLaneButtonsKeyboard[i] != null)
                 {
                     int idx = i;
                     rebindLaneButtonsKeyboard[i].onClick.RemoveAllListeners();
-                    rebindLaneButtonsKeyboard[i].onClick.AddListener(() =>
-                        StartRebind(actionsKeyboard[idx], idx, false));
+                    rebindLaneButtonsKeyboard[i].onClick.AddListener(() => StartRebind(actionsKeyboard[idx], idx, false));
                 }
             }
         }
 
         if (actionsGamepad != null)
         {
-            for (int i = 0; i < actionsGamepad.Length && i < laneLabelsGamepad.Length; i++)
+            for (int i = 0; i < actionsGamepad.Length && i < 4; i++)
             {
-                string binding = GetBindingDisplayString(actionsGamepad[i], "<Gamepad>");
-                if (laneLabelsGamepad[i] != null)
+                if (i < laneLabelsGamepad.Length && laneLabelsGamepad[i] != null)
                     laneLabelsGamepad[i].text = $"Lane {i}";
 
-                if (currentKeyLabelsGamepad != null && i < currentKeyLabelsGamepad.Length && currentKeyLabelsGamepad[i] != null)
+                if (i < currentKeyLabelsGamepad.Length && currentKeyLabelsGamepad[i] != null)
+                {
+                    string binding = GetBindingDisplayString(actionsGamepad[i], "<Gamepad>");
                     currentKeyLabelsGamepad[i].text = $"{binding}";
+                }
 
-                if (rebindLaneButtonsGamepad != null && i < rebindLaneButtonsGamepad.Length && rebindLaneButtonsGamepad[i] != null)
+                if (i < rebindLaneButtonsGamepad.Length && rebindLaneButtonsGamepad[i] != null)
                 {
                     int idx = i;
                     rebindLaneButtonsGamepad[i].onClick.RemoveAllListeners();
-                    rebindLaneButtonsGamepad[i].onClick.AddListener(() =>
-                        StartRebind(actionsGamepad[idx], idx, true));
+                    rebindLaneButtonsGamepad[i].onClick.AddListener(() => StartRebind(actionsGamepad[idx], idx, true));
                 }
             }
+        }
+    }
+
+    private void UpdateChyronControlBindings()
+    {
+        if (actionsKeyboard != null && actionsKeyboard.Length >= 2)
+        {
+            // Lane 0 = Gauche
+            if (laneLabelsKeyboard.Length > 0 && laneLabelsKeyboard[0] != null)
+                laneLabelsKeyboard[0].text = "â—„ Gauche";
+
+            if (currentKeyLabelsKeyboard.Length > 0 && currentKeyLabelsKeyboard[0] != null)
+            {
+                string binding = GetBindingDisplayString(actionsKeyboard[0], "<Keyboard>");
+                currentKeyLabelsKeyboard[0].text = $"{binding}";
+            }
+
+            if (rebindLaneButtonsKeyboard.Length > 0 && rebindLaneButtonsKeyboard[0] != null)
+            {
+                rebindLaneButtonsKeyboard[0].onClick.RemoveAllListeners();
+                rebindLaneButtonsKeyboard[0].onClick.AddListener(() => StartRebind(actionsKeyboard[0], 0, false));
+            }
+
+            // Lane 1 = Droite
+            if (laneLabelsKeyboard.Length > 1 && laneLabelsKeyboard[1] != null)
+                laneLabelsKeyboard[1].text = "Droite â–º";
+
+            if (currentKeyLabelsKeyboard.Length > 1 && currentKeyLabelsKeyboard[1] != null)
+            {
+                string binding = GetBindingDisplayString(actionsKeyboard[1], "<Keyboard>");
+                currentKeyLabelsKeyboard[1].text = $"{binding}";
+            }
+
+            if (rebindLaneButtonsKeyboard.Length > 1 && rebindLaneButtonsKeyboard[1] != null)
+            {
+                rebindLaneButtonsKeyboard[1].onClick.RemoveAllListeners();
+                rebindLaneButtonsKeyboard[1].onClick.AddListener(() => StartRebind(actionsKeyboard[1], 1, false));
+            }
+        }
+
+        if (actionsGamepad != null && actionsGamepad.Length >= 2)
+        {
+            // Lane 0 = Gauche
+            if (laneLabelsGamepad.Length > 0 && laneLabelsGamepad[0] != null)
+                laneLabelsGamepad[0].text = "â—„ Gauche";
+
+            if (currentKeyLabelsGamepad.Length > 0 && currentKeyLabelsGamepad[0] != null)
+            {
+                string binding = GetBindingDisplayString(actionsGamepad[0], "<Gamepad>");
+                currentKeyLabelsGamepad[0].text = $"{binding}";
+            }
+
+            if (rebindLaneButtonsGamepad.Length > 0 && rebindLaneButtonsGamepad[0] != null)
+            {
+                rebindLaneButtonsGamepad[0].onClick.RemoveAllListeners();
+                rebindLaneButtonsGamepad[0].onClick.AddListener(() => StartRebind(actionsGamepad[0], 0, true));
+            }
+
+            // Lane 1 = Droite
+            if (laneLabelsGamepad.Length > 1 && laneLabelsGamepad[1] != null)
+                laneLabelsGamepad[1].text = "Droite â–º";
+
+            if (currentKeyLabelsGamepad.Length > 1 && currentKeyLabelsGamepad[1] != null)
+            {
+                string binding = GetBindingDisplayString(actionsGamepad[1], "<Gamepad>");
+                currentKeyLabelsGamepad[1].text = $"{binding}";
+            }
+
+            if (rebindLaneButtonsGamepad.Length > 1 && rebindLaneButtonsGamepad[1] != null)
+            {
+                rebindLaneButtonsGamepad[1].onClick.RemoveAllListeners();
+                rebindLaneButtonsGamepad[1].onClick.AddListener(() => StartRebind(actionsGamepad[1], 1, true));
+            }
+        }
+    }
+
+    private void HideUnusedLanes()
+    {
+        // Keyboard - cacher lanes 2 et 3
+        for (int i = 2; i < 4; i++)
+        {
+            if (i < laneLabelsKeyboard.Length && laneLabelsKeyboard[i] != null && laneLabelsKeyboard[i].transform.parent != null)
+                laneLabelsKeyboard[i].transform.parent.gameObject.SetActive(false);
+        }
+
+        // Gamepad - cacher lanes 2 et 3
+        for (int i = 2; i < 4; i++)
+        {
+            if (i < laneLabelsGamepad.Length && laneLabelsGamepad[i] != null && laneLabelsGamepad[i].transform.parent != null)
+                laneLabelsGamepad[i].transform.parent.gameObject.SetActive(false);
+        }
+    }
+
+    private void ShowAllLanes()
+    {
+        // Keyboard - afficher toutes les lanes
+        for (int i = 0; i < laneLabelsKeyboard.Length; i++)
+        {
+            if (laneLabelsKeyboard[i] != null && laneLabelsKeyboard[i].transform.parent != null)
+                laneLabelsKeyboard[i].transform.parent.gameObject.SetActive(true);
+        }
+
+        // Gamepad - afficher toutes les lanes
+        for (int i = 0; i < laneLabelsGamepad.Length; i++)
+        {
+            if (laneLabelsGamepad[i] != null && laneLabelsGamepad[i].transform.parent != null)
+                laneLabelsGamepad[i].transform.parent.gameObject.SetActive(true);
         }
     }
 
@@ -300,7 +418,6 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
                 if (videoDisplay != null)
                 {
-                    videoPlayer.targetTexture = null;
                     videoPlayer.renderMode = VideoRenderMode.RenderTexture;
 
                     if (videoPlayer.targetTexture == null)
@@ -325,15 +442,15 @@ public class MiniGameTutorialPanel : MonoBehaviour
     private void StartRebind(InputAction action, int laneIndex, bool isGamepad)
     {
         TMP_Text currentKeyLabel = isGamepad
-            ? (currentKeyLabelsGamepad != null && laneIndex < currentKeyLabelsGamepad.Length ? currentKeyLabelsGamepad[laneIndex] : null)
-            : (currentKeyLabelsKeyboard != null && laneIndex < currentKeyLabelsKeyboard.Length ? currentKeyLabelsKeyboard[laneIndex] : null);
+            ? (laneIndex < currentKeyLabelsGamepad.Length ? currentKeyLabelsGamepad[laneIndex] : null)
+            : (laneIndex < currentKeyLabelsKeyboard.Length ? currentKeyLabelsKeyboard[laneIndex] : null);
 
         Button rebindButton = isGamepad
-            ? (rebindLaneButtonsGamepad != null && laneIndex < rebindLaneButtonsGamepad.Length ? rebindLaneButtonsGamepad[laneIndex] : null)
-            : (rebindLaneButtonsKeyboard != null && laneIndex < rebindLaneButtonsKeyboard.Length ? rebindLaneButtonsKeyboard[laneIndex] : null);
+            ? (laneIndex < rebindLaneButtonsGamepad.Length ? rebindLaneButtonsGamepad[laneIndex] : null)
+            : (laneIndex < rebindLaneButtonsKeyboard.Length ? rebindLaneButtonsKeyboard[laneIndex] : null);
 
         if (currentKeyLabel != null)
-            currentKeyLabel.text = "Appuyez sur une touche...";
+            currentKeyLabel.text = "...";
 
         if (rebindButton != null)
         {
@@ -361,7 +478,7 @@ public class MiniGameTutorialPanel : MonoBehaviour
             string binding = GetBindingDisplayString(action, isGamepad ? "<Gamepad>" : "<Keyboard>");
 
             if (currentKeyLabel != null)
-                currentKeyLabel.text = isGamepad ? $"Bouton actuel : {binding}" : $" {binding}";
+                currentKeyLabel.text = binding;
 
             if (rebindButton != null)
             {
@@ -370,7 +487,8 @@ public class MiniGameTutorialPanel : MonoBehaviour
                 rebindButton.interactable = true;
             }
 
-            InputManager.Instance?.SaveRebinds(isGamepad);
+            if (InputManager.Instance != null)
+                InputManager.Instance.SaveRebinds(isGamepad);
         }).Start();
     }
 
@@ -384,21 +502,15 @@ public class MiniGameTutorialPanel : MonoBehaviour
             string path = binding.effectivePath;
             if (string.IsNullOrEmpty(path)) path = binding.path;
 
-            // Ne garder que les bindings du layout demandé
             if (!path.Contains(deviceLayout)) continue;
 
-            // Essayer d'abord la chaîne formatée fournie par InputAction (si disponible)
             string displayString = null;
             try
             {
                 displayString = action.GetBindingDisplayString(i);
             }
-            catch
-            {
-                displayString = null;
-            }
+            catch { }
 
-            // Si rien, convertir le path en texte lisible
             if (string.IsNullOrEmpty(displayString))
             {
                 try
@@ -413,12 +525,11 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
             if (!string.IsNullOrEmpty(displayString))
             {
-                // Nettoyage mineur pour enlever les préfixes courants
                 displayString = displayString.Replace("Keyboard/", "").Replace("Gamepad/", "").Trim();
                 return displayString;
             }
         }
-        return "Non assigné";
+        return "Non assignÃ©";
     }
 
     // ==================== ANIMATIONS ====================
@@ -449,15 +560,13 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
         if (videoSection != null)
         {
-            videoSection.anchoredPosition = videoOriginalAnchoredPos - (Vector2)Vector2.right * Mathf.Abs(sectionSlideOffset.x);
-            videoSection.gameObject.SetActive(true);
+            videoSection.anchoredPosition = videoOriginalAnchoredPos - sectionSlideOffset;
             seq.Append(videoSection.DOAnchorPos(videoOriginalAnchoredPos, sectionSlideDuration).SetEase(slideEase));
         }
 
         if (controlsSection != null)
         {
-            controlsSection.anchoredPosition = controlsOriginalAnchoredPos + (Vector2)Vector2.right * Mathf.Abs(sectionSlideOffset.x);
-            controlsSection.gameObject.SetActive(true);
+            controlsSection.anchoredPosition = controlsOriginalAnchoredPos + sectionSlideOffset;
             seq.Join(controlsSection.DOAnchorPos(controlsOriginalAnchoredPos, sectionSlideDuration).SetEase(slideEase));
         }
 
@@ -466,11 +575,7 @@ public class MiniGameTutorialPanel : MonoBehaviour
             isAnimating = false;
             if (continueButton != null)
             {
-                EventSystem.current.SetSelectedGameObject(null);
                 EventSystem.current.SetSelectedGameObject(continueButton.gameObject);
-
-                continueButton.transform.DOKill();
-                continueButton.transform.localScale = Vector3.one;
                 continueButton.transform.DOScale(continuePulseScale, continuePulseDuration).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
             }
         });
@@ -489,10 +594,10 @@ public class MiniGameTutorialPanel : MonoBehaviour
         Sequence seq = DOTween.Sequence();
 
         if (videoSection != null)
-            seq.Append(videoSection.DOAnchorPos(videoOriginalAnchoredPos - (Vector2)Vector2.right * Mathf.Abs(sectionSlideOffset.x), sectionSlideDuration * 0.8f).SetEase(Ease.InCubic));
+            seq.Append(videoSection.DOAnchorPos(videoOriginalAnchoredPos - sectionSlideOffset, sectionSlideDuration * 0.8f).SetEase(Ease.InCubic));
 
         if (controlsSection != null)
-            seq.Join(controlsSection.DOAnchorPos(controlsOriginalAnchoredPos + (Vector2)Vector2.right * Mathf.Abs(sectionSlideOffset.x), sectionSlideDuration * 0.8f).SetEase(Ease.InCubic));
+            seq.Join(controlsSection.DOAnchorPos(controlsOriginalAnchoredPos + sectionSlideOffset, sectionSlideDuration * 0.8f).SetEase(Ease.InCubic));
 
         if (contentContainer != null)
         {
@@ -519,7 +624,6 @@ public class MiniGameTutorialPanel : MonoBehaviour
         {
             CanvasGroup cgHide = panelToHide.GetComponent<CanvasGroup>();
             if (cgHide == null) cgHide = panelToHide.AddComponent<CanvasGroup>();
-            cgHide.DOKill();
             cgHide.DOFade(0, controlsSwitchDuration).OnComplete(() => panelToHide.SetActive(false));
         }
 
@@ -527,35 +631,34 @@ public class MiniGameTutorialPanel : MonoBehaviour
         {
             CanvasGroup cgShow = panelToShow.GetComponent<CanvasGroup>();
             if (cgShow == null) cgShow = panelToShow.AddComponent<CanvasGroup>();
-            cgShow.DOKill();
             cgShow.alpha = 0;
             panelToShow.SetActive(true);
             cgShow.DOFade(1, controlsSwitchDuration);
 
             RectTransform rt = panelToShow.GetComponent<RectTransform>();
             Vector2 originalPos = rt.anchoredPosition;
-            rt.anchoredPosition = new Vector2(originalPos.x + 50, originalPos.y);
-            rt.DOKill();
+            rt.anchoredPosition = originalPos + new Vector2(50, 0);
             rt.DOAnchorPos(originalPos, controlsSwitchDuration).SetEase(slideEase);
-        }
-
-        if (toKeyboard && keyboardToggleButton != null)
-        {
-            keyboardToggleButton.transform.DOKill();
-            keyboardToggleButton.transform.DOScale(1.06f, 0.18f).SetLoops(2, LoopType.Yoyo).SetEase(Ease.InOutSine);
-        }
-        if (!toKeyboard && gamepadToggleButton != null)
-        {
-            gamepadToggleButton.transform.DOKill();
-            gamepadToggleButton.transform.DOScale(1.06f, 0.18f).SetLoops(2, LoopType.Yoyo).SetEase(Ease.InOutSine);
         }
     }
 
-    public void ShowClick(
-       string miniGameName,
-       VideoClip tutorialClip = null)
+    private void OnContinueClicked()
     {
-        titleText.text = $"Contrôles : {miniGameName}";
+        Hide();
+    }
+
+    private void OnDestroy()
+    {
+        DOTween.Kill(this);
+        if (continueButton != null)
+            DOTween.Kill(continueButton.transform);
+    }
+
+    public void ShowClick(
+      string miniGameName,
+      VideoClip tutorialClip = null)
+    {
+        titleText.text = $"ContrÃ´les : {miniGameName}";
 
 
         if (videoPlayer != null)
@@ -574,16 +677,5 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
         gameObject.SetActive(true);
         continueButton.Select();
-    }
-    private void OnContinueClicked()
-    {
-        Hide();
-    }
-
-    private void OnDestroy()
-    {
-        DOTween.Kill(this);
-        if (continueButton != null)
-            DOTween.Kill(continueButton.transform);
     }
 }

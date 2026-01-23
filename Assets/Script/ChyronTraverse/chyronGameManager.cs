@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,12 +23,12 @@ public class chyronGameManager : MonoBehaviour
     public TMP_Text lifeText;
 
     [Header("Pièces")]
-    public int coinScore = 0;              // nombre de pièces collectées
-    public TMP_Text coinText;              // optionnel : UI pour afficher les pièces
+    public int coinScore = 0;
+    public TMP_Text coinText;
 
     [Header("SFX")]
-    [SerializeField] private AudioSource sfxSource;      // AudioSource pour les SFX du game
-    [SerializeField] private AudioClip boatHitClip;      // son de bateau qui craque
+    [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioClip boatHitClip;
 
     public bool isGameOver = false;
 
@@ -51,6 +51,7 @@ public class chyronGameManager : MonoBehaviour
     [Header("Paliers étoiles")]
     public int[] starThresholds = new int[3] { 100, 200, 300 };
     private bool[] starGiven = new bool[3];
+
     [Header("UI Étoiles")]
     public UnityEngine.UI.Image[] starImages;
     public Sprite starOnSprite;
@@ -67,16 +68,79 @@ public class chyronGameManager : MonoBehaviour
 
     public void ShowTutorialAndStart()
     {
-        tutorialPanel.ShowClick(
-            "Chyron",
-            tutorialClip
-        );
-        tutorialPanel.continueButton.onClick.RemoveAllListeners();
-        tutorialPanel.continueButton.onClick.AddListener(() => {
-            tutorialPanel.Hide();
+        // Pour Chyron, on utilise seulement MoveLeft et MoveRight (2 touches)
+        InputAction[] actionsKeyboard = null;
+        InputAction[] actionsGamepad = null;
+
+        if (InputManager.Instance != null)
+        {
+            var kb = InputManager.Instance.keyboardControls;
+            var gp = InputManager.Instance.gamepadControls;
+
+            // IMPORTANT: Chyron n'utilise que 2 contrôles (Gauche/Droite)
+            // On va créer un tableau avec seulement 2 actions
+            if (kb != null)
+            {
+                try
+                {
+                    actionsKeyboard = new InputAction[]
+                    {
+                        kb.Gameplay.MoveLeft,
+                        kb.Gameplay.MoveRight
+                    };
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[Chyron] Erreur lors de la récupération des actions clavier: {e.Message}");
+                    actionsKeyboard = null;
+                }
+            }
+
+            if (gp != null)
+            {
+                try
+                {
+                    actionsGamepad = new InputAction[]
+                    {
+                        gp.Gameplay.MoveLeft,
+                        gp.Gameplay.MoveRight
+                    };
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[Chyron] Erreur lors de la récupération des actions gamepad: {e.Message}");
+                    actionsGamepad = null;
+                }
+            }
+        }
+
+        // Affiche le panel de tutoriel
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.ShowChyron(
+                "La traversée de Chyron",
+                actionsKeyboard,
+                actionsGamepad,
+                tutorialClip,
+                "Conseil : Les marteaux et boucliers sont des bonus vous permettant de récupérer de la vie."
+            );
+
+            // Configurer le bouton continuer
+            tutorialPanel.continueButton.onClick.RemoveAllListeners();
+            tutorialPanel.continueButton.onClick.AddListener(() =>
+            {
+                tutorialPanel.Hide();
+                tutorialValidated = true;
+                StartGameAfterTutorial();
+            });
+        }
+        else
+        {
+            Debug.LogError("[Chyron] TutorialPanel non assigné!");
+            // Démarrer quand même le jeu
             tutorialValidated = true;
             StartGameAfterTutorial();
-        });
+        }
     }
 
     private void StartGameAfterTutorial()
@@ -87,7 +151,6 @@ public class chyronGameManager : MonoBehaviour
         currentLives = maxLives;
         player = FindFirstObjectByType<PlayerLaneMovement>();
 
-        // sécurités si jamais l'AudioSource n'est pas assigné
         if (sfxSource == null)
         {
             sfxSource = GetComponent<AudioSource>();
@@ -97,9 +160,11 @@ public class chyronGameManager : MonoBehaviour
             sfxSource.playOnAwake = false;
             sfxSource.loop = false;
         }
+
         starGiven = new bool[3];
         UpdateStarsUI();
 
+        Debug.Log("[Chyron] Jeu démarré après tutoriel!");
     }
 
     void Update()
@@ -110,8 +175,11 @@ public class chyronGameManager : MonoBehaviour
         score += scrollSpeed * Time.deltaTime;
         scoreText.text = "Score : " + Mathf.FloorToInt(score);
         lifeText.text = "Vies : " + currentLives + "/" + maxLives;
+
         if (coinText != null)
             coinText.text = "Pièces : " + coinScore;
+
+        // Gestion des étoiles
         for (int i = 0; i < starThresholds.Length; i++)
         {
             if (!starGiven[i] && score >= starThresholds[i])
@@ -122,7 +190,6 @@ public class chyronGameManager : MonoBehaviour
             }
         }
         UpdateStarsUI();
-
     }
 
     public void HitObstacle()
@@ -135,7 +202,7 @@ public class chyronGameManager : MonoBehaviour
 
         if (isInvincible || isGameOver) return;
 
-        // --- ONE MISTAKE FAIL ---
+        // Mode one mistake fail
         if (_oneMistakeFail)
         {
             Debug.Log("[Chyron] Mode oneMistakeFail : obstacle touché -> GameOver immédiat.");
@@ -163,8 +230,6 @@ public class chyronGameManager : MonoBehaviour
     private void PlayBoatHitSfx()
     {
         if (sfxSource == null || boatHitClip == null) return;
-
-        // volume actuel de l'AudioSource (tu pourras le lier à un slider plus tard)
         sfxSource.PlayOneShot(boatHitClip);
     }
 
@@ -172,27 +237,46 @@ public class chyronGameManager : MonoBehaviour
     {
         isGameOver = true;
         scrollSpeed = 0;
-        Debug.Log("GAME OVER!");
+        Debug.Log("[Chyron] GAME OVER!");
 
         int finalScore = Mathf.FloorToInt(score);
+
+        // TODO: Afficher un écran de game over avant de retourner au menu
         SceneManager.LoadScene("SampleScene");
-
     }
-
 
     public void UpdateStarsUI()
     {
+        if (starImages == null) return;
+
         for (int i = 0; i < starImages.Length; i++)
-            starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
+        {
+            if (i < starImages.Length && starImages[i] != null)
+            {
+                starImages[i].sprite = starGiven[i] ? starOnSprite : starOffSprite;
+            }
+        }
     }
 
-    // invincibilité et clignotement
-    System.Collections.IEnumerator InvincibilityRoutine()
+    // Invincibilité avec clignotement
+    IEnumerator InvincibilityRoutine()
     {
         isInvincible = true;
 
-        SpriteRenderer sr = player.spriteRenderer;
+        if (player == null)
+        {
+            player = FindFirstObjectByType<PlayerLaneMovement>();
+        }
 
+        if (player == null || player.spriteRenderer == null)
+        {
+            Debug.LogWarning("[Chyron] Player ou SpriteRenderer non trouvé pour l'invincibilité!");
+            yield return new WaitForSeconds(invincibilityDuration);
+            isInvincible = false;
+            yield break;
+        }
+
+        SpriteRenderer sr = player.spriteRenderer;
         float elapsed = 0f;
         float blinkInterval = 0.15f;
 
@@ -207,7 +291,7 @@ public class chyronGameManager : MonoBehaviour
         isInvincible = false;
     }
 
-    // système de vibration
+    // Système de vibration
     public void Vibrate(float left, float right, float duration)
     {
         if (Gamepad.current == null)
@@ -219,7 +303,7 @@ public class chyronGameManager : MonoBehaviour
         vibrationCoroutine = StartCoroutine(VibrationRoutine(left, right, duration));
     }
 
-    private System.Collections.IEnumerator VibrationRoutine(float left, float right, float duration)
+    private IEnumerator VibrationRoutine(float left, float right, float duration)
     {
         Gamepad.current.SetMotorSpeeds(left, right);
         yield return new WaitForSeconds(duration);
@@ -242,34 +326,40 @@ public class chyronGameManager : MonoBehaviour
         if (currentLives > maxLives)
             currentLives = maxLives;
 
-        Debug.Log("Soin +" + amount + " PV, Vies : " + currentLives + "/" + maxLives);
+        Debug.Log($"[Chyron] Soin +{amount} PV, Vies : {currentLives}/{maxLives}");
     }
 
     public void IncreaseMaxHealth(int amount)
     {
         maxLives += amount;
-        currentLives += 1;
+        currentLives += amount;
         if (currentLives > maxLives)
             currentLives = maxLives;
 
-        Debug.Log("Bouclier +" + amount + " PV max, Vies : " + currentLives + "/" + maxLives);
+        Debug.Log($"[Chyron] Bouclier +{amount} PV max, Vies : {currentLives}/{maxLives}");
     }
 
-    // --- SCORE PIÈCES ---
     public void AddCoin(int amount)
     {
         coinScore += amount;
+        Debug.Log($"[Chyron] +{amount} pièce(s), Total : {coinScore}");
     }
 
     private void ApplyMiniGameCardIfAny()
     {
         var runtime = MiniGameCardRuntime.Instance;
         if (runtime == null || runtime.SelectedCard == null)
+        {
+            Debug.Log("[Chyron] Aucune carte de mini-jeu à appliquer.");
             return;
+        }
 
         var card = runtime.SelectedCard;
         if (card.targetMiniGame != MiniGameType.Any && card.targetMiniGame != MiniGameType.Chyron)
+        {
+            Debug.Log($"[Chyron] Carte ignorée (cible: {card.targetMiniGame})");
             return;
+        }
 
         float speedMult = Mathf.Max(0.1f, card.speedMultiplier);
         scrollSpeed = _baseScrollSpeed * speedMult;
@@ -289,10 +379,16 @@ public class chyronGameManager : MonoBehaviour
         _chaosLevel = Mathf.Clamp01(card.chaosLevel);
         _rewardMult = Mathf.Max(0.1f, card.rewardMultiplier);
         _rewardFlat = card.rewardFlatBonus;
-        _oneMistakeFail = card.oneMistakeFail;   // <--- AJOUT
+        _oneMistakeFail = card.oneMistakeFail;
 
         Debug.Log($"[Chyron] Carte appliquée : {card.cardName}, scroll x{speedMult}, maxLives={maxLives}, chaos={_chaosLevel}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}");
 
         runtime.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        // Arrêter la vibration si le jeu est détruit
+        StopVibration();
     }
 }
