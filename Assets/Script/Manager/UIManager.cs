@@ -272,6 +272,7 @@ public class UIManager : MonoBehaviour
         if (interactionPanel == null) return;
 
         HideAllUI();
+        RerollTxt.text = "";
         interactionPanel.SetActive(true);
 
         if (interactionHeader != null)
@@ -397,6 +398,90 @@ public class UIManager : MonoBehaviour
         {
             Debug.LogWarning("[UIManager] ChangeStatUI appelé mais un objet UI a été détruit.");
         }
+    }
+
+    public void ShakeStatUI(StatType stat)
+    {
+        GameObject panel = null;
+        switch (stat)
+        {
+            case StatType.Foi:
+                panel = StatFoi;
+                break;
+            case StatType.Nemosis:
+                panel = StatNemosis;
+                break;
+            case StatType.Human:
+                panel = StatHumain;
+                break;
+            case StatType.Or:
+                panel = StatArgent;
+                break;
+            case StatType.Food:
+                panel = StatFood;
+                break;
+        }
+
+        if (panel == null)
+            return;
+
+        Image statImage = GetStatImage(panel);
+        FlashStatImage(statImage, false);
+    }
+
+    /// <summary>
+    /// Fait clignoter une stat en rouge avec une secousse pour indiquer une insuffisance de ressources
+    /// </summary>
+    public void InvalidateStatUI(StatType stat)
+    {
+        GameObject panel = null;
+        switch (stat)
+        {
+            case StatType.Foi:
+                panel = StatFoi;
+                break;
+            case StatType.Nemosis:
+                panel = StatNemosis;
+                break;
+            case StatType.Human:
+                panel = StatHumain;
+                break;
+            case StatType.Or:
+                panel = StatArgent;
+                break;
+            case StatType.Food:
+                panel = StatFood;
+                break;
+        }
+
+        if (panel == null)
+            return;
+
+        Image statImage = GetStatImage(panel);
+        RectTransform panelRect = panel.GetComponent<RectTransform>();
+
+        if (statImage == null || panelRect == null)
+            return;
+
+        Color originalColor = statImage.color;
+        Color redColor = new Color(1f, 0.3f, 0.3f, originalColor.a);
+
+        // Kill les tweens existants
+        DOTween.Kill(statImage);
+        DOTween.Kill(panelRect);
+
+        // Séquence d'animation : rouge avec secousse
+        var seq = DOTween.Sequence();
+
+        // Clignotement rouge intense
+        seq.Append(statImage.DOColor(redColor, 0.1f).SetEase(Ease.OutQuad));
+        seq.Append(statImage.DOColor(originalColor, 0.1f).SetEase(Ease.OutQuad));
+        seq.Append(statImage.DOColor(redColor, 0.1f).SetEase(Ease.OutQuad));
+        seq.Append(statImage.DOColor(originalColor, 0.15f).SetEase(Ease.OutQuad));
+
+        // Secousse parallèle
+        panelRect.DOShakeRotation(0.4f, new Vector3(0, 0, 8f), 10, 90f, false, ShakeRandomnessMode.Harmonic)
+            .SetEase(Ease.OutQuad);
     }
 
     private void UpdateStatSprite(GameObject panel, StatType stat, float currentValue)
@@ -650,7 +735,8 @@ public class UIManager : MonoBehaviour
 
         HideAllUI();
         interactionPanel.SetActive(true);
-
+        Image imageHeader = interactionHeader.GetComponentInChildren<Image>();
+        imageHeader.sprite = null;
         if (interactionHeader != null)
         {
             var headerText = interactionHeader.GetComponentInChildren<TextMeshProUGUI>();

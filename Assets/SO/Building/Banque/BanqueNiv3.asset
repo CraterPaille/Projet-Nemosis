@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e2127f56410ba469ad784dd6c84da3, type: 3}
+  m_Name: BanqueNiv3
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: Banque(niv3)
+  description: "C'est ici que sont stock\xE9 votre argent !"
+  visualType: 0
+  icon: {fileID: 0}
+  animationSprites: []
+  animationFPS: 12
+  gridSize: 4
+  passiveEffects:
+  - {fileID: 11400000, guid: 5fbaed7b3d30a2742b8cff071cc304a4, type: 2}
+  interactionEffects: []

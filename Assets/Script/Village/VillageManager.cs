@@ -21,6 +21,9 @@ public class VillageManager : MonoBehaviour
     public Transform buildingsParent; // Parent pour organiser la hiérarchie
     public GameObject villageGrid; // La grille à activer/désactiver
     [HideInInspector] public List<BuildingPlacement> buildingPlacements = new List<BuildingPlacement>(); // Calculé automatiquement
+    
+    // Tracker les effets passifs par bâtiment pour pouvoir les retirer
+    private Dictionary<BuildingData, List<Effect>> buildingPassiveEffects = new Dictionary<BuildingData, List<Effect>>();
 
     public GameObject CloseButton;
 
@@ -51,6 +54,27 @@ public class VillageManager : MonoBehaviour
         villageGrid.SetActive(false);
     }
 
+    private void Start()
+    {
+        // Applique les passifs des bâtiments existants au démarrage
+        InitializeExistingBuildingsPassives();
+    }
+
+    /// <summary>
+    /// Applique les effets passifs de tous les bâtiments existants au démarrage du jeu
+    /// </summary>
+    private void InitializeExistingBuildingsPassives()
+    {
+        if (currentBuildings == null) return;
+        
+        foreach (var building in currentBuildings)
+        {
+            ApplyBuildingPassives(building);
+        }
+        
+        Debug.Log($"[VillageManager] {buildingPassiveEffects.Count} bâtiments avec passifs initialisés.");
+    }
+
     public void RemoveBuilding(BuildingData buildingData)
     {
         if (currentBuildings == null)
@@ -58,6 +82,10 @@ public class VillageManager : MonoBehaviour
             Debug.LogWarning("[VillageManager] currentBuildings is null!");
             return;
         }
+        
+        // Retire les effets passifs du bâtiment AVANT de le retirer de la liste
+        RemoveBuildingPassives(buildingData);
+        
         if (currentBuildings.Remove(buildingData))
         {
             Debug.Log($"[VillageManager] Removed building: {buildingData.buildingName}");
@@ -75,6 +103,10 @@ public class VillageManager : MonoBehaviour
             currentBuildings = new List<BuildingData>();
         }
         currentBuildings.Add(buildingData);
+        
+        // Applique les effets passifs du nouveau bâtiment
+        ApplyBuildingPassives(buildingData);
+        
         Debug.Log($"[VillageManager] Added building: {buildingData.buildingName}");
     }
     public void AfficheBuildings()
@@ -296,6 +328,65 @@ public class VillageManager : MonoBehaviour
         float worldX = (x - y) * (isoTileWidth * 0.5f);
         float worldY = -(x + y) * (isoTileHeight * 0.5f) + isoYOffset;
         return gridOrigin + new Vector3(worldX, worldY, 0f);
+    }
+
+    /// <summary>
+    /// Applique tous les effets passifs d'un bâtiment
+    /// </summary>
+    private void ApplyBuildingPassives(BuildingData buildingData)
+    {
+        if (buildingData == null || buildingData.passiveEffects == null || buildingData.passiveEffects.Count == 0)
+            return;
+        
+        if (PassiveManager.Instance == null)
+        {
+            Debug.LogWarning("[VillageManager] PassiveManager.Instance est null, impossible d'appliquer les passifs.");
+            return;
+        }
+        
+        List<Effect> effects = new List<Effect>();
+        
+        foreach (var effectSO in buildingData.passiveEffects)
+        {
+            if (effectSO == null) continue;
+            
+            var effect = effectSO.CreateInstance();
+            if (effect != null)
+            {
+                PassiveManager.Instance.AddEffect(effect);
+                effect.CheckConditions();
+                effects.Add(effect);
+                Debug.Log($"[VillageManager] Passif appliqué : {effectSO.effectName} pour {buildingData.buildingName}");
+            }
+        }
+        
+        // Stocke les effets pour pouvoir les retirer plus tard
+        if (effects.Count > 0)
+        {
+            buildingPassiveEffects[buildingData] = effects;
+        }
+    }
+    
+    /// <summary>
+    /// Retire tous les effets passifs d'un bâtiment
+    /// </summary>
+    private void RemoveBuildingPassives(BuildingData buildingData)
+    {
+        if (buildingData == null || !buildingPassiveEffects.ContainsKey(buildingData))
+            return;
+        
+        List<Effect> effects = buildingPassiveEffects[buildingData];
+        
+        foreach (var effect in effects)
+        {
+            if (effect != null)
+            {
+                effect.DestroySelf();
+                Debug.Log($"[VillageManager] Passif retiré pour {buildingData.buildingName}");
+            }
+        }
+        
+        buildingPassiveEffects.Remove(buildingData);
     }
 
     public void OnCloseVillageAnimation()
