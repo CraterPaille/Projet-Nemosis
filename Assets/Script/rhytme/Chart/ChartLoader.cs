@@ -3,7 +3,7 @@ using System.IO;
 
 public class ChartLoader : MonoBehaviour
 {
-    public string chartFileName = "chart_holyground.json";
+    public string chartFileName = "chart_holyground_easy.json";
     public ChartData loadedChart;
 
     void Awake()

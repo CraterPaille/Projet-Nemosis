@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿    using UnityEngine;
 using UnityEngine.InputSystem;
 
 public enum SoulType { Good, Neutral, Bad }
@@ -68,23 +68,25 @@ public class Soul : MonoBehaviour
         // Mise à jour de l'état du curseur (souris vs manette)
         UpdateCursorState();
 
-        // Gestion du drag via Input System (compatible souris & virtual mouse)
-        // Si on n'est pas en train de draguer, regarder si on commence un drag sur cet objet
+        // Si on n'est pas en train de drag on vérifie le début du drag
         if (!isBeingDragged)
         {
+            // si clic détecté
             if (clickAction.WasPressedThisFrame())
             {
+                // Vérifie si on a cliqué sur l'objet
                 Vector2 usedScreenPos = s_virtualCursorScreenPos;
                 if (Mouse.current != null)
                     usedScreenPos = pointAction.ReadValue<Vector2>();
 
+                // le convertit en position monde au lieu de local
                 Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(usedScreenPos.x, usedScreenPos.y, Camera.main.nearClipPlane));
                 worldPos.z = transform.position.z;
                 RaycastHit2D hit = Physics2D.Raycast(new Vector2(worldPos.x, worldPos.y), Vector2.zero);
 
+                // Si on touche ce collider, commence le drag
                 if (hit.collider != null && hit.collider == GetComponent<Collider2D>())
                 {
-                    // Commence le drag
                     isBeingDragged = true;
                     pointerOffset = transform.position - new Vector3(worldPos.x, worldPos.y, transform.position.z);
                 }
@@ -92,14 +94,17 @@ public class Soul : MonoBehaviour
         }
         else
         {
-            // Si on est en train de draguer, déplacer tant que le bouton est enfoncé
+            // Si on est en train de drag on déplace l'objet
             float clickVal = clickAction.ReadValue<float>();
+            // si clic maintenu plus de 0.5 secondes 
             if (clickVal > 0.5f)
             {
+                // Déplacement de l'objet
                 Vector2 usedScreenPos = s_virtualCursorScreenPos;
                 if (Mouse.current != null)
                     usedScreenPos = pointAction.ReadValue<Vector2>();
 
+                // Convertit en position mode au lieu de local
                 Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(usedScreenPos.x, usedScreenPos.y, Camera.main.nearClipPlane));
                 transform.position = new Vector3(mouseWorldPos.x + pointerOffset.x, mouseWorldPos.y + pointerOffset.y, transform.position.z);
             }
@@ -113,15 +118,18 @@ public class Soul : MonoBehaviour
         // Ne pas appliquer le mouvement automatique si on est en train de draguer
         if (isBeingDragged) return;
 
+        // Mouvement automatique pour faire déplacer l'âme
         if (movementType == MovementType.Vertical)
         {
+            // on descend verticalement
             transform.Translate(Vector3.down * fallSpeed * Time.deltaTime);
         }
         else if (movementType == MovementType.Horizontal)
         {
+            // on va horizontalement
             transform.Translate(Vector3.right * fallSpeed * Time.deltaTime);
         }
-
+        // Vérifie si l'âme est sortie de l'écran (en bas ou trop à gauche/droite) les limites en gros
         if (transform.position.y < -6f || transform.position.x < -10f || transform.position.x > 10f)
         {
             TriGameManager.Instance.AddScore(-2);
@@ -154,7 +162,7 @@ public class Soul : MonoBehaviour
             s_virtualCursorScreenPos.y = Mathf.Clamp(s_virtualCursorScreenPos.y, 0f, Screen.height);
         }
 
-        // Optionnel : cacher le curseur OS si on utilise le curseur manette
+        // Optionnel : cacher le curseur OS si curseur manette actif
         Cursor.visible = !s_usingGamepadCursor;
     }
 
