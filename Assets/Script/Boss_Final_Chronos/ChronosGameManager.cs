@@ -1,9 +1,10 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using System.Collections;
 using DG.Tweening;
+using System.Collections;
+using TMPro;
+using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class ChronosGameManager : MonoBehaviour
 {
@@ -21,6 +22,10 @@ public class ChronosGameManager : MonoBehaviour
     public int bossCurrentHearts;
     public int bossCurrentHP;
 
+    [Header("Tutorial")]
+    public MiniGameTutorialPanel tutorialPanel;
+    public VideoClip tutorialClip;
+    private bool tutorialValidated = false;
     public int BossPhase => bossMaxHearts - bossCurrentHearts + 1;
 
     [Header("HP Bar Sprites")]
@@ -125,6 +130,7 @@ public class ChronosGameManager : MonoBehaviour
         bossCurrentHearts = bossMaxHearts;
         bossCurrentHP = bossHeartHP;
         UpdateUI();
+        ShowTutorialAndStart();
         // Initialiser l'alpha de l'image du boss à pleine opacité
         UpdateBossImageAlpha(instant: true);
 
@@ -195,6 +201,132 @@ public class ChronosGameManager : MonoBehaviour
     {
         if (enableBossInfinityMovement && bossImage != null && bossRect != null)
             AnimateBossInfinity();
+    }
+
+    private void ShowTutorialAndStart()
+    {
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.ShowChronos(
+                "Chronos - Combat Épique",
+                tutorialClip,
+                "ZQSD / Stick : Se déplacer\n" +
+                "Clic / Bouton A : Choisir (Attaquer/Soigner)\n" +
+                "Boucliers : ZQSD pendant les attaques Justice\n" +
+                "Esquivez les projectiles et collectez les joyaux !"
+            );
+
+            tutorialPanel.continueButton.onClick.RemoveAllListeners();
+            tutorialPanel.continueButton.onClick.AddListener(() =>
+            {
+                tutorialPanel.Hide();
+                tutorialValidated = true;
+                StartBossFight(); // Votre méthode pour démarrer le combat
+            });
+        }
+        else
+        {
+            tutorialValidated = true;
+            StartBossFight();
+        }
+    }
+
+    // -----------------------------
+    // Nouvelle méthode pour démarrer le combat
+    // -----------------------------
+    public void StartBossFight()
+    {
+        // Flag tutoriel
+        tutorialValidated = true;
+        isPausedForJewel = false;
+
+        // Réinitialisation des PV / UI
+        playerHP = playerMaxHP;
+        bossCurrentHearts = bossMaxHearts;
+        bossCurrentHP = bossHeartHP;
+        UpdateUI();
+
+        // Remettre le boss visible et actif
+        enableBossInfinityMovement = true;
+        if (bossImage != null)
+        {
+            bossImage.gameObject.SetActive(true);
+            UpdateBossImageAlpha(instant: true);
+            bossImage.raycastTarget = true;
+        }
+
+        // Trouver ou spawner le PlayerSoul
+        GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerSoul");
+        ChronosAttackController ac = FindFirstObjectByType<ChronosAttackController>();
+
+        Vector3 spawnPos = Vector3.zero;
+        if (ac != null && ac.arena != null)
+        {
+            var box = ac.arena.GetComponent<BoxCollider2D>();
+            if (box != null) spawnPos = box.bounds.center;
+            else spawnPos = ac.arena.position;
+        }
+
+        if (playerObj == null)
+        {
+            PlayerSoul spawned = null;
+            try
+            {
+                spawned = PlayerSoul.Spawn(spawnPos, Quaternion.identity);
+            }
+            catch
+            {
+                spawned = null;
+            }
+
+            if (spawned != null)
+                playerObj = spawned.gameObject;
+        }
+
+        if (playerObj != null)
+        {
+            var ps = playerObj.GetComponent<PlayerSoul>();
+            if (ps != null)
+            {
+                ps.SetMovementEnabled(true);
+                ps.ExitJusticeMode();
+            }
+
+            // s'assurer du tag pour que ChronosAttackController puisse le retrouver
+            playerObj.tag = "PlayerSoul";
+        }
+
+        // Activer le contrôleur d'attaques (il fera son Init et démarrera sa boucle)
+        if (ac != null)
+        {
+            // Propager éventuellement le curseur gamepad si nécessaire
+            if (ac.gamepadCursor == null)
+                ac.gamepadCursor = gamepadCursor;
+
+            ac.enabled = true;
+        }
+
+        // SFX / audio defaults
+        if (sfxSource == null) sfxSource = GetComponent<AudioSource>();
+        if (sfxSource != null)
+        {
+            sfxSource.playOnAwake = false;
+            sfxSource.loop = false;
+        }
+
+        // Initialiser trail pool si pas encore fait
+        if (bossImage != null && bossRect == null)
+        {
+            bossRect = bossImage.rectTransform;
+            bossCenterAnchored = bossRect.anchoredPosition;
+            InitializeTrailPool();
+        }
+
+        if (dialogueText != null)
+            dialogueText.text = "* Le combat commence !";
+
+        // Mise à jour finale de l'UI
+        UpdateUI();
     }
 
     public void DamagePlayer(int dmg)

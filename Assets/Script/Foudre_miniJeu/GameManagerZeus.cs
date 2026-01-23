@@ -67,6 +67,7 @@ public class GameManagerZeus : MonoBehaviour
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
+    [Header("Tutorial")]
     public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
     public VideoClip tutorialClip; // à assigner dans l'inspector
     private bool tutorialValidated = false;
@@ -107,15 +108,31 @@ public class GameManagerZeus : MonoBehaviour
 
     private void ShowTutorialAndStart()
     {
-        tutorialPanel.ShowClick(
-            "Zeus",
-            tutorialClip
-        );
-        tutorialPanel.continueButton.onClick.RemoveAllListeners();
-        tutorialPanel.continueButton.onClick.AddListener(() => {
-            tutorialPanel.Hide();
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.ShowSimple(
+                "Zeus - Foudre Divine",
+                tutorialClip,
+                "Conseil : il faut empêchez les ennemis d'atteindre votre sanctuaire, pour cela," +
+                " cliquez ou appuyé sur le bouton A ou X (selon la manette) pour foudroyé les ennemis." +
+                " Il y a aussi plusieurs type d'ennemis:\r\n-Le rouge plus rapide et violent" +
+                "\r\n-Le bleu plus calme et lent\r\n-Le dorée donnant plus de point "
+            );
+
+            tutorialPanel.continueButton.onClick.RemoveAllListeners();
+            tutorialPanel.continueButton.onClick.AddListener(() =>
+            {
+                tutorialPanel.Hide();
+                tutorialValidated = true;
+                StartGame();
+            });
+        }
+        else
+        {
+            Debug.LogError("[Zeus] TutorialPanel non assigné!");
             tutorialValidated = true;
-        });
+            StartGame();
+        }
     }
 
     private void ApplyMiniGameCardIfAny()

@@ -140,20 +140,31 @@ public class NuitGlacialeGameManager : MonoBehaviour
 
     public void ShowTutorialAndStart()
     {
-        tutorialPanel.ShowClick(
-            "NuitGlaciale",
-            tutorialClip
-        );
-        tutorialPanel.continueButton.onClick.RemoveAllListeners();
-        tutorialPanel.continueButton.onClick.AddListener(() => {
-            tutorialPanel.Hide();
-            tutorialValidated = true;
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.ShowSimple(
+                "Nuit Glaciale",
+                tutorialClip,
+                "Conseil : Cliquez sur les maisons éteintes pour les rallumer !\n" +
+                "Ne laissez pas trop de maisons s'éteindre ou vous perdrez."
+            );
 
-            // AJOUTER ici le spawn des maisons et le démarrage du jeu :
+            tutorialPanel.continueButton.onClick.RemoveAllListeners();
+            tutorialPanel.continueButton.onClick.AddListener(() =>
+            {
+                tutorialPanel.Hide();
+                tutorialValidated = true;
+                GenerateRandomHouses();
+                houses = housesParent.GetComponentsInChildren<House>();
+                StartMiniGame();
+            });
+        }
+        else
+        {
+            tutorialValidated = true;
             GenerateRandomHouses();
-            houses = housesParent.GetComponentsInChildren<House>();
             StartMiniGame();
-        });
+        }
     }
 
     void Update()

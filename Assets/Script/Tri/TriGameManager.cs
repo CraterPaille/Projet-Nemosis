@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
@@ -26,21 +26,21 @@ public class TriGameManager : MonoBehaviour
     private float _baseSpawnInterval;
     private int _baseScorePerSoul;
 
-    // paramètres dérivés de la carte
+    // paramÃ¨tres dÃ©rivÃ©s de la carte
     private float _spawnChaos = 0f;
     private float _rewardMult = 1f;
     private float _rewardFlat = 0f;
     private bool _oneMistakeFail = false;
 
     [Header("Tutorial")]
-    public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
-    public VideoClip tutorialClip; // à assigner dans l'inspector
+    public MiniGameTutorialPanel tutorialPanel; // Ã  assigner dans l'inspector
+    public VideoClip tutorialClip; // Ã  assigner dans l'inspector
     private bool tutorialValidated = false;
 
-    [Header("Paliers étoiles")]
+    [Header("Paliers Ã©toiles")]
     public int[] starThresholds = new int[3] { 30, 60, 100 };
     private bool[] starGiven = new bool[3];
-    [Header("UI Étoiles")]
+    [Header("UI Ã‰toiles")]
     public UnityEngine.UI.Image[] starImages;
     public Sprite starOnSprite;
     public Sprite starOffSprite;
@@ -50,13 +50,13 @@ public class TriGameManager : MonoBehaviour
     public AudioClip sfxCorrect;
     public AudioClip sfxWrong;
 
-    // Tweens / états
+    // Tweens / Ã©tats
     private Tween timerTween = null;
     private bool timerWarningPlaying = false;
 
     private void Awake()
     {
-        // on vérifie qu'il n'y a qu'une instance de ce GameManager si il y en a plusieurs on détruit le nouveau
+        // on vÃ©rifie qu'il n'y a qu'une instance de ce GameManager si il y en a plusieurs on dÃ©truit le nouveau
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
@@ -66,11 +66,11 @@ public class TriGameManager : MonoBehaviour
     {
         _baseGameDuration = gameDuration;
 
-        // récup les valeurs de base du Spawner
+        // rÃ©cup les valeurs de base du Spawner
         if (spawner != null)
         {
             _baseSpawnInterval = spawner.spawnInterval;
-            // hypothèse : 1 point de score par âme de base
+            // hypothÃ¨se : 1 point de score par Ã¢me de base
             _baseScorePerSoul = 1;
         }
 
@@ -79,14 +79,14 @@ public class TriGameManager : MonoBehaviour
         ShowTutorialAndStart();
 
         starGiven = new bool[3];
-        // s'assurer que les étoiles sont prêtes à pop
+        // s'assurer que les Ã©toiles sont prÃªtes Ã  pop
         if (starImages != null)
         {
             for (int i = 0; i < starImages.Length; i++)
             {
                 if (starImages[i] != null)
                 {
-                    // rendre la state "off" visible : sprite off + scale 1 + alpha réduit
+                    // rendre la state "off" visible : sprite off + scale 1 + alpha rÃ©duit
                     starImages[i].transform.localScale = Vector3.one;
                     starImages[i].sprite = starOffSprite;
                     starImages[i].color = new Color(1f, 1f, 1f, 0.45f);
@@ -98,7 +98,7 @@ public class TriGameManager : MonoBehaviour
 
     private void Update()
     {
-        // si tuto pas validé, on ne lance pas le timer
+        // si tuto pas validÃ©, on ne lance pas le timer
         if (!tutorialValidated) { return; }
 
         if (!IsPlaying) return;
@@ -115,7 +115,7 @@ public class TriGameManager : MonoBehaviour
 
     public void StartGame()
     {
-        // Réinitialisation des variables
+        // RÃ©initialisation des variables
         score = 0;
         remainingTime = gameDuration;
         IsPlaying = true;
@@ -124,7 +124,7 @@ public class TriGameManager : MonoBehaviour
         uiManager.UpdateScore(score);
         spawner.StartSpawning();
 
-        // petit effet d'entrée du timer/score
+        // petit effet d'entrÃ©e du timer/score
         if (uiManager.scoreText != null)
         {
             uiManager.scoreText.transform.localScale = Vector3.one * 0.8f;
@@ -145,11 +145,11 @@ public class TriGameManager : MonoBehaviour
         score += soulsCount * _baseScorePerSoul;
         uiManager.UpdateScore(score);
 
-        // animation du texte score — couleur bleue pour réussite + SFX
+        // animation du texte score â€” couleur bleue pour rÃ©ussite + SFX
         PlayScorePop(Color.cyan);
         if (sfxSource != null && sfxCorrect != null) sfxSource.PlayOneShot(sfxCorrect);
 
-        // Paliers étoiles
+        // Paliers Ã©toiles
         for (int i = 0; i < starThresholds.Length; i++)
         {
             if (!starGiven[i] && score >= starThresholds[i])
@@ -158,7 +158,7 @@ public class TriGameManager : MonoBehaviour
                 if (GameManager.Instance != null)
                     GameManager.Instance.changeStat(StatType.Foi, 5f); // ou autre stat
 
-                // joue animation étoile
+                // joue animation Ã©toile
                 PlayStarPop(i);
             }
         }
@@ -167,7 +167,7 @@ public class TriGameManager : MonoBehaviour
 
     public void UpdateStarsUI()
     {
-        // Met à jour l'affichage des étoiles
+        // Met Ã  jour l'affichage des Ã©toiles
         if (starImages == null) return;
         for (int i = 0; i < starImages.Length; i++)
         {
@@ -191,7 +191,7 @@ public class TriGameManager : MonoBehaviour
             Destroy(soul);
         }
 
-        // afficher écran de fin puis animer avant de charger la scène
+        // afficher Ã©cran de fin puis animer avant de charger la scÃ¨ne
         uiManager.ShowEndScreen(score);
         StartCoroutine(EndGameSequence());
     }
@@ -229,10 +229,10 @@ public class TriGameManager : MonoBehaviour
             uiManager.endMessageText.CrossFadeAlpha(1f, 0.8f, false);
         }
 
-        // Laisser le temps à l'animation d'être visible
+        // Laisser le temps Ã  l'animation d'Ãªtre visible
         yield return new WaitForSeconds(1.4f);
 
-        // Retour à la scene principale
+        // Retour Ã  la scene principale
         SceneManager.LoadScene("SampleScene");
     }
 
@@ -244,7 +244,7 @@ public class TriGameManager : MonoBehaviour
 
     private void ApplyMiniGameCardIfAny()
     {
-        // vérifie si une carte est sélectionnée et applique ses effets
+        // vÃ©rifie si une carte est sÃ©lectionnÃ©e et applique ses effets
         var runtime = MiniGameCardRuntime.Instance;
         if (runtime == null || runtime.SelectedCard == null)
             return;
@@ -263,17 +263,17 @@ public class TriGameManager : MonoBehaviour
 
         if (spawner != null)
         {
-            // vitesse + densité
+            // vitesse + densitÃ©
             float interval = _baseSpawnInterval / speedMult;
             interval /= spawnMult;
 
-            // applique du chaos(plein d'effets différents) au spawn des âmes
+            // applique du chaos(plein d'effets diffÃ©rents) au spawn des Ã¢mes
             _spawnChaos = Mathf.Clamp01(card.chaosLevel);
 
             spawner.spawnInterval = interval;
         }
 
-        // score par âme augmenter avec la difficulté
+        // score par Ã¢me augmenter avec la difficultÃ©
         _baseScorePerSoul = Mathf.Max(1, Mathf.RoundToInt(_baseScorePerSoul * diffMult));
 
         // gains de stats globaux
@@ -281,7 +281,7 @@ public class TriGameManager : MonoBehaviour
         _rewardFlat = card.rewardFlatBonus;
         _oneMistakeFail = card.oneMistakeFail;
 
-        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={_baseScorePerSoul}, chaos={_spawnChaos}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}");
+        Debug.Log($"[Tri] Carte appliquÃ©e : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={_baseScorePerSoul}, chaos={_spawnChaos}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}");
 
         runtime.Clear();
     }
@@ -308,25 +308,38 @@ public class TriGameManager : MonoBehaviour
 
         if (_oneMistakeFail)
         {
-            Debug.Log("[Tri] Mode oneMistakeFail : erreur de tri -> fin immédiate de la partie.");
+            Debug.Log("[Tri] Mode oneMistakeFail : erreur de tri -> fin immÃ©diate de la partie.");
             EndGame();
         }
     }
 
-    // Affiche le tuto et lance la partie après validation
+    // Affiche le tuto et lance la partie aprÃ¨s validation
     public void ShowTutorialAndStart()
     {
-        tutorialPanel.ShowClick(
-            "Tri",
-            tutorialClip
-        );
-        tutorialPanel.continueButton.onClick.RemoveAllListeners();
-        tutorialPanel.continueButton.onClick.AddListener(() => {
-            tutorialPanel.Hide();
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.ShowSimple(
+                "Tri des Ã‚mes",
+                tutorialClip,
+                "Conseil : Glissez les Ã¢mes dans les bonnes zones !\n" +
+                " Bonnes Ã¢mes â†’ Zone bleue\n" +
+                " Ã‚mes neutres â†’ Zone Jaune\n" +
+                " Mauvaises Ã¢mes â†’ Zone rouge"
+            );
+
+            tutorialPanel.continueButton.onClick.RemoveAllListeners();
+            tutorialPanel.continueButton.onClick.AddListener(() =>
+            {
+                tutorialPanel.Hide();
+                tutorialValidated = true;
+                StartGame();
+            });
+        }
+        else
+        {
             tutorialValidated = true;
             StartGame();
-
-        });
+        }
     }
 
     // ----------------------
@@ -343,7 +356,7 @@ public class TriGameManager : MonoBehaviour
         s.Append(t.DOScale(1f, 0.15f).SetEase(Ease.OutBack));
         s.Play();
 
-        // couleur rapide (paramétrable)
+        // couleur rapide (paramÃ©trable)
         Color original = uiManager.scoreText.color;
         uiManager.scoreText.DOColor(flashColor, 0.12f).OnComplete(() => uiManager.scoreText.DOColor(original, 0.2f));
     }
@@ -359,7 +372,7 @@ public class TriGameManager : MonoBehaviour
         Sequence s = DOTween.Sequence();
         s.Append(img.transform.DOScale(1.4f, 0.25f).SetEase(Ease.OutBack));
         s.Append(img.transform.DOScale(1f, 0.12f).SetEase(Ease.OutBack));
-        // rotation rapide et continue légère
+        // rotation rapide et continue lÃ©gÃ¨re
         img.transform.DORotate(new Vector3(0, 0, 20f), 0.4f, RotateMode.Fast).SetLoops(2, LoopType.Yoyo);
         s.Play();
     }
@@ -368,7 +381,7 @@ public class TriGameManager : MonoBehaviour
     {
         if (uiManager == null || uiManager.timerText == null) return;
 
-        float warnThreshold = Mathf.Min(10f, gameDuration * 0.25f); // par défaut 10s ou 25% du temps
+        float warnThreshold = Mathf.Min(10f, gameDuration * 0.25f); // par dÃ©faut 10s ou 25% du temps
         if (remainingTime <= warnThreshold && !timerWarningPlaying)
         {
             timerWarningPlaying = true;

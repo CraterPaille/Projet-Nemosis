@@ -58,6 +58,11 @@ public class MiniGameTutorialPanel : MonoBehaviour
     private InputAction[] actionsGamepad;
     private bool isAnimating = false;
 
+    [Header("Tutorial")]
+    public MiniGameTutorialPanel tutorialPanel;
+    public VideoClip tutorialClip;
+    private bool tutorialValidated = false;
+
     [Header("Animation Parameters")]
     public float backgroundFadeDuration = 0.35f;
     public float containerPopDuration = 0.45f;
@@ -152,11 +157,13 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
     /// <summary>
     /// Version simplifiée pour les jeux sans rebind (comme click)
+    /// Cache les contrôles et affiche seulement la vidéo + tip
     /// </summary>
     public void ShowSimple(string miniGameName, VideoClip tutorialClip = null, string tip = null)
     {
         titleText.text = $"Contrôles : {miniGameName}";
 
+        // Cacher complètement les sections de contrôles
         if (keyboardControlsPanel != null) keyboardControlsPanel.SetActive(false);
         if (gamepadControlsPanel != null) gamepadControlsPanel.SetActive(false);
         if (keyboardToggleButton != null) keyboardToggleButton.gameObject.SetActive(false);
@@ -164,6 +171,64 @@ public class MiniGameTutorialPanel : MonoBehaviour
 
         SetupVideo(tutorialClip);
         SetupTip(tip);
+
+        gameObject.SetActive(true);
+        AnimateIn();
+    }
+
+    /// <summary>
+    /// Version pour Chronos (combat au tour par tour, contrôles complexes)
+    /// Affiche instructions textuelles au lieu de rebind
+    /// </summary>
+    public void ShowChronos(string miniGameName, VideoClip tutorialClip = null, string tip = null)
+    {
+        titleText.text = $"Contrôles : {miniGameName}";
+
+        // Cacher les contrôles de rebind
+        if (keyboardControlsPanel != null) keyboardControlsPanel.SetActive(false);
+        if (gamepadControlsPanel != null) gamepadControlsPanel.SetActive(false);
+        if (keyboardToggleButton != null) keyboardToggleButton.gameObject.SetActive(false);
+        if (gamepadToggleButton != null) gamepadToggleButton.gameObject.SetActive(false);
+
+        SetupVideo(tutorialClip);
+
+        // Tip personnalisé avec instructions
+        if (tipsSection != null)
+        {
+            tipsSection.SetActive(true);
+            if (tipText != null)
+            {
+                tipText.text = tip ?? "ZQSD / Flèches : Se déplacer\nA / Bouton Sud : Choisir\nBoucliers : ZQSD pendant l'attaque Justice";
+            }
+        }
+
+        gameObject.SetActive(true);
+        AnimateIn();
+    }
+
+    /// <summary>
+    /// Version pour PlayerSoul/Chronos avec instructions de mouvement
+    /// </summary>
+    public void ShowMovementOnly(string miniGameName, VideoClip tutorialClip = null, string tip = null)
+    {
+        titleText.text = $"Contrôles : {miniGameName}";
+
+        // Cacher les contrôles
+        if (keyboardControlsPanel != null) keyboardControlsPanel.SetActive(false);
+        if (gamepadControlsPanel != null) gamepadControlsPanel.SetActive(false);
+        if (keyboardToggleButton != null) keyboardToggleButton.gameObject.SetActive(false);
+        if (gamepadToggleButton != null) gamepadToggleButton.gameObject.SetActive(false);
+
+        SetupVideo(tutorialClip);
+
+        if (tipsSection != null)
+        {
+            tipsSection.SetActive(true);
+            if (tipText != null)
+            {
+                tipText.text = tip ?? "ZQSD / Stick Gauche : Se déplacer\nMode Justice : Mouvement limité à 4 directions";
+            }
+        }
 
         gameObject.SetActive(true);
         AnimateIn();
@@ -652,30 +717,5 @@ public class MiniGameTutorialPanel : MonoBehaviour
         DOTween.Kill(this);
         if (continueButton != null)
             DOTween.Kill(continueButton.transform);
-    }
-
-    public void ShowClick(
-      string miniGameName,
-      VideoClip tutorialClip = null)
-    {
-        titleText.text = $"Contrôles : {miniGameName}";
-
-
-        if (videoPlayer != null)
-        {
-            if (tutorialClip != null)
-            {
-                videoPlayer.clip = tutorialClip;
-                videoPlayer.gameObject.SetActive(true);
-                videoPlayer.Play();
-            }
-            else
-            {
-                videoPlayer.gameObject.SetActive(false);
-            }
-        }
-
-        gameObject.SetActive(true);
-        continueButton.Select();
     }
 }
