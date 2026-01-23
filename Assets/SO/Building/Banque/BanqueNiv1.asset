@@ -19,7 +19,6 @@ MonoBehaviour:
   animationSprites: []
   animationFPS: 12
   gridSize: 4
-  passiveEffects:
-  - {fileID: 11400000, guid: 5fbaed7b3d30a2742b8cff071cc304a4, type: 2}
+  passiveEffects: []
   interactionEffects:
   - {fileID: 11400000, guid: 18fb2ddfd741d564981bed5bf528c0d1, type: 2}

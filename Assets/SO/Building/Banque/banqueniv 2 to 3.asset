@@ -17,3 +17,6 @@ MonoBehaviour:
   isInstant: 0
   conditions: []
   UpgradedBuilding: {fileID: 11400000, guid: e0c0c5d996c518f48a89a4832ac23025, type: 2}
+  UpgradeCost:
+  - statType: 3
+    amount: 20

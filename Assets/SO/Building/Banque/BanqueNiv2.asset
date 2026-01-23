@@ -20,6 +20,6 @@ MonoBehaviour:
   animationFPS: 12
   gridSize: 4
   passiveEffects:
-  - {fileID: 11400000, guid: 001fa419e46fd8649bc7975ceadea7c9, type: 2}
+  - {fileID: 11400000, guid: 5fbaed7b3d30a2742b8cff071cc304a4, type: 2}
   interactionEffects:
   - {fileID: 11400000, guid: 792e9c71eeeb4494e974daa8d5f0317e, type: 2}
