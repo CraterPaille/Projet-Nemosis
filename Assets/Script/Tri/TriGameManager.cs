@@ -35,7 +35,7 @@ public class TriGameManager : MonoBehaviour
     [Header("Tutorial")]
     public MiniGameTutorialPanel tutorialPanel; // à assigner dans l'inspector
     public VideoClip tutorialClip; // à assigner dans l'inspector
-    private bool tutorialValidated = false;
+    public bool tutorialValidated = false; // rendu public pour que Spawner puisse y accéder
 
     [Header("Paliers étoiles")]
     public int[] starThresholds = new int[3] { 30, 60, 100 };
@@ -76,6 +76,11 @@ public class TriGameManager : MonoBehaviour
 
         ApplyMiniGameCardIfAny();
 
+        // Sécurité : s'assurer que rien ne tourne avant validation du tutoriel
+        IsPlaying = false;
+        if (spawner != null)
+            spawner.StopSpawning();
+
         ShowTutorialAndStart();
 
         starGiven = new bool[3];
@@ -99,7 +104,7 @@ public class TriGameManager : MonoBehaviour
     private void Update()
     {
         // si tuto pas validé, on ne lance pas le timer
-        if (!tutorialValidated) { return; }
+        if (!tutorialValidated) return;
 
         if (!IsPlaying) return;
         // Maj le timer
@@ -115,6 +120,13 @@ public class TriGameManager : MonoBehaviour
 
     public void StartGame()
     {
+        // Protection : ne pas démarrer si le tutoriel n'est pas validé
+        if (!tutorialValidated)
+        {
+            Debug.LogWarning("[Tri] StartGame ignoré : tutoriel non validé.");
+            return;
+        }
+
         // Réinitialisation des variables
         score = 0;
         remainingTime = gameDuration;
@@ -281,36 +293,12 @@ public class TriGameManager : MonoBehaviour
         _rewardFlat = card.rewardFlatBonus;
         _oneMistakeFail = card.oneMistakeFail;
 
-        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}, spawnInterval={spawner.spawnInterval}, scorePerSoul={_baseScorePerSoul}, chaos={_spawnChaos}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, oneMistakeFail={_oneMistakeFail}");
+        Debug.Log($"[Tri] Carte appliquée : {card.cardName}, duration={gameDuration}," +
+            $" spawnInterval={spawner.spawnInterval}, scorePerSoul={_baseScorePerSoul}," +
+            $" chaos={_spawnChaos}, rewardMult={_rewardMult}, rewardFlat={_rewardFlat}, " +
+            $"oneMistakeFail={_oneMistakeFail}");
 
         runtime.Clear();
-    }
-
-    //Getters pour les modifs de carte
-    public float GetSpawnChaos()
-    {
-        return _spawnChaos;
-    }
-
-    public void OnMistake()
-    {
-        if (!IsPlaying) return;
-
-        // feedback visuel rouge + SFX
-        if (uiManager != null && uiManager.scoreText != null)
-        {
-            var original = uiManager.scoreText.color;
-            uiManager.scoreText.DOColor(new Color(1f, 0.45f, 0.45f), 0.1f)
-                .OnComplete(() => uiManager.scoreText.DOColor(original, 0.25f));
-            uiManager.scoreText.transform.DOPunchScale(Vector3.one * 0.18f, 0.25f, 8);
-        }
-        if (sfxSource != null && sfxWrong != null) sfxSource.PlayOneShot(sfxWrong);
-
-        if (_oneMistakeFail)
-        {
-            Debug.Log("[Tri] Mode oneMistakeFail : erreur de tri -> fin immédiate de la partie.");
-            EndGame();
-        }
     }
 
     // Affiche le tuto et lance la partie après validation

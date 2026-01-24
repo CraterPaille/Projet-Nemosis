@@ -75,16 +75,27 @@ public class ChronosAttackController : MonoBehaviour
 
     IEnumerator Init()
     {
-        while (!ChronosGameManager.Instance) yield return null;
+        // Attendre l'existence du GameManager Chronos
+        while (!ChronosGameManager.Instance)
+            yield return null;
 
         gm = ChronosGameManager.Instance;
+
+        // ATTENTION : attendre explicitement la validation du tutoriel Chronos
+        // rien de lié aux attaques ne doit démarrer avant tutorialValidated == true
+        while (!gm.tutorialValidated)
+            yield return null;
+
+        // Ensuite initialiser les dépendances et lancer la boucle d'attaques
         pooler = ObjectPooler.Instance;
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("PlayerSoul");
         if (playerObj != null)
             player = playerObj.transform;
 
-        arenaBox = arena.GetComponent<BoxCollider2D>();
+        if (arena != null)
+            arenaBox = arena.GetComponent<BoxCollider2D>();
+
         UpdateArenaCache();
         StartCoroutine(AttackLoop());
     }
@@ -301,7 +312,7 @@ public class ChronosAttackController : MonoBehaviour
             yield return wait2s;
         }
 
-       SceneManager.LoadScene("EndScene");
+        SceneManager.LoadScene("EndScene");
         yield return wait2s;
 
         // Arrêter les coroutines d'attaque / comportement du boss

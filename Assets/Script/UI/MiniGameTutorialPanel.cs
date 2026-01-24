@@ -61,7 +61,6 @@ public class MiniGameTutorialPanel : MonoBehaviour
     [Header("Tutorial")]
     public MiniGameTutorialPanel tutorialPanel;
     public VideoClip tutorialClip;
-    private bool tutorialValidated = false;
 
     [Header("Animation Parameters")]
     public float backgroundFadeDuration = 0.35f;

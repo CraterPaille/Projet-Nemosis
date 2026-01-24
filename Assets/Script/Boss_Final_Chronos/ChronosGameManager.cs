@@ -1,4 +1,4 @@
-using DG.Tweening;
+Ôªøusing DG.Tweening;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -25,7 +25,7 @@ public class ChronosGameManager : MonoBehaviour
     [Header("Tutorial")]
     public MiniGameTutorialPanel tutorialPanel;
     public VideoClip tutorialClip;
-    private bool tutorialValidated = false;
+    public bool tutorialValidated = false;
     public int BossPhase => bossMaxHearts - bossCurrentHearts + 1;
 
     [Header("HP Bar Sprites")]
@@ -44,7 +44,7 @@ public class ChronosGameManager : MonoBehaviour
     public Sprite heartFull;
 
     [Header("Boss Image (fade)")]
-    public Image bossImage; // <-- RÈfÈrence ‡ l'image du boss ‡ placer dans l'inspecteur
+    public Image bossImage; // <-- R√©f√©rence √† l'image du boss √† placer dans l'inspecteur
 
     [Header("Boss Movement (infinite)")]
     public bool enableBossInfinityMovement = true;
@@ -55,14 +55,14 @@ public class ChronosGameManager : MonoBehaviour
     [Tooltip("Amplitude Y en pixels (anchoredPosition)")]
     public float infinityRadiusY = 60f;
 
-    [Header("Boss Trail (rÈmanence)")]
-    [Tooltip("Intervalle entre spawn de traÓnÈe en secondes")]
+    [Header("Boss Trail (r√©manence)")]
+    [Tooltip("Intervalle entre spawn de tra√Æn√©e en secondes")]
     public float trailSpawnInterval = 0.06f;
-    [Tooltip("Nombre maximum d'images rÈmanentes (pool)")]
+    [Tooltip("Nombre maximum d'images r√©manentes (pool)")]
     public int trailPoolSize = 12;
-    [Tooltip("DurÈe du fondu des rÈmanences")]
+    [Tooltip("Dur√©e du fondu des r√©manences")]
     public float trailFadeDuration = 0.8f;
-    [Tooltip("…chelle appliquÈe aux rÈmanences")]
+    [Tooltip("√âchelle appliqu√©e aux r√©manences")]
     public float trailScaleMultiplier = 0.95f;
 
     [Header("UI")]
@@ -95,7 +95,7 @@ public class ChronosGameManager : MonoBehaviour
     private Image[] trailPool;
     private int trailIndex = 0;
 
-    // Constantes prÈ-calculÈes
+    // Constantes pr√©-calcul√©es
     private const float HP_ANIM_DURATION = 0.5f;
     private const float SHAKE_DURATION = 0.2f;
     private const float SCALE_DURATION = 0.2f;
@@ -125,13 +125,17 @@ public class ChronosGameManager : MonoBehaviour
 
     void Start()
     {
+
+
         heartRotateTweens = new Tween[bossMaxHearts];
         playerHP = playerMaxHP;
         bossCurrentHearts = bossMaxHearts;
         bossCurrentHP = bossHeartHP;
         UpdateUI();
         ShowTutorialAndStart();
-        // Initialiser l'alpha de l'image du boss ‡ pleine opacitÈ
+        // si non valid√©, ne pas d√©marrer le combat
+        if (!tutorialValidated) return;
+        // Initialiser l'alpha de l'image du boss √† pleine opacit√©
         UpdateBossImageAlpha(instant: true);
 
         // Boss rect + centre pour le mouvement
@@ -142,7 +146,7 @@ public class ChronosGameManager : MonoBehaviour
             InitializeTrailPool();
         }
 
-        // ROUTER la source SFX vers le groupe "SFX" du mixer (si prÈsent)
+        // ROUTER la source SFX vers le groupe "SFX" du mixer (si pr√©sent)
         if (sfxSource != null)
         {
             AudioMixerGroup target = null;
@@ -208,12 +212,22 @@ public class ChronosGameManager : MonoBehaviour
         if (tutorialPanel != null)
         {
             tutorialPanel.ShowChronos(
-                "Chronos - Combat …pique",
-                tutorialClip,
-                "ZQSD / Stick : Se dÈplacer\n" +
-                "Clic / Bouton A : Choisir (Attaquer/Soigner)\n" +
-                "Boucliers : ZQSD pendant les attaques Justice\n" +
-                "Esquivez les projectiles et collectez les joyaux !"
+                "Chronos - Combat √âpique",
+            tutorialClip,
+            "C'EST LE COMBAT FINAL\n\n" +
+            "D√âPLACEMENT :\n" +
+            "‚Ä¢ ZQSD / Fl√®ches / Stick : Se d√©placer\n" +
+            "‚Ä¢ Esquivez les projectiles du boss\n\n" +
+            "ATTAQUES SP√âCIALES :\n" +
+            "‚Ä¢ Mode Justice : 4 directions (‚Üë‚Üì‚Üê‚Üí)\n" +
+            "‚Ä¢ Boucliers : ZQSD pour bloquer\n\n" +
+            "JOYAUX :\n" +
+            "‚Ä¢ Collectez-les pour choisir :\n" +
+            "  Clic/Bouton A ‚Üí Attaquer ou Soigner\n\n" +
+            "OBJECTIF :\n" +
+            "‚Ä¢ D√©truisez les 6 sabliers de Chronos\n" +
+            "‚Ä¢ 4 coups par sabliers !\n" +
+            "‚Ä¢ Chaque phase est plus difficile !"
             );
 
             tutorialPanel.continueButton.onClick.RemoveAllListeners();
@@ -221,7 +235,7 @@ public class ChronosGameManager : MonoBehaviour
             {
                 tutorialPanel.Hide();
                 tutorialValidated = true;
-                StartBossFight(); // Votre mÈthode pour dÈmarrer le combat
+                StartBossFight(); // Votre m√©thode pour d√©marrer le combat
             });
         }
         else
@@ -232,15 +246,16 @@ public class ChronosGameManager : MonoBehaviour
     }
 
     // -----------------------------
-    // Nouvelle mÈthode pour dÈmarrer le combat
+    // Nouvelle m√©thode pour d√©marrer le combat
     // -----------------------------
     public void StartBossFight()
     {
+
         // Flag tutoriel
         tutorialValidated = true;
         isPausedForJewel = false;
 
-        // RÈinitialisation des PV / UI
+        // R√©initialisation des PV / UI
         playerHP = playerMaxHP;
         bossCurrentHearts = bossMaxHearts;
         bossCurrentHP = bossHeartHP;
@@ -296,10 +311,10 @@ public class ChronosGameManager : MonoBehaviour
             playerObj.tag = "PlayerSoul";
         }
 
-        // Activer le contrÙleur d'attaques (il fera son Init et dÈmarrera sa boucle)
+        // Activer le contr√¥leur d'attaques (il fera son Init et d√©marrera sa boucle)
         if (ac != null)
         {
-            // Propager Èventuellement le curseur gamepad si nÈcessaire
+            // Propager √©ventuellement le curseur gamepad si n√©cessaire
             if (ac.gamepadCursor == null)
                 ac.gamepadCursor = gamepadCursor;
 
@@ -325,7 +340,7 @@ public class ChronosGameManager : MonoBehaviour
         if (dialogueText != null)
             dialogueText.text = "* Le combat commence !";
 
-        // Mise ‡ jour finale de l'UI
+        // Mise √† jour finale de l'UI
         UpdateUI();
     }
 
@@ -342,7 +357,7 @@ public class ChronosGameManager : MonoBehaviour
 
         if (playerHP <= 0)
         {
-            dialogueText.text = "* Chronos ‡ gagnÈ. tu es mort.";
+            dialogueText.text = "* Chronos √† gagn√©. tu es mort.";
             StopAllCoroutines();
         }
     }
@@ -430,21 +445,21 @@ public class ChronosGameManager : MonoBehaviour
         }
         else
         {
-            dialogueText.text = "* Tu enlËves 1/4 de cúur !";
+            dialogueText.text = "* Tu enl√®ves 1/4 de c≈ìur !";
             PlayDialogueEffect();
         }
 
-        // Mise ‡ jour de l'alpha de l'image du boss ‡ chaque coup
+        // Mise √† jour de l'alpha de l'image du boss √† chaque coup
         UpdateBossImageAlpha();
 
         if (bossCurrentHearts <= 0)
         {
             dialogueText.text = "*Chronos est vaincu !";
-            // Optionnel : dÈsactiver le raycast ou l'objet une fois invisible
+            // Optionnel : d√©sactiver le raycast ou l'objet une fois invisible
             if (bossImage != null)
                 bossImage.raycastTarget = false;
 
-            // ArrÍter le mouvement et nettoyer les traÓnÈes
+            // Arr√™ter le mouvement et nettoyer les tra√Æn√©es
             StopBossMovementAndClearTrails();
         }
 
@@ -458,14 +473,14 @@ public class ChronosGameManager : MonoBehaviour
 
         if (healAmount <= 0)
         {
-            dialogueText.text = "* Tu es dÈj‡ ‡ pleine santÈ.";
+            dialogueText.text = "* Tu es d√©j√† √† pleine sant√©.";
             PlayDialogueEffect();
             return;
         }
 
         playerHP = playerMaxHP;
 
-        // Effet visuel optimisÈ
+        // Effet visuel optimis√©
         playerHPBar.DOColor(colorGreen, 0.15f)
             .OnComplete(() => playerHPBar.DOColor(colorWhite, SHAKE_DURATION));
 
@@ -598,7 +613,7 @@ public class ChronosGameManager : MonoBehaviour
         playerHPBar.fillAmount = (float)playerHP / playerMaxHP;
         UpdatePlayerHPText();
 
-        // Mise ‡ jour des cúurs du boss
+        // Mise √† jour des c≈ìurs du boss
         for (int i = 0; i < bossMaxHearts; i++)
         {
             if (i < bossCurrentHearts - 1)
@@ -774,23 +789,23 @@ public class ChronosGameManager : MonoBehaviour
             bossImage.DOFade(alpha, 0.25f);
         }
 
-        // Si plus de PV, s'assurer que l'image est dÈsactivÈe/complËtement transparente
+        // Si plus de PV, s'assurer que l'image est d√©sactiv√©e/compl√®tement transparente
         if (GetRemainingBossHP() <= 0 && bossImage != null)
         {
-            // Garder l'objet actif si vous voulez d'autres animations, sinon dÈsactivez-le:
+            // Garder l'objet actif si vous voulez d'autres animations, sinon d√©sactivez-le:
             // bossImage.gameObject.SetActive(false);
             bossImage.raycastTarget = false;
         }
     }
 
     // -----------------------------
-    // Mouvement infini + rÈmanence
+    // Mouvement infini + r√©manence
     // -----------------------------
     private void InitializeTrailPool()
     {
         if (bossImage == null) return;
 
-        // CrÈer le pool d'Images en tant qu'enfants du mÍme parent que bossImage
+        // Cr√©er le pool d'Images en tant qu'enfants du m√™me parent que bossImage
         Transform parent = bossImage.transform.parent;
         trailPool = new Image[Mathf.Max(1, trailPoolSize)];
         for (int i = 0; i < trailPool.Length; i++)
@@ -818,10 +833,10 @@ public class ChronosGameManager : MonoBehaviour
         Vector2 newPos = bossCenterAnchored + new Vector2(x, y);
         bossRect.anchoredPosition = newPos;
 
-        // Optionnel : lÈgËre rotation pour dynamique
+        // Optionnel : l√©g√®re rotation pour dynamique
         bossRect.localEulerAngles = new Vector3(0f, 0f, Mathf.Sin(infinityT) * 6f);
 
-        // Spawn rÈmanence
+        // Spawn r√©manence
         trailTimer += Time.deltaTime;
         if (trailTimer >= trailSpawnInterval)
         {
@@ -839,7 +854,7 @@ public class ChronosGameManager : MonoBehaviour
 
         if (t == null) return;
 
-        // PrÈparer l'image du trail
+        // Pr√©parer l'image du trail
         t.sprite = bossImage.sprite;
         t.gameObject.SetActive(true);
         RectTransform tr = t.rectTransform;
@@ -851,10 +866,10 @@ public class ChronosGameManager : MonoBehaviour
         baseColor.a = Mathf.Clamp01(baseColor.a); // s'assurer
         t.color = baseColor;
 
-        // Kill tweens prÈcÈdents
+        // Kill tweens pr√©c√©dents
         t.DOKill();
 
-        // Animation : fondu vers 0 + dÈplacement lÈger
+        // Animation : fondu vers 0 + d√©placement l√©ger
         Vector2 jitter = new Vector2(Random.Range(-8f, 8f), Random.Range(-8f, 8f));
         tr.DOAnchorPos(anchoredPos + jitter, trailFadeDuration).SetEase(Ease.OutQuad);
         t.DOFade(0f, trailFadeDuration).SetEase(Ease.OutQuad).OnComplete(() =>
@@ -862,7 +877,7 @@ public class ChronosGameManager : MonoBehaviour
             if (t != null)
             {
                 t.gameObject.SetActive(false);
-                // remettre alpha ‡ 0 pour sÈcuritÈ
+                // remettre alpha √† 0 pour s√©curit√©
                 Color c = t.color;
                 t.color = new Color(c.r, c.g, c.b, 0f);
             }

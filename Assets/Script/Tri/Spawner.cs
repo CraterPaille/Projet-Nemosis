@@ -13,6 +13,14 @@ public class Spawner : MonoBehaviour
     public void StartSpawning()
     {
         if (spawning) return; // Empêche le double lancement
+
+        // Utilise explicitement la variable tutorialValidated comme demandé
+        if (TriGameManager.Instance == null || !TriGameManager.Instance.tutorialValidated)
+        {
+            Debug.LogWarning("[Spawner] StartSpawning ignoré : tutoriel non validé.");
+            return;
+        }
+
         spawning = true;
         spawnCoroutine = StartCoroutine(SpawnLoop());
     }
@@ -31,6 +39,13 @@ public class Spawner : MonoBehaviour
     {
         while (spawning)
         {
+            // Vérifie le flag tutorialValidated à chaque itération (sécurisation)
+            if (TriGameManager.Instance == null || !TriGameManager.Instance.tutorialValidated)
+            {
+                yield return null;
+                continue;
+            }
+
             // Choix aléatoire du spawn point
             Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
             GameObject prefab = soulPrefabs[Random.Range(0, soulPrefabs.Length)];

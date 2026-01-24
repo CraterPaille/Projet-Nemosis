@@ -145,8 +145,9 @@ public class NuitGlacialeGameManager : MonoBehaviour
             tutorialPanel.ShowSimple(
                 "Nuit Glaciale",
                 tutorialClip,
-                "Conseil : Cliquez sur les maisons éteintes pour les rallumer !\n" +
-                "Ne laissez pas trop de maisons s'éteindre ou vous perdrez."
+                " Conseil : Cliquez  ou appuyé sur A ou X (selon la manette) pour rallumer les maison éteinte. " +
+                "Si plus de la moitié des maisons s'éteignent vous pedrez. " +
+                "De plus plusieurs maisons peuvent s'éteindre en même temps!"
             );
 
             tutorialPanel.continueButton.onClick.RemoveAllListeners();
