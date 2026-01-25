@@ -7,9 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using DG.Tweening;
 using Math = System.Math;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
 using System.Collections;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using System; // ajouté pour Enum.GetValues
 public class UIManager : MonoBehaviour
 {
