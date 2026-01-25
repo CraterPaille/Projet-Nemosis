@@ -1053,6 +1053,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraShakeRhytm
   duration: 0.15
   magnitude: 0.1
+--- !u!114 &527061787 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4911828260613736082, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+  m_PrefabInstance: {fileID: 2140462983}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &710792862
 GameObject:
   m_ObjectHideFlags: 0
@@ -3119,6 +3130,58 @@ PrefabInstance:
       propertyPath: m_text
       value: Manette
       objectReference: {fileID: 0}
+    - target: {fileID: 1145396089790878510, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 1145396089790878510, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 1377960873197457613, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: tutorialClip
+      value: 
+      objectReference: {fileID: 32900000, guid: ea00f8afd5fb63c48b4cf505f38d47c8, type: 3}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: tutorialPanel
+      value: 
+      objectReference: {fileID: 2140462985}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: laneIconsKeyboard.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: laneLabelsKeyboard.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: 'laneIconsKeyboard.Array.data[3]'
+      value: 
+      objectReference: {fileID: 527061787}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: 'laneLabelsKeyboard.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2140462988}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: currentKeyLabelsKeyboard.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: rebindLaneButtonsKeyboard.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: 'currentKeyLabelsKeyboard.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2140462987}
+    - target: {fileID: 1787999658401070885, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: 'rebindLaneButtonsKeyboard.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2140462986}
     - target: {fileID: 2506860531452758778, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_text
       value: 'Conseil : si une note a une barre il faut maintenir la touche, sinon
@@ -3128,21 +3191,29 @@ PrefabInstance:
       propertyPath: m_fontSize
       value: 32.45
       objectReference: {fileID: 0}
+    - target: {fileID: 2525215016047281450, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2999706048507553560, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 3939511170039802495, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_text
@@ -3260,6 +3331,18 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5228927784581666756, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5981700563279540590, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 5981700563279540590, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 400
+      objectReference: {fileID: 0}
     - target: {fileID: 5981700563279540590, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -3276,23 +3359,43 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6002755745265307489, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6196642728990930233, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6722127685846602741, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_Name
       value: MiniGameTutorialRhytmePanel
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -207
+      objectReference: {fileID: 0}
+    - target: {fileID: 7566910745781827057, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
@@ -3333,6 +3436,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 155775d0f7b6906428f80fbb85cf2d33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiniGameTutorialPanel
+--- !u!114 &2140462986 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4798204308585631527, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+  m_PrefabInstance: {fileID: 2140462983}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &2140462987 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2680271460439787061, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+  m_PrefabInstance: {fileID: 2140462983}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &2140462988 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7012575570558290805, guid: 5278b7c053df5ef46a42723b3b1db4aa, type: 3}
+  m_PrefabInstance: {fileID: 2140462983}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
