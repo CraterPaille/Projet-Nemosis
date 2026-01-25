@@ -1,22 +1,34 @@
-using System.Text;
+﻿using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class ScheduleShow : MonoBehaviour
 {
-    [Header("Ic�nes")]
+    [Header("Icônes")]
     public Sprite EventIcon;
     public Sprite MiniGameIcon;
 
     public DayTime currentTime;
     public GameManager gameManager;
 
-    [Header("UI")]
+    [Header("UI Texte Simple")]
     [SerializeField] private TextMeshProUGUI weekText;
 
-    private EventScheduler eventScheduler;
+    [Header("UI Avancée (optionnel)")]
+    [SerializeField] private GameObject dayCardPrefab;
+    [SerializeField] private Transform dayCardsContainer;
+    [SerializeField] private bool useAdvancedUI = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [Header("Couleurs")]
+    [SerializeField] private Color todayColor = new Color(1f, 0.9f, 0.6f, 1f);
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color eventColor = new Color(0.6f, 0.8f, 1f, 1f);
+
+    private EventScheduler eventScheduler;
+    private List<DayCard> dayCards = new List<DayCard>();
+
     void Start()
     {
         if (gameManager == null)
@@ -25,9 +37,19 @@ public class ScheduleShow : MonoBehaviour
         }
         eventScheduler = EventScheduler.Instance;
 
-        UpdateWeekText();
+        if (useAdvancedUI && dayCardPrefab != null && dayCardsContainer != null)
+        {
+            InitializeAdvancedUI();
+        }
+        else
+        {
+            UpdateWeekText();
+        }
     }
 
+    // ============================================
+    // MODE TEXTE AMÉLIORÉ
+    // ============================================
     public void UpdateWeekText()
     {
         if (gameManager == null || weekText == null)
@@ -36,29 +58,27 @@ public class ScheduleShow : MonoBehaviour
             return;
         }
 
-        // Si pas d'EventScheduler, on affiche seulement les noms des jours
         if (eventScheduler == null)
         {
             BuildSimpleWeekText();
             return;
         }
 
-        // Utilise la liste publique scheduledEvents au lieu d'une m�thode inexistante
-        var scheduled = eventScheduler.scheduledEvents; // IReadOnlyList<EventDay> possible
-
+        var scheduled = eventScheduler.scheduledEvents;
         StringBuilder sb = new StringBuilder();
 
-        // On part du jour courant dans la campagne (currentDay) pour calculer les 7 prochains jours
-        // et les mapper sur les noms de semaine (Lundi..Dimanche)
+        // En-tête stylisé
+        sb.AppendLine("<size=120%><b>═══ PLANNING DE LA SEMAINE ═══</b></size>");
+        sb.AppendLine();
+
         for (int i = 0; i < gameManager.weekDays.Length; i++)
         {
             int absoluteDay = gameManager.currentDay - ((int)((gameManager.currentDay - 1) % 7)) + i;
-
             string weekDayName = gameManager.weekDays[i];
 
-            // Chercher s'il y a un EventDay dont le "day" == absoluteDay
+            // Recherche événement
             string eventName = null;
-            Sprite eventSprite = null;
+            bool hasEvent = false;
             if (scheduled != null)
             {
                 foreach (var eventDay in scheduled)
@@ -66,63 +86,63 @@ public class ScheduleShow : MonoBehaviour
                     if (eventDay.day == absoluteDay && eventDay.gameEvent != null)
                     {
                         var info = eventDay.gameEvent.GetEventInfo();
-
                         eventName = !string.IsNullOrEmpty(info.eventName)
                             ? info.eventName
                             : eventDay.gameEvent.name;
-
-                        // sprite de l'�v�nement : soit celui d�fini dans EventInfo, sinon l'ic�ne par d�faut
-                        eventSprite = info.eventImage != null ? info.eventImage : EventIcon;
+                        hasEvent = true;
                         break;
                     }
                 }
             }
 
-            // Mini-jeu : tous les dimanches matin
+            // Mini-jeu dimanche
             bool isSunday = weekDayName == "Dimanche";
-            bool hasMiniGame = isSunday; // si ta logique change plus tard, adapte ici
-            string miniGameName = hasMiniGame ? "\nMini-jeu (dimanche matin)" : null;
-            Sprite miniGameSprite = hasMiniGame ? MiniGameIcon : null;
+            bool hasMiniGame = isSunday;
 
-            // Marquer le jour de la semaine actuel visuellement
             bool isToday = weekDayName == gameManager.currentWeekDay;
 
+            // Construction de la ligne
             if (isToday)
-                sb.Append("<b>"); // d�but gras
-
-            sb.Append(weekDayName);
-            sb.Append(" : ");
-
-            // Affichage �v�nement
-            if (!string.IsNullOrEmpty(eventName))
             {
-                if (eventSprite != null)
-                    sb.Append("<sprite name=\"EventIcon\"> "); // ex : tag TMP pour un sprite (mapping par nom dans l'Atlas)
-
-                sb.Append(eventName);
+                sb.Append("<color=#FFD700>▶ </color><b><color=#FFE680>");
             }
             else
             {
-                sb.Append("Aucun �v�nement");
+                sb.Append("  ");
             }
 
-            // Saut de ligne entre �v�nement et mini-jeu si les deux existent
-            if (!string.IsNullOrEmpty(eventName) && hasMiniGame)
+            // Nom du jour
+            sb.Append($"<size=110%>{weekDayName}</size>");
+
+            // Contenu
+            if (hasEvent || hasMiniGame)
             {
-                sb.Append(" / ");
+                sb.Append(" │ ");
+
+                if (hasEvent)
+                {
+                    sb.Append($"<color=#87CEEB>📅 {eventName}</color>");
+                }
+
+                if (hasEvent && hasMiniGame)
+                {
+                    sb.Append(" + ");
+                }
+
+                if (hasMiniGame)
+                {
+                    sb.Append("<color=#98FB98>🎮 Mini-jeu</color>");
+                }
             }
-
-            // Affichage mini-jeu (dimanche matin)
-            if (hasMiniGame)
+            else
             {
-                if (miniGameSprite != null)
-                    sb.Append("<sprite name=\"MiniGameIcon\"> ");
-
-                sb.Append(miniGameName);
+                sb.Append(" │ <color=#888888>─ Libre ─</color>");
             }
 
             if (isToday)
-                sb.Append("</b>"); // fin gras
+            {
+                sb.Append("</color></b>");
+            }
 
             if (i < gameManager.weekDays.Length - 1)
                 sb.AppendLine();
@@ -134,19 +154,159 @@ public class ScheduleShow : MonoBehaviour
     private void BuildSimpleWeekText()
     {
         StringBuilder sb = new StringBuilder();
+        sb.AppendLine("<b>SEMAINE</b>");
+
         for (int i = 0; i < gameManager.weekDays.Length; i++)
         {
             string weekDayName = gameManager.weekDays[i];
             bool isToday = weekDayName == gameManager.currentWeekDay;
 
-            if (isToday) sb.Append("<b>");
+            if (isToday)
+                sb.Append("<color=#FFD700>▶ <b>");
+            else
+                sb.Append("  ");
+
             sb.Append(weekDayName);
-            if (isToday) sb.Append("</b>");
+
+            if (isToday)
+                sb.Append("</b></color>");
 
             if (i < gameManager.weekDays.Length - 1)
-                sb.Append(" | ");
+                sb.AppendLine();
         }
 
         weekText.text = sb.ToString();
+    }
+
+    // ============================================
+    // MODE UI AVANCÉE AVEC CARTES
+    // ============================================
+    private void InitializeAdvancedUI()
+    {
+        // Nettoyer les cartes existantes
+        foreach (var card in dayCards)
+        {
+            if (card != null && card.gameObject != null)
+                Destroy(card.gameObject);
+        }
+        dayCards.Clear();
+
+        // Créer une carte par jour
+        for (int i = 0; i < gameManager.weekDays.Length; i++)
+        {
+            GameObject cardObj = Instantiate(dayCardPrefab, dayCardsContainer);
+            DayCard card = cardObj.GetComponent<DayCard>();
+
+            if (card != null)
+            {
+                dayCards.Add(card);
+            }
+        }
+
+        UpdateAdvancedUI();
+    }
+
+    public void UpdateAdvancedUI()
+    {
+        if (!useAdvancedUI || dayCards.Count == 0) return;
+
+        var scheduled = eventScheduler?.scheduledEvents;
+
+        for (int i = 0; i < gameManager.weekDays.Length && i < dayCards.Count; i++)
+        {
+            int absoluteDay = gameManager.currentDay - ((int)((gameManager.currentDay - 1) % 7)) + i;
+            string weekDayName = gameManager.weekDays[i];
+            bool isToday = weekDayName == gameManager.currentWeekDay;
+
+            // Recherche événement
+            string eventName = "Libre";
+            Sprite eventSprite = null;
+            bool hasEvent = false;
+
+            if (scheduled != null)
+            {
+                foreach (var eventDay in scheduled)
+                {
+                    if (eventDay.day == absoluteDay && eventDay.gameEvent != null)
+                    {
+                        var info = eventDay.gameEvent.GetEventInfo();
+                        eventName = !string.IsNullOrEmpty(info.eventName)
+                            ? info.eventName
+                            : eventDay.gameEvent.name;
+                        eventSprite = info.eventImage != null ? info.eventImage : EventIcon;
+                        hasEvent = true;
+                        break;
+                    }
+                }
+            }
+
+            // Mini-jeu
+            bool hasMiniGame = weekDayName == "Dimanche";
+
+            // Mettre à jour la carte
+            DayCard card = dayCards[i];
+            card.Setup(
+                weekDayName,
+                eventName,
+                eventSprite,
+                hasMiniGame ? MiniGameIcon : null,
+                isToday,
+                hasEvent,
+                isToday ? todayColor : (hasEvent ? eventColor : normalColor)
+            );
+        }
+    }
+
+    // Appeler cette fonction quand le jour change
+    public void OnDayChanged()
+    {
+        if (useAdvancedUI)
+            UpdateAdvancedUI();
+        else
+            UpdateWeekText();
+    }
+}
+
+// ============================================
+// COMPOSANT POUR LES CARTES DE JOUR
+// ============================================
+public class DayCard : MonoBehaviour
+{
+    [Header("Références UI")]
+    public TextMeshProUGUI dayNameText;
+    public TextMeshProUGUI eventNameText;
+    public Image eventIcon;
+    public Image miniGameIcon;
+    public Image backgroundImage;
+    public GameObject todayIndicator;
+
+    public void Setup(string dayName, string eventName, Sprite eventSprite,
+                     Sprite miniGameSprite, bool isToday, bool hasEvent, Color bgColor)
+    {
+        if (dayNameText != null)
+            dayNameText.text = dayName;
+
+        if (eventNameText != null)
+            eventNameText.text = eventName;
+
+        if (eventIcon != null)
+        {
+            eventIcon.gameObject.SetActive(eventSprite != null);
+            if (eventSprite != null)
+                eventIcon.sprite = eventSprite;
+        }
+
+        if (miniGameIcon != null)
+        {
+            miniGameIcon.gameObject.SetActive(miniGameSprite != null);
+            if (miniGameSprite != null)
+                miniGameIcon.sprite = miniGameSprite;
+        }
+
+        if (backgroundImage != null)
+            backgroundImage.color = bgColor;
+
+        if (todayIndicator != null)
+            todayIndicator.SetActive(isToday);
     }
 }

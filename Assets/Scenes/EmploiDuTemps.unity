@@ -392,6 +392,12 @@ MonoBehaviour:
   currentTime: 0
   gameManager: {fileID: 0}
   weekText: {fileID: 2011451178}
+  dayCardPrefab: {fileID: 0}
+  dayCardsContainer: {fileID: 0}
+  useAdvancedUI: 0
+  todayColor: {r: 1, g: 0.9, b: 0.6, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  eventColor: {r: 0.6, g: 0.8, b: 1, a: 1}
 --- !u!4 &1589484893
 Transform:
   m_ObjectHideFlags: 0
@@ -608,7 +614,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 103.17172}
+  m_margin: {x: 0, y: -101.19342, z: 0, w: 103.17172}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
