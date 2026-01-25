@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11dd4889239fdd3478083862a08848b8, type: 3}
   m_Name: Carte MaxFoi + 200
   m_EditorClassIdentifier: Assembly-CSharp::VillageCard
-  cardName: TU va avoir de la foi
+  cardName: "Foi max augment\xE9"
   icon: {fileID: 0}
-  description: FOIOS jsqdjqmlkje ma sqjd dqf^zlksdfhj lkdqhj sldkfhjkqsdf qjskldj
-    qslkfjql
+  description: augmente le maximum de foi possible
   cardSet: 1
   effectSO: {fileID: 11400000, guid: b7e4a1095fe15404da7a1c060a60356b, type: 2}

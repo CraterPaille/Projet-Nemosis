@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VillageCard
   cardName: argent en moins
   icon: {fileID: -4919783380165033945, guid: 5daae032e18077543a82818273802e59, type: 3}
-  description: MOINSSSSSSSSSS
+  description: Fais perdre 500 d'argent.
   cardSet: 1
   effectSO: {fileID: 11400000, guid: 96be6b45d230dd14895455a15a97d1dc, type: 2}
