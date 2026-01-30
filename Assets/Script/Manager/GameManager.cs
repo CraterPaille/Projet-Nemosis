@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
     [Tooltip("Nombre total de jours dans une partie (1 mois = 28 jours)")]
     public int totalDays = 28;
     [Tooltip("Scène chargée quand la campagne est terminée")]
-    public string endSceneName = "Menu_principal";
+    public string endSceneName = "EndScene";
 
    
     private bool campaignFinished = false;
@@ -163,6 +163,13 @@ public class GameManager : MonoBehaviour
         Valeurs[type] += clampedDelta;
         Debug.Log($"Stat {type} etais a {ancienvaleur}. + {clampedDelta} = {Valeurs[type]}");
         GameEvents.TriggerStatChanged(type, Valeurs[type]);
+
+        // Nouvelle vérification : si Nemosis atteint >= 100 -> fin de la partie
+        if (type == StatType.Nemosis && Valeurs[type] >= 100f)
+        {
+            Debug.Log("[GameManager] Nemosis >= 100 : défaite détectée -> chargement de la scène de fin.");
+            EndCampaign();
+        }
     }
 
     /// <summary>

@@ -80,29 +80,66 @@ public class EndGameScreen : MonoBehaviour
         canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutQuad);
         yield return new WaitForSeconds(fadeInDuration * 0.5f);
 
-        // 2. Animation du titre principal (cible scale = 2 pour correspondre aux textes en scale 2)
+        // Déterminer si c'est une défaite due à Nemosis >= 100
+        bool isDefeatByNemosis = false;
+        if (GameManager.Instance != null && GameManager.Instance.Valeurs != null)
+        {
+            if (GameManager.Instance.Valeurs.TryGetValue(StatType.Nemosis, out float nemosisValue))
+            {
+                isDefeatByNemosis = nemosisValue >= 100f;
+            }
+        }
+
+        // 2. Animation du titre principal (cible scale dépend si défaite)
         if (titleText != null)
         {
-            titleText.text = "FÉLICITATIONS !";
-            titleText.transform.localScale = Vector3.zero;
-            titleText.DOFade(1f, 1.3f);
-            titleText.transform.DOScale(Vector3.one * 2f, textAnimationDuration)
-                .SetEase(Ease.OutElastic, 2f, 1.6f);
+            if (isDefeatByNemosis)
+            {
+                titleText.text = "DÉFAITE";
+                titleText.color = Color.red;
+                titleText.transform.localScale = Vector3.zero;
+                titleText.DOFade(1f, 1.0f);
+                // plus grand pour bien marquer la défaite
+                titleText.transform.DOScale(Vector3.one * 2.5f, textAnimationDuration)
+                    .SetEase(Ease.OutElastic, 2f, 1.6f);
+                // secousse un peu plus prononcée
+                titleText.transform.DOShakeRotation(0.7f, 8f, 12, 90f)
+                    .SetDelay(textAnimationDuration);
+            }
+            else
+            {
+                titleText.text = "FÉLICITATIONS !";
+                titleText.transform.localScale = Vector3.zero;
+                titleText.DOFade(1f, 1.3f);
+                titleText.transform.DOScale(Vector3.one * 2f, textAnimationDuration)
+                    .SetEase(Ease.OutElastic, 2f, 1.6f);
 
-            // Effet de shake subtil
-            titleText.transform.DOShakeRotation(0.5f, 5f, 10, 90f)
-                .SetDelay(textAnimationDuration);
+                // Effet de shake subtil
+                titleText.transform.DOShakeRotation(0.5f, 5f, 10, 90f)
+                    .SetDelay(textAnimationDuration);
+            }
         }
         yield return new WaitForSeconds(textAnimationDuration);
 
-        // 3. Texte de complétion (cible scale = 2)
+        // 3. Texte de complétion (cible scale = 2) — si défaite, expliquer pourquoi
         if (completionText != null)
         {
-            DisplayCompletionPercentage();
+            if (isDefeatByNemosis)
+            {
+                completionText.text = "La Nemosis a atteint son maximum — vous avez succombé.";
+                completionText.color = Color.red;
+            }
+            else
+            {
+                DisplayCompletionPercentage();
+            }
+
             // démarrer légèrement plus petit que la cible (par ex. 1.6) pour un effet d'entrée
             completionText.transform.localScale = Vector3.one * 1.6f;
             completionText.DOFade(1f, 0.5f);
-            completionText.transform.DOScale(Vector3.one * 2f, 0.8f).SetEase(Ease.OutBack);
+            // scale légèrement plus grand si défaite (pour emphase)
+            float targetScale = isDefeatByNemosis ? 2.2f : 2f;
+            completionText.transform.DOScale(Vector3.one * targetScale, 0.8f).SetEase(Ease.OutBack);
         }
         yield return new WaitForSeconds(0.6f);
 
@@ -116,8 +153,8 @@ public class EndGameScreen : MonoBehaviour
         }
         yield return new WaitForSeconds(0.8f);
 
-        // 5. Particules de célébration
-        if (celebrationParticles != null)
+        // 5. Particules de célébration — ne pas jouer en cas de défaite
+        if (!isDefeatByNemosis && celebrationParticles != null)
         {
             celebrationParticles.Play();
         }

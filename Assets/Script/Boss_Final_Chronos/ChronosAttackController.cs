@@ -29,7 +29,7 @@ public class ChronosAttackController : MonoBehaviour
     private Rect camRect;
     private bool camDirty = true;
     private Bounds arenaBounds;
-    private Vector2 arenaCenter, arenaSize;
+    private Vector3 arenaCenter, arenaSize;
     private Transform cachedTransform;
     private Camera mainCamera;
     private ObjectPooler pooler;
@@ -590,7 +590,8 @@ public class ChronosAttackController : MonoBehaviour
             int perSide = Mathf.Clamp(1 + w, 1, 6);
 
             // Spawn needles cardinales (remplace les blasters/lasers pour la Phase 5)
-            yield return SpawnCardinalNeedles(player.position, 8f, speed, perSide);
+            // Undyne-like: spawn inward from each side, never spawn multiple simultaneous needles from same side
+            yield return SpawnCardinalNeedles(player.position, 8f, speed, perSide, false);
             yield return new WaitForSeconds(Mathf.Max(2.5f, 4f - w * 0.3f));
         }
 
@@ -605,57 +606,131 @@ public class ChronosAttackController : MonoBehaviour
         yield return wait1s;
     }
 
-    IEnumerator SpawnCardinalNeedles(Vector3 center, float radius, float speed, int perSideCount = 1)
+    IEnumerator SpawnCardinalNeedles(Vector3 center, float radius, float speed, int perSideCount = 1, bool aimAtPlayer = true)
     {
-        const float outsideOffset = 1f;
+        const float outsideOffset = 3f; // Distance en dehors de l'arène pour spawn
 
-        foreach (Vector3 dir in cardinalDirs)
+        List<(Vector3 spawnPos, Vector3 moveDir, int side)> allSpawns = new List<(Vector3, Vector3, int)>();
+
+        int n = Mathf.Max(1, perSideCount);
+
+        // Pour chaque côté cardinal
+        for (int s = 0; s < 4; s++)
         {
-            // Position de base placée exactement sur le bord de l'arène + offset
-            Vector3 basePos = new Vector3(
-                arenaCenter.x + dir.x * (arenaSize.x * 0.5f + outsideOffset),
-                arenaCenter.y + dir.y * (arenaSize.y * 0.5f + outsideOffset),
-                0f);
+            Vector3 dir = cardinalDirs[s];
 
-            // choisir l'axe de dispersion (perp)
-            Vector3 perp = (Mathf.Abs(dir.y) > 0.5f) ? Vector3.right : Vector3.up;
+            // Position de spawn sur la ligne cardinale, ALIGNÉE avec le centre
+            Vector3 spawnPos;
+            Vector3 moveDir;
 
-            // spread adapté à l'arène (empirique)
-            float spread = (Mathf.Abs(dir.y) > 0.5f) ? Mathf.Max(1f, arenaSize.x * 0.6f) : Mathf.Max(1f, arenaSize.y * 0.6f);
-            int n = Mathf.Max(1, perSideCount);
-            float spacing = (n > 1) ? (spread / (n - 1)) : 0f;
-            float start = -spread / 2f;
-
-            for (int i = 0; i < n; i++)
+            if (s == 0) // HAUT - spawn au-dessus du centre, descendre
             {
-                Vector3 offset = perp * (start + i * spacing);
-                Vector3 spawnPos = basePos + offset;
-
-                // direction vers le joueur
-                Vector3 moveDir = (player.position - spawnPos).normalized;
-                float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
-                Quaternion rot = Quaternion.Euler(0, 0, angle);
-
-                GameObject needle = Spawn("needle", spawnPos, rot, false);
-                if (needle)
-                {
-                    var nd = needle.GetComponent<Bone>();
-                    if (nd != null)
-                    {
-                        nd.moveMode = Bone.MoveMode.Directional;
-                        nd.moveDirection = moveDir;
-                        nd.speed = speed;
-                        nd.maxLifetime = 6f; // sécurité
-                    }
-
-                    // Forcer orientation visuelle (Bone.OnEnable appliquera aussi l'angle configurable)
-                    needle.transform.rotation = rot;
-                    needle.SetActive(true);
-                }
+                spawnPos = new Vector3(arenaCenter.x, arenaCenter.y + arenaSize.y * 0.5f + outsideOffset, 0f);
+                moveDir = Vector3.down;
+            }
+            else if (s == 1) // DROITE - spawn à droite du centre, aller à gauche
+            {
+                spawnPos = new Vector3(arenaCenter.x + arenaSize.x * 0.5f + outsideOffset, arenaCenter.y, 0f);
+                moveDir = Vector3.left;
+            }
+            else if (s == 2) // BAS - spawn en-dessous du centre, monter
+            {
+                spawnPos = new Vector3(arenaCenter.x, arenaCenter.y - arenaSize.y * 0.5f - outsideOffset, 0f);
+                moveDir = Vector3.up;
+            }
+            else // GAUCHE - spawn à gauche du centre, aller à droite
+            {
+                spawnPos = new Vector3(arenaCenter.x - arenaSize.x * 0.5f - outsideOffset, arenaCenter.y, 0f);
+                moveDir = Vector3.right;
             }
 
-            // petit délai entre côtés
-            yield return wait0_3s;
+            // Pour une seule needle : elle passe par le centre
+            if (n == 1)
+            {
+                allSpawns.Add((spawnPos, moveDir, s));
+            }
+            else
+            {
+                // Plusieurs needles : espacer perpendiculairement MAIS toutes visent le centre
+                Vector3 perp;
+                float spreadSize;
+
+                if (s == 0 || s == 2) // Haut ou Bas
+                {
+                    perp = Vector3.right;
+                    spreadSize = arenaSize.x * 0.7f;
+                }
+                else // Gauche ou Droite
+                {
+                    perp = Vector3.up;
+                    spreadSize = arenaSize.y * 0.7f;
+                }
+
+                float spacing = spreadSize / (n - 1);
+                float start = -spreadSize / 2f;
+
+                for (int i = 0; i < n; i++)
+                {
+                    Vector3 offset = perp * (start + i * spacing);
+                    Vector3 finalSpawnPos = spawnPos + offset;
+
+                    // IMPORTANT : recalculer la direction pour viser le centre
+                    Vector3 finalMoveDir = (arenaCenter - finalSpawnPos).normalized;
+
+                    allSpawns.Add((finalSpawnPos, finalMoveDir, s));
+                }
+            }
+        }
+
+        // Réorganiser pour alterner entre les côtés
+        List<(Vector3, Vector3, int)>[] spawnsBySide = new List<(Vector3, Vector3, int)>[4];
+        for (int s = 0; s < 4; s++)
+            spawnsBySide[s] = new List<(Vector3, Vector3, int)>();
+
+        foreach (var spawn in allSpawns)
+            spawnsBySide[spawn.Item3].Add(spawn);
+
+        int maxCount = 0;
+        for (int s = 0; s < 4; s++)
+            maxCount = Mathf.Max(maxCount, spawnsBySide[s].Count);
+
+        List<(Vector3, Vector3, int)> orderedSpawns = new List<(Vector3, Vector3, int)>();
+        for (int wave = 0; wave < maxCount; wave++)
+        {
+            for (int s = 0; s < 4; s++)
+            {
+                if (wave < spawnsBySide[s].Count)
+                    orderedSpawns.Add(spawnsBySide[s][wave]);
+            }
+        }
+
+        // Spawner avec délai
+        WaitForSeconds spawnDelay = new WaitForSeconds(0.8f); // Ajustable
+
+        foreach (var spawn in orderedSpawns)
+        {
+            Vector3 spawnPos = spawn.Item1;
+            Vector3 moveDir = spawn.Item2;
+
+            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.Euler(0, 0, angle);
+
+            GameObject needle = Spawn("needle", spawnPos, rot, false);
+            if (needle)
+            {
+                var nd = needle.GetComponent<Bone>();
+                if (nd != null)
+                {
+                    nd.moveMode = Bone.MoveMode.Directional;
+                    nd.moveDirection = moveDir;
+                    nd.speed = speed;
+                    nd.maxLifetime = 10f;
+                }
+
+                needle.SetActive(true);
+            }
+
+            yield return spawnDelay;
         }
     }
 

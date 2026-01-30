@@ -352,19 +352,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 3583312601893175573, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 4461561176163299394, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_Pivot.x
@@ -474,21 +474,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: MiniGameTutorialChronosPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 6722127685846602741, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 7101975683543467946, guid: 88a70ed90c81b9c47aba4fffe3bf0684, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -175
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -1845,16 +1849,13 @@ MonoBehaviour:
   pools:
   - tag: needle
     prefab: {fileID: 8439240537102039666, guid: 0a8a58e3ea917d74897bb2eb7341c460, type: 3}
-    size: 30
+    size: 100
   - tag: Laser
     prefab: {fileID: 4396842872430510340, guid: 53dc3ab30dc42b743800a23a8adac6cd, type: 3}
     size: 10
   - tag: GasterBlaster
     prefab: {fileID: 9104950582744654031, guid: 4424e6c51ab413e4fb9963a6b36005f2, type: 3}
     size: 10
-  - tag: PlayerSoul
-    prefab: {fileID: 3475594922051089011, guid: f2edb7138c11f6a4c81ac11eba3d2121, type: 3}
-    size: 1
   - tag: Jewel
     prefab: {fileID: 8497957813008943151, guid: 3aff36cca1ec444478e4d67790729478, type: 3}
     size: 1
